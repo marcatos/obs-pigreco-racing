@@ -20,7 +20,9 @@ Collezione scene OBS per streaming sim racing (triplo monitor + monitor singolo)
 4. **BRB** — “Torno subito” + webcam
 5. **Ending** — grazie + handle Twitch
 
-Canvas / uscita: **1920×1080**.
+Canvas / uscita: **1920×1080** (OBS 32.x: le scene usano le coordinate relative `pos_rel` / `scale_rel`).
+
+> Se OBS è aperto mentre si riscrive `PiGreco_Racing.json`, alla chiusura può sovrascrivere il file. Chiudi OBS prima di reinstallare la collezione, poi riapri.
 
 ## Installazione OBS
 

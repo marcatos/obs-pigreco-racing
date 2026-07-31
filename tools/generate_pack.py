@@ -95,6 +95,22 @@ def source_base(name: str, source_id: str, settings: dict, *, mixers: int = 0, v
     }
 
 
+def pos_rel(pos: tuple[float, float]) -> dict[str, float]:
+    """OBS 28+ relative position (matches Streaming_Gaming / OBS 32.2)."""
+    x, y = pos
+    return {
+        "x": (2.0 * x - CANVAS_W) / CANVAS_H,
+        "y": (2.0 * y - CANVAS_H) / CANVAS_H,
+    }
+
+
+def scale_rel(scale: tuple[float, float], scale_ref: tuple[float, float]) -> dict[str, float]:
+    return {
+        "x": scale[0] * scale_ref[0] / CANVAS_W,
+        "y": scale[1] * scale_ref[1] / CANVAS_H,
+    }
+
+
 def scene_item(
     name: str,
     source_uuid: str,
@@ -104,16 +120,17 @@ def scene_item(
     scale=(1.0, 1.0),
     visible: bool = True,
     locked: bool = False,
-    scale_ref=(float(CANVAS_W), float(CANVAS_H)),
+    scale_ref: tuple[float, float] | None = None,
 ) -> dict:
+    ref = scale_ref or (float(CANVAS_W), float(CANVAS_H))
     return {
         "name": name,
         "source_uuid": source_uuid,
         "visible": visible,
         "locked": locked,
         "rot": 0.0,
-        "scale_ref": {"x": scale_ref[0], "y": scale_ref[1]},
-        "align": 5,
+        "scale_ref": {"x": ref[0], "y": ref[1]},
+        "align": 5,  # OBS_ALIGN_LEFT | OBS_ALIGN_TOP
         "bounds_type": 0,
         "bounds_align": 0,
         "bounds_crop": False,
@@ -124,9 +141,9 @@ def scene_item(
         "id": item_id,
         "group_item_backup": False,
         "pos": {"x": float(pos[0]), "y": float(pos[1])},
-        "pos_rel": {"x": 0.0, "y": 0.0},
+        "pos_rel": pos_rel(pos),
         "scale": {"x": float(scale[0]), "y": float(scale[1])},
-        "scale_rel": {"x": 1.0, "y": 1.0},
+        "scale_rel": scale_rel(scale, ref),
         "bounds": {"x": 0.0, "y": 0.0},
         "bounds_rel": {"x": 0.0, "y": 0.0},
         "scale_filter": "disable",
@@ -247,6 +264,7 @@ def build_collection() -> Path:
     cam_w, cam_h = 360.0, 202.0
     cam_scale = cam_w / 1920.0
     cam_x, cam_y = 36.0, CANVAS_H - 36.0 - cam_h
+    cam_ref = (1920.0, 1080.0)
 
     # Smaller cam for interstitial scenes
     cam_sm_w = 280.0
@@ -255,74 +273,82 @@ def build_collection() -> Path:
     cam_sm_x = (CANVAS_W - cam_sm_w) / 2.0
     cam_sm_y = CANVAS_H - 56.0 - cam_sm_h
 
-    def fit_item(name: str, source_uuid: str, item_id: int, *, visible: bool = True, locked: bool = False) -> dict:
-        """Scale source to fill 1920x1080 canvas while keeping aspect ratio."""
-        item = scene_item(name, source_uuid, item_id, visible=visible, locked=locked)
-        item["bounds_type"] = 2  # OBS_BOUNDS_SCALE_INNER
-        item["bounds"] = {"x": float(CANVAS_W), "y": float(CANVAS_H)}
-        item["bounds_align"] = 0
-        item["scale"] = {"x": 1.0, "y": 1.0}
-        return item
+    def fullscreen(name: str, source_uuid: str, item_id: int, *, visible: bool = True, locked: bool = False) -> dict:
+        """Top-left full canvas item with correct OBS 32 relative transforms."""
+        return scene_item(
+            name,
+            source_uuid,
+            item_id,
+            pos=(0.0, 0.0),
+            scale=(1.0, 1.0),
+            visible=visible,
+            locked=locked,
+            scale_ref=(float(CANVAS_W), float(CANVAS_H)),
+        )
 
     scene_soon = make_scene(
         "Starting Soon",
         [
-            fit_item(ov_soon["name"], ov_soon["uuid"], 1, locked=True),
+            fullscreen(ov_soon["name"], ov_soon["uuid"], 1, locked=True),
             scene_item(
                 cam["name"],
                 cam["uuid"],
                 2,
                 pos=(cam_sm_x, cam_sm_y),
                 scale=(cam_sm_scale, cam_sm_scale),
+                scale_ref=cam_ref,
             ),
         ],
     )
     scene_race = make_scene(
         "Live Race",
         [
-            fit_item(mon_center["name"], mon_center["uuid"], 1),
+            fullscreen(mon_center["name"], mon_center["uuid"], 1),
             scene_item(game["name"], game["uuid"], 2, visible=False),
-            fit_item(ov_live["name"], ov_live["uuid"], 3, locked=True),
+            fullscreen(ov_live["name"], ov_live["uuid"], 3, locked=True),
             scene_item(
                 cam["name"],
                 cam["uuid"],
                 4,
                 pos=(cam_x, cam_y),
                 scale=(cam_scale, cam_scale),
+                scale_ref=cam_ref,
             ),
         ],
     )
     scene_single = make_scene(
         "Live Singolo",
         [
-            fit_item(mon_single["name"], mon_single["uuid"], 1),
-            fit_item(ov_live["name"], ov_live["uuid"], 2, locked=True),
+            fullscreen(mon_single["name"], mon_single["uuid"], 1),
+            fullscreen(ov_live["name"], ov_live["uuid"], 2, locked=True),
             scene_item(
                 cam["name"],
                 cam["uuid"],
                 3,
                 pos=(cam_x, cam_y),
                 scale=(cam_scale, cam_scale),
+                scale_ref=cam_ref,
             ),
         ],
     )
     scene_brb = make_scene(
         "BRB",
         [
-            fit_item(ov_brb["name"], ov_brb["uuid"], 1, locked=True),
+            fullscreen(ov_brb["name"], ov_brb["uuid"], 1, locked=True),
             scene_item(
                 cam["name"],
                 cam["uuid"],
                 2,
                 pos=(cam_sm_x, cam_sm_y),
                 scale=(cam_sm_scale, cam_sm_scale),
+                scale_ref=cam_ref,
             ),
         ],
     )
     scene_end = make_scene(
         "Ending",
         [
-            fit_item(ov_end["name"], ov_end["uuid"], 1, locked=True),
+            fullscreen(ov_end["name"], ov_end["uuid"], 1, locked=True),
         ],
     )
 
