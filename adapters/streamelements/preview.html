@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PiGreco — Chat + Alerts preview</title>
+    <link rel="stylesheet" href="chat.css" />
+    <link rel="stylesheet" href="alerts.css" />
+    <style>
+      /* Local demo layout only — not for SE paste */
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: #080a0c;
+        font-family: "Rajdhani", sans-serif;
+        color: #f7fafc;
+      }
+
+      .demo {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        margin: 0 auto;
+        background:
+          radial-gradient(ellipse at 70% 40%, rgba(0, 159, 229, 0.08), transparent 55%),
+          radial-gradient(ellipse at 20% 80%, rgba(0, 196, 0, 0.06), transparent 50%),
+          #080a0c;
+      }
+
+      .demo__label {
+        position: absolute;
+        top: 36px;
+        left: 48px;
+        font-family: "Orbitron", sans-serif;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #009fe5;
+      }
+
+      .demo__title {
+        position: absolute;
+        top: 58px;
+        left: 48px;
+        font-family: "Orbitron", sans-serif;
+        font-size: 1.4rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+      }
+
+      .demo__hint {
+        position: absolute;
+        top: 96px;
+        left: 48px;
+        font-size: 1rem;
+        color: #a7b1ba;
+        max-width: 420px;
+      }
+
+      .demo-chat {
+        position: absolute;
+        left: 48px;
+        bottom: 48px;
+        width: 420px;
+        max-height: 520px;
+        overflow: hidden;
+      }
+
+      .demo-alert-slot {
+        position: absolute;
+        left: 50%;
+        top: 42%;
+        width: 640px;
+        height: 220px;
+        transform: translate(-50%, -50%);
+      }
+
+      .demo-alert-slot .pgr-alert {
+        position: relative;
+        left: auto;
+        top: auto;
+        transform: none;
+        margin: 0 auto;
+        animation: none;
+      }
+
+      .demo-alert-slot .pgr-alert.is-hidden {
+        display: none;
+      }
+
+      .demo-alert-slot .pgr-alert--raid {
+        animation: pgr-alert-pulse 2.2s ease-in-out infinite;
+      }
+
+      .demo-tabs {
+        position: absolute;
+        top: 48px;
+        right: 48px;
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .demo-tabs button {
+        font-family: "Orbitron", sans-serif;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 0.55rem 0.9rem;
+        color: #f7fafc;
+        background: #11161a;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        cursor: pointer;
+      }
+
+      .demo-tabs button.is-active {
+        border-color: #00c400;
+        color: #00c400;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="demo" role="img" aria-label="Anteprima chat e alert PiGreco">
+      <div class="demo__label">Engagement preview · P2-01 / P2-02</div>
+      <div class="demo__title">PiGreco Racing</div>
+      <p class="demo__hint">
+        Apri questo file come Browser Source OBS (1920×1080) per demo locale.
+        In live usa StreamElements con i CSS in questa cartella.
+      </p>
+
+      <div class="demo-tabs" aria-label="Tipo alert">
+        <button type="button" data-alert="follow" class="is-active">Follow</button>
+        <button type="button" data-alert="sub">Sub</button>
+        <button type="button" data-alert="raid">Raid</button>
+      </div>
+
+      <div class="demo-alert-slot">
+        <div class="pgr-alert pgr-alert--follow" data-panel="follow">
+          <div class="pgr-alert__eyebrow">Nuovo follow</div>
+          <div class="pgr-alert__name">PilotAlpha</div>
+          <div class="pgr-alert__detail">Benvenuto nel garage PiGreco</div>
+          <span class="pgr-alert__bar" aria-hidden="true"></span>
+        </div>
+        <div class="pgr-alert pgr-alert--sub is-hidden" data-panel="sub">
+          <div class="pgr-alert__eyebrow">Nuova sub</div>
+          <div class="pgr-alert__name">GridRunner</div>
+          <div class="pgr-alert__detail">
+            <strong>Tier 1</strong> · <strong>3</strong> mesi
+          </div>
+          <span class="pgr-alert__bar" aria-hidden="true"></span>
+        </div>
+        <div class="pgr-alert pgr-alert--raid is-hidden" data-panel="raid">
+          <div class="pgr-alert__eyebrow">Raid in arrivo</div>
+          <div class="pgr-alert__name">NightShiftSim</div>
+          <div class="pgr-alert__detail">
+            <strong>42</strong> piloti in formazione
+          </div>
+          <span class="pgr-alert__bar" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <div class="demo-chat chat-container" id="log" aria-label="Chat demo">
+        <div class="message">
+          <span class="meta">
+            <span class="badges"></span>
+            <span class="name">apex_ita</span>
+            <span class="colon">:</span>
+          </span>
+          <span class="content">che setup stai usando oggi?</span>
+        </div>
+        <div class="message">
+          <span class="meta">
+            <span class="name">pigreco_fan</span>
+            <span class="colon">:</span>
+          </span>
+          <span class="content">GG sul settore 2, tempo pulito</span>
+        </div>
+        <div class="message">
+          <span class="meta">
+            <span class="name">wheel_check</span>
+            <span class="colon">:</span>
+          </span>
+          <span class="content">raid incoming? 🔥</span>
+        </div>
+        <div class="message">
+          <span class="meta">
+            <span class="name">sim_marta</span>
+            <span class="colon">:</span>
+          </span>
+          <span class="content">forza PiGreco, bel branding</span>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        var buttons = document.querySelectorAll(".demo-tabs button");
+        var panels = document.querySelectorAll("[data-panel]");
+
+        function show(kind) {
+          panels.forEach(function (el) {
+            el.classList.toggle("is-hidden", el.getAttribute("data-panel") !== kind);
+          });
+          buttons.forEach(function (btn) {
+            btn.classList.toggle("is-active", btn.getAttribute("data-alert") === kind);
+          });
+        }
+
+        buttons.forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            show(btn.getAttribute("data-alert"));
+          });
+        });
+
+        var order = ["follow", "sub", "raid"];
+        var i = 0;
+        setInterval(function () {
+          i = (i + 1) % order.length;
+          show(order[i]);
+        }, 4500);
+      })();
+    </script>
+  </body>
+</html>

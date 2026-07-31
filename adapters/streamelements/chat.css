@@ -1,0 +1,146 @@
+/**
+ * PiGreco Racing — StreamElements Custom Chat CSS
+ *
+ * Target: StreamElements → Overlay → Chatbox → Custom CSS
+ * Also usable as a generic browser-chat theme if markup uses the same
+ * SE class names (.message, .meta, .badges, .name, .colon, .content).
+ *
+ * Brand: #00C400 #009FE5 #080A0C #11161A — Orbitron / Rajdhani
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&family=Rajdhani:wght@500;600;700&display=swap");
+
+:root {
+  --pgr-green: #00c400;
+  --pgr-blue: #009fe5;
+  --pgr-bg: #080a0c;
+  --pgr-panel: #11161a;
+  --pgr-text: #f7fafc;
+  --pgr-muted: #a7b1ba;
+  --pgr-line: rgba(0, 196, 0, 0.4);
+  --font-display: "Orbitron", sans-serif;
+  --font-body: "Rajdhani", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  background: transparent !important;
+  font-family: var(--font-body);
+  color: var(--pgr-text);
+}
+
+/* StreamElements chat root */
+.chat-container,
+.sl__chat__container,
+#log {
+  background: transparent !important;
+  font-family: var(--font-body);
+}
+
+.message,
+.chat-message {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.5rem;
+  margin: 0 0 0.55rem;
+  padding: 0.45rem 0.65rem 0.5rem 0.75rem;
+  background: linear-gradient(
+    105deg,
+    rgba(17, 22, 26, 0.92) 0%,
+    rgba(8, 10, 12, 0.88) 100%
+  );
+  border-left: 3px solid var(--pgr-green);
+  border-radius: 0 4px 4px 0;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  animation: pgr-chat-in 0.35s ease-out both;
+}
+
+.message:nth-child(even),
+.chat-message:nth-child(even) {
+  border-left-color: var(--pgr-blue);
+}
+
+.meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  vertical-align: middle;
+}
+
+.badge {
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 2px;
+}
+
+.name,
+.username {
+  color: var(--pgr-green);
+  font-weight: 700;
+  text-shadow: 0 0 12px rgba(0, 196, 0, 0.25);
+}
+
+.message:nth-child(even) .name,
+.message:nth-child(even) .username,
+.chat-message:nth-child(even) .name,
+.chat-message:nth-child(even) .username {
+  color: var(--pgr-blue);
+  text-shadow: 0 0 12px rgba(0, 159, 229, 0.25);
+}
+
+.colon {
+  color: var(--pgr-muted);
+  margin-right: 0.15rem;
+}
+
+.content,
+.message-body,
+.message-text {
+  display: inline;
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--pgr-text);
+  word-break: break-word;
+}
+
+/* Emotes stay crisp */
+.content img,
+.message-body img,
+.message-text img,
+.emote {
+  vertical-align: middle;
+  height: 1.35em;
+}
+
+@keyframes pgr-chat-in {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

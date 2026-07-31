@@ -119,6 +119,10 @@ Canvas / uscita: **1920×1080** (OBS 32.x con `pos_rel` / `scale_rel`).
 | F4 | BRB |
 | F5 | Ending |
 
+## Engagement
+
+Temi chat/alert PiGreco (StreamElements / preview OBS): [`adapters/streamelements/`](adapters/streamelements/).
+
 ## Asset ufficiali
 
 Vedi [ATTRIBUTION.md](ATTRIBUTION.md). Palette: `#00C400`, `#009FE5`, `#050505`.

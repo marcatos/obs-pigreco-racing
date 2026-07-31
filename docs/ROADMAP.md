@@ -30,8 +30,8 @@ Update this file when claiming or finishing an ID.
 
 | ID | Item | Status | Notes |
 |----|------|--------|-------|
-| P2-01 | Chat overlay theme PiGreco | in_progress | CSS for SE/Streamlabs/own |
-| P2-02 | Alert box theme (follow/sub/raid) | in_progress | |
+| P2-01 | Chat overlay theme PiGreco | done | `adapters/streamelements/chat.css` |
+| P2-02 | Alert box theme (follow/sub/raid) | done | `adapters/streamelements/alerts/` |
 | P2-03 | Hotkey map + Stream Deck profile export | ready | JSON/docs |
 | P2-04 | Instant Replay / Highlight scene | ready | replay buffer media source |
 
@@ -57,7 +57,7 @@ Update this file when claiming or finishing an ID.
 
 1. `P1-03` Stinger (media + OBS transition notes)  
 2. `P1-06` BRB smart timer (pairs with countdown patterns)  
-3. `P2-01` + `P2-02` engagement CSS pack  
+3. `P2-03` hotkey map + Stream Deck  
 4. `P3-01` telemetry contract (ADR-005)  
 
 ## Definition of done (any ID)
