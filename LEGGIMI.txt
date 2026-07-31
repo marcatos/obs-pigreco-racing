@@ -2,16 +2,21 @@
   PIGRECO RACING — PACCHETTO OBS
 ========================================
 
-INIZIA DA QUI:
-  Apri il file  Guida_PiGreco_OBS.pdf
+INIZIA DA QUI (il modo piu' semplice):
+  Fai doppio clic su  Setup.bat
 
-Lì trovi i passi semplici per:
-  - mettere il tuo nick
-  - installare le scene in OBS
-  - collegare monitor e webcam
+Ti chiede il nick, e se manca Python
+lo installa (comparira' una richiesta
+di amministratore: accetta).
+
+Poi apri OBS e scegli la collezione
+"PiGreco Racing".
+
+Guida completa con immagini:
+  Guida_PiGreco_OBS.pdf
 
 Anteprime grafiche: cartella  showcase\
 (apri index.html con il browser)
 
-Domande tecniche: chiedi al referente del team.
+Domande: chiedi al referente del team.
 ========================================

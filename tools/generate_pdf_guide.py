@@ -396,8 +396,8 @@ def build() -> Path:
             "2. <b>OBS Studio</b> installato (gratis su <font color='#009FE5'>obsproject.com</font>)<br/>"
             "3. Questa cartella del pacchetto, messa in un posto fisso "
             "(es. Documenti → obs-pigreco-racing)<br/>"
-            "4. Se non sai usare il terminale: manda il tuo nick al referente tech "
-            "e ti prepara lui la cartella già pronta",
+            "4. Se non sai usare il computer oltre al doppio clic: usa <b>Setup.bat</b> "
+            "oppure manda il tuo nick al referente tech",
             s["body"],
         )
     )
@@ -424,26 +424,21 @@ def build() -> Path:
     story.append(
         card(
             2,
-            "Scrivi il tuo nick",
+            "Avvia il setup (consigliato)",
             [
-                "Apri <b>PowerShell</b> (cerca “PowerShell” nel menu Start).",
-                "Copia le righe qui sotto, cambia solo il nick e il nome, poi premi Invio.",
+                "Fai <b>doppio clic</b> su <b>Setup.bat</b> (nella cartella del pacchetto).",
+                "Ti chiede il <b>nick Twitch</b> e il nome da mostrare in diretta.",
+                "Se sul PC <b>non c’è Python</b>, lo script lo installa da solo: "
+                "appare la richiesta di amministratore Windows → scegli <b>Sì</b>.",
+                "Alla fine dice «SETUP COMPLETATO».",
             ],
         )
     )
     story.append(Spacer(1, 0.2 * cm))
     story.append(
         Paragraph(
-            "cd percorso\\della\\cartella\\obs-pigreco-racing<br/>"
-            "python tools\\setup_streamer.py --username TUO_NICK "
-            "--pilot-name \"Il Tuo Nome\" --install-obs",
-            s["code"],
-        )
-    )
-    story.append(
-        Paragraph(
-            "Esempio: --username marco92 --pilot-name \"Marco Rossi\". "
-            "Se compare un errore su “python”, chiedi aiuto al referente tech.",
+            "Alternativa tecnica (solo se sai usare PowerShell): "
+            r".\Setup.ps1 -Username TUO_NICK -PilotName \"Il Tuo Nome\"",
             s["muted"],
         )
     )
@@ -455,7 +450,7 @@ def build() -> Path:
             [
                 "Apri <b>OBS Studio</b>.",
                 "Menu in alto: <b>Collezione di scene</b> → seleziona <b>PiGreco Racing</b>.",
-                "Se non la vedi: chiudi OBS, rifai il Passo 2, poi riapri.",
+                "Se non la vedi: chiudi OBS, rilancia <b>Setup.bat</b>, poi riapri.",
             ],
         )
     )
@@ -554,11 +549,17 @@ def build() -> Path:
         ),
         (
             "Il mio nick non cambia",
-            "Rilancia setup_streamer, poi in OBS: Aggiorna cache sulla sorgente Browser.",
+            "Rilancia Setup.bat, poi in OBS: Aggiorna cache sulla sorgente Browser.",
         ),
         (
-            "Non so usare PowerShell",
-            "Nessun problema: manda il tuo nick al referente e ti prepara la cartella già configurata.",
+            "Non so usare PowerShell / Python",
+            "Usa solo Setup.bat con doppio clic. Se chiede l’amministratore, accetta. "
+            "In alternativa manda il nick al referente tech.",
+        ),
+        (
+            "Windows blocca lo script",
+            "Tasto destro su Setup.ps1 → Proprietà → spunta «Sblocca» se presente, "
+            "oppure usa Setup.bat. Se SmartScreen avvisa: Altre info → Esegui comunque.",
         ),
     ]
     for title, ans in faqs:

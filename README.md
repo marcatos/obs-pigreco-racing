@@ -22,15 +22,23 @@ python tools/generate_showcase.py
 ## Condivisione con il team
 
 1. Condividi **tutta** la cartella del progetto (zip o copia).
-2. Allega / includi il PDF **[`Guida_PiGreco_OBS.pdf`](Guida_PiGreco_OBS.pdf)** — istruzioni semplificate per chi non è tecnico.
-3. Il compagno segue la guida, oppure (se a suo agio col terminale):
+2. Il compagno apre **`LEGGIMI.txt`** oppure fa doppio clic su **`Setup.bat`**.
+3. Guida con immagini: **[`Guida_PiGreco_OBS.pdf`](Guida_PiGreco_OBS.pdf)**.
+
+`Setup.bat` / `Setup.ps1`:
+- chiede nick e nome
+- se manca Python, lo installa con **privilegi amministratore** (UAC)
+- personalizza gli overlay e installa la collezione in OBS
+
+Alternativa da terminale (se Python c’è già):
 
 ```powershell
-cd percorso\obs-pigreco-racing
+.\Setup.ps1 -Username SUO_NICK -PilotName "Nome Cognome"
+# oppure
 python tools/setup_streamer.py --username SUO_NICK --pilot-name "Nome Cognome" --install-obs
 ```
 
-Rigenera il PDF dopo aver aggiornato gli screenshot:
+Rigenera PDF/screenshot:
 
 ```powershell
 python tools/generate_showcase.py
@@ -61,7 +69,8 @@ Dopo ogni modifica a `config.js`: in OBS → Browser Source → **Refresh cache 
 
 | Percorso | Descrizione |
 |----------|-------------|
-| `Guida_PiGreco_OBS.pdf` | **Istruzioni semplificate** (parti da qui se condividi il pack) |
+| `Setup.bat` / `Setup.ps1` | **Setup guidato** (installa Python se manca + configura OBS) |
+| `Guida_PiGreco_OBS.pdf` | Istruzioni semplificate con grafiche PiGreco |
 | `LEGGIMI.txt` | Promemoria rapido in chiaro |
 | `obs/PiGreco_Racing.json` | Collezione scene OBS |
 | `overlays/*.html` | Browser Source |

@@ -16,3 +16,4 @@ __pycache__/
 showcase/_pdf_*
 showcase/_logo_*_pdf.png
 showcase/_preview_pdf_*
+logs/
