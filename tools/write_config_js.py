@@ -15,6 +15,7 @@ OUT = OVERLAYS / "config.js"
 
 
 def write_config_js(values: dict | None = None, *, overlay_root: Path | None = None) -> Path:
+    """Emit config.js under overlay_root, or ROOT/overlays when overlay_root is None."""
     root = Path(overlay_root) if overlay_root else OVERLAYS
     values_path = root / "config.values.json"
     runtime_path = root / "config.runtime.js"
