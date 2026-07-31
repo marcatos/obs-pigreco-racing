@@ -22,11 +22,20 @@
         <p class="eyebrow" data-cfg="teamName">PiGreco Racing</p>
         <h1 class="headline" data-cfg="brbMessage">TORNO SUBITO</h1>
         <p class="subline">Pit stop in corso</p>
+        <div class="brb-timer" data-brb-timer hidden>
+          <p class="brb-return" data-brb-return>TORNO ALLE --:--</p>
+          <div class="countdown brb-countdown" data-brb-countdown hidden>
+            <span class="countdown-label" data-brb-countdown-label>RITORNO TRA</span>
+            <span class="countdown-value" data-brb-countdown-value>--:--</span>
+          </div>
+        </div>
         <p class="tagline" data-cfg="tagline">Competizione · Rispetto · Ironia</p>
         <div class="handle" data-cfg="twitchHandle">@senormarcato</div>
       </div>
     </div>
   </div>
   <script src="config.js"></script>
+  <script src="brb-timer.js"></script>
 </body>
 </html>
+

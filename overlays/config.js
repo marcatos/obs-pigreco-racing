@@ -13,6 +13,14 @@ window.PIGRECO_CONFIG = {
   endingMessage: "GRAZIE PER AVER SEGUITO",
   endingSub: "Ci vediamo alla prossima sessione",
 
+  // --- BRB return timer (vuoto = nascosto) ---
+  /** "21:45" oggi (domani se già passato) oppure ISO datetime */
+  brbUntil: "",
+  brbReturnLabel: "TORNO ALLE",
+  brbShowCountdown: true,
+  brbCountdownLabel: "RITORNO TRA",
+  brbCountdownDoneLabel: "STO TORNANDO",
+
   // --- Sessione / countdown ---
   sessionBadgeEnabled: true,
   /** practice | quali | race | cooldown | custom */
@@ -25,6 +33,13 @@ window.PIGRECO_CONFIG = {
   goLiveAt: "",
   countdownLabel: "SI PARTE TRA",
   countdownDoneLabel: "IN DIRETTA",
+
+  // --- Ending CTA ---
+  endingCtaEnabled: true,
+  discordInviteUrl: "https://discord.com/invite/wZ4ZfK9DYy",
+  discordQrImage: "assets/qr-discord.png",
+  endingCtaText: "Entra nel Discord del team",
+  endingFollowText: "",
 
   // --- Sponsor (rotazione discreta in Live) ---
   sponsorsEnabled: true,

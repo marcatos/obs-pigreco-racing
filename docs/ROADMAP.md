@@ -21,17 +21,17 @@ Update this file when claiming or finishing an ID.
 |----|------|--------|-------|
 | P1-01 | Countdown Starting Soon | done | `goLiveAt` / `countdownSeconds` |
 | P1-02 | Badge sessione (Practice/Quali/Race) | done | pill top-center |
-| P1-03 | Stinger transition (webm/mov or HTML) | ready | OBS stinger path + asset |
+| P1-03 | Stinger transition (webm/mov or HTML) | in_progress | OBS stinger path + asset |
 | P1-04 | Dual cam layout (face + wheel) toggle | ready | second dshow + hotkey hide |
-| P1-05 | Ending ricco (Discord QR + CTA) | ready | config URLs + optional QR gen |
-| P1-06 | BRB smart timer “torno alle HH:MM” | ready | |
+| P1-05 | Ending ricco (Discord QR + CTA) | done | config URLs + QR PNG |
+| P1-06 | BRB smart timer “torno alle HH:MM” | done | `brbUntil` + optional countdown |
 
 ## Phase 2 — Engagement
 
 | ID | Item | Status | Notes |
 |----|------|--------|-------|
-| P2-01 | Chat overlay theme PiGreco | ready | CSS for SE/Streamlabs/own |
-| P2-02 | Alert box theme (follow/sub/raid) | ready | |
+| P2-01 | Chat overlay theme PiGreco | in_progress | CSS for SE/Streamlabs/own |
+| P2-02 | Alert box theme (follow/sub/raid) | in_progress | |
 | P2-03 | Hotkey map + Stream Deck profile export | ready | JSON/docs |
 | P2-04 | Instant Replay / Highlight scene | ready | replay buffer media source |
 
@@ -39,7 +39,7 @@ Update this file when claiming or finishing an ID.
 
 | ID | Item | Status | Notes |
 |----|------|--------|-------|
-| P3-01 | Telemetry bridge design (SimHub/iRacing) | ready | ADR first |
+| P3-01 | Telemetry bridge design (SimHub/iRacing) | in_progress | ADR first |
 | P3-02 | Live relative / position widget | later | needs P3-01 |
 | P3-03 | Minimap / track map | later | |
 | P3-04 | Auto scene on flags | later | obs-websocket |
