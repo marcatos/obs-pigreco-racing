@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="PiGreco Racing">
+  <!-- Fallback mark inspired by official π — prefer logo-pi-official.png in overlays -->
+  <rect width="200" height="200" fill="none"/>
+  <g transform="translate(100 100) skewX(-18) translate(-100 -100)">
+    <path fill="#00C400"
+      d="M42 58h116c4 0 7 3 7 7v10c0 4-3 7-7 7H118v78c0 5-4 9-9 9h-12c-5 0-9-4-9-9V82H78v78c0 5-4 9-9 9H57c-5 0-9-4-9-9V82H42c-4 0-7-3-7-7V65c0-4 3-7 7-7z"/>
+    <path fill="#00C400" d="M118 148h28c5 0 9 4 9 9v2c0 5-4 9-9 9h-28c-5 0-9-4-9-9v-2c0-5 4-9 9-9z"/>
+  </g>
+</svg>
