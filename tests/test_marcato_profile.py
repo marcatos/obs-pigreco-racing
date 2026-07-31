@@ -32,10 +32,16 @@ def test_write_config_js_marcato_root():
 def test_marcato_theme_has_steel_tokens_not_pigreco():
     css = (ROOT / "overlays-marcato" / "assets" / "theme.css").read_text(encoding="utf-8")
     assert "--steel:" in css
+    assert "--line:" in css
+    assert "--panel:" in css
+    assert "--font-display:" in css
+    assert "--font-body:" in css
     assert "Orbitron" not in css
+    assert "Space Grotesk" not in css
     assert "#00c400" not in css.lower()
     assert "#009fe5" not in css.lower()
-    assert "Syne" in css or "Space Grotesk" in css
+    assert "Syne" in css
+    assert "IBM Plex Sans" in css
 
 
 def test_write_config_js_default_overlay_root():
