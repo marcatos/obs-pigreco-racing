@@ -10,7 +10,10 @@
   const followEl = root.querySelector("[data-ending-follow]");
   if (ctaEl) ctaEl.textContent = (cfg.endingCtaText || "Segui su Twitch").trim();
   if (followEl) {
-    followEl.textContent = (cfg.endingFollowText || ("Segui " + (cfg.twitchHandle || "") + " su Twitch")).trim();
+    const handle = (cfg.twitchHandle || "").trim();
+    const dynamicFollow = ("Segui " + handle + " su Twitch").trim();
+    const custom = (cfg.endingFollowText || "").trim();
+    followEl.textContent = custom || dynamicFollow;
   }
   const qr = root.querySelector("[data-ending-qr]");
   if (qr) qr.hidden = true;

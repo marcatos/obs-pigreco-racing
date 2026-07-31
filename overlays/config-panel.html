@@ -81,10 +81,10 @@
 </head>
 <body>
   <header>
-    <img src="/assets/logo-pi-official.png" alt="" />
+    <img id="header-logo" src="/assets/logo-pi-official.png" alt="" />
     <div>
-      <strong>PiGreco Config</strong><br />
-      <span>Pannello scene OBS</span>
+      <strong id="header-title">PiGreco Config</strong><br />
+      <span id="header-sub">Pannello scene OBS</span>
     </div>
     <div class="profile-wrap">
       <label for="profile">Profilo overlay</label>
@@ -144,13 +144,13 @@
       <legend>Ending</legend>
       <label>Messaggio<input name="endingMessage" /></label>
       <label>Sottotitolo<input name="endingSub" /></label>
-      <label>Discord invite URL<input name="discordInviteUrl" /></label>
+      <label data-profile-hide="marcato">Discord invite URL<input name="discordInviteUrl" /></label>
       <label>CTA Discord<input name="endingCtaText" /></label>
       <label>Testo follow<input name="endingFollowText" placeholder="vuoto = usa handle Twitch" /></label>
       <label class="check"><input type="checkbox" name="endingCtaEnabled" /> Mostra QR / CTA</label>
     </fieldset>
 
-    <fieldset>
+    <fieldset data-profile-hide="marcato">
       <legend>Sponsor</legend>
       <label class="check"><input type="checkbox" name="sponsorsEnabled" /> Rotator attivo</label>
       <div class="row">
@@ -193,6 +193,22 @@
       location.href = url.toString();
     });
 
+    function applyProfileUi() {
+      const profile = currentProfile();
+      const isMarcato = profile === "marcato";
+      $("#header-title").textContent = isMarcato ? "S.Marcato Config" : "PiGreco Config";
+      $("#header-logo").hidden = isMarcato;
+      document.querySelectorAll("[data-profile-hide]").forEach((el) => {
+        const hideFor = (el.getAttribute("data-profile-hide") || "").trim();
+        const hidden = hideFor === profile;
+        el.hidden = hidden;
+        el.querySelectorAll("input, select, textarea").forEach((inp) => {
+          inp.disabled = hidden;
+        });
+      });
+    }
+    applyProfileUi();
+
     const status = (msg, cls) => {
       const el = $("#status");
       el.textContent = msg;
@@ -222,7 +238,7 @@
       const form = $("#form");
       const cfg = {};
       for (const el of form.elements) {
-        if (!el.name || el.name === "sponsorsJson") continue;
+        if (!el.name || el.name === "sponsorsJson" || el.disabled) continue;
         if (el.type === "checkbox") cfg[el.name] = el.checked;
         else if (el.type === "number") cfg[el.name] = el.value === "" ? 0 : Number(el.value);
         else cfg[el.name] = el.value;
@@ -231,6 +247,13 @@
         cfg.sponsors = JSON.parse(form.sponsorsJson.value || "[]");
       } catch (e) {
         throw new Error("JSON sponsor non valido");
+      }
+      if (currentProfile() === "marcato") {
+        cfg.sponsorsEnabled = false;
+        cfg.sponsors = Array.isArray(cfg.sponsors) ? cfg.sponsors : [];
+        delete cfg.sponsorDisplayMs;
+        delete cfg.sponsorGapMs;
+        cfg.discordInviteUrl = "";
       }
       return cfg;
     }

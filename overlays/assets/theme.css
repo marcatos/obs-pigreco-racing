@@ -646,6 +646,10 @@ body {
   pointer-events: none;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 .telemetry-widget[hidden] {
   display: none !important;
 }

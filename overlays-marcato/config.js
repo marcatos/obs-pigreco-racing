@@ -28,7 +28,7 @@ window.PIGRECO_CONFIG = {
   "discordInviteUrl": "",
   "discordQrImage": "",
   "endingCtaText": "Segui su Twitch",
-  "endingFollowText": "Segui @senormarcato su Twitch",
+  "endingFollowText": "",
   "sponsorsEnabled": false,
   "sponsorLabel": "",
   "sponsors": []
