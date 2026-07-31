@@ -20,8 +20,9 @@ OVERLAYS = ROOT / "overlays"
 ASSETS = OVERLAYS / "assets"
 OBS_DIR = ROOT / "obs"
 
-CANVAS_W = 2560
-CANVAS_H = 1440
+# Match OBS base canvas + stream output (1920x1080)
+CANVAS_W = 1920
+CANVAS_H = 1080
 
 STREAMCAM_ID = (
     r"Logitech StreamCam:\\?\usb#22vid_046d&pid_0893&mi_00#228&33ee287c&0&0000"
@@ -242,22 +243,31 @@ def build_collection() -> Path:
     ov_end = browser("Overlay Ending", "ending.html")
     ov_live = browser("Overlay Live Chrome", "live-chrome.html")
 
-    # Webcam ~480x270 inside cam frame (left 48, bottom 48 on 2560 canvas)
-    cam_w, cam_h = 480.0, 270.0
+    # Webcam ~360x202 inside cam frame (left 36, bottom 36 on 1920x1080)
+    cam_w, cam_h = 360.0, 202.0
     cam_scale = cam_w / 1920.0
-    cam_x, cam_y = 48.0, CANVAS_H - 48.0 - cam_h
+    cam_x, cam_y = 36.0, CANVAS_H - 36.0 - cam_h
 
     # Smaller cam for interstitial scenes
-    cam_sm_w = 360.0
+    cam_sm_w = 280.0
     cam_sm_scale = cam_sm_w / 1920.0
     cam_sm_h = 1080.0 * cam_sm_scale
     cam_sm_x = (CANVAS_W - cam_sm_w) / 2.0
-    cam_sm_y = CANVAS_H - 80.0 - cam_sm_h
+    cam_sm_y = CANVAS_H - 56.0 - cam_sm_h
+
+    def fit_item(name: str, source_uuid: str, item_id: int, *, visible: bool = True, locked: bool = False) -> dict:
+        """Scale source to fill 1920x1080 canvas while keeping aspect ratio."""
+        item = scene_item(name, source_uuid, item_id, visible=visible, locked=locked)
+        item["bounds_type"] = 2  # OBS_BOUNDS_SCALE_INNER
+        item["bounds"] = {"x": float(CANVAS_W), "y": float(CANVAS_H)}
+        item["bounds_align"] = 0
+        item["scale"] = {"x": 1.0, "y": 1.0}
+        return item
 
     scene_soon = make_scene(
         "Starting Soon",
         [
-            scene_item(ov_soon["name"], ov_soon["uuid"], 1),
+            fit_item(ov_soon["name"], ov_soon["uuid"], 1, locked=True),
             scene_item(
                 cam["name"],
                 cam["uuid"],
@@ -270,9 +280,9 @@ def build_collection() -> Path:
     scene_race = make_scene(
         "Live Race",
         [
-            scene_item(mon_center["name"], mon_center["uuid"], 1),
+            fit_item(mon_center["name"], mon_center["uuid"], 1),
             scene_item(game["name"], game["uuid"], 2, visible=False),
-            scene_item(ov_live["name"], ov_live["uuid"], 3, locked=True),
+            fit_item(ov_live["name"], ov_live["uuid"], 3, locked=True),
             scene_item(
                 cam["name"],
                 cam["uuid"],
@@ -285,8 +295,8 @@ def build_collection() -> Path:
     scene_single = make_scene(
         "Live Singolo",
         [
-            scene_item(mon_single["name"], mon_single["uuid"], 1),
-            scene_item(ov_live["name"], ov_live["uuid"], 2, locked=True),
+            fit_item(mon_single["name"], mon_single["uuid"], 1),
+            fit_item(ov_live["name"], ov_live["uuid"], 2, locked=True),
             scene_item(
                 cam["name"],
                 cam["uuid"],
@@ -299,7 +309,7 @@ def build_collection() -> Path:
     scene_brb = make_scene(
         "BRB",
         [
-            scene_item(ov_brb["name"], ov_brb["uuid"], 1),
+            fit_item(ov_brb["name"], ov_brb["uuid"], 1, locked=True),
             scene_item(
                 cam["name"],
                 cam["uuid"],
@@ -312,7 +322,7 @@ def build_collection() -> Path:
     scene_end = make_scene(
         "Ending",
         [
-            scene_item(ov_end["name"], ov_end["uuid"], 1),
+            fit_item(ov_end["name"], ov_end["uuid"], 1, locked=True),
         ],
     )
 

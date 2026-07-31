@@ -20,7 +20,7 @@ Collezione scene OBS per streaming sim racing (triplo monitor + monitor singolo)
 4. **BRB** — “Torno subito” + webcam
 5. **Ending** — grazie + handle Twitch
 
-Canvas previsto: **2560×1440** (allineato al tuo profilo OBS attuale → output 1080p).
+Canvas / uscita: **1920×1080**.
 
 ## Installazione OBS
 

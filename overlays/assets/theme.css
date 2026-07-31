@@ -209,20 +209,20 @@ body {
 
 .watermark {
   position: absolute;
-  top: 36px;
-  right: 48px;
+  top: 24px;
+  right: 28px;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.55rem 0.9rem 0.55rem 0.65rem;
+  gap: 0.65rem;
+  padding: 0.45rem 0.75rem 0.45rem 0.55rem;
   background: linear-gradient(135deg, rgba(5, 5, 5, 0.78), rgba(17, 22, 26, 0.62));
   border: 1px solid rgba(0, 196, 0, 0.35);
   backdrop-filter: blur(4px);
 }
 
 .watermark img {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   object-fit: contain;
 }
 
@@ -247,10 +247,10 @@ body {
 
 .lower-third {
   position: absolute;
-  left: 48px;
-  bottom: 48px;
-  min-width: 420px;
-  max-width: 560px;
+  left: 36px;
+  bottom: 36px;
+  min-width: 320px;
+  max-width: 420px;
   background: linear-gradient(105deg, rgba(5, 5, 5, 0.9), rgba(17, 22, 26, 0.78));
   border-left: 4px solid var(--pgr-green);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
@@ -283,24 +283,24 @@ body {
 .lower-name {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 1.45rem;
+  font-size: 1.2rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .lower-meta {
   margin-top: 0.15rem;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--muted);
 }
 
 .cam-frame {
   position: absolute;
-  left: 48px;
-  bottom: 48px;
-  width: 480px;
-  height: 270px;
+  left: 36px;
+  bottom: 36px;
+  width: 360px;
+  height: 202px;
   border: 2px solid rgba(0, 196, 0, 0.55);
   box-shadow:
     inset 0 0 0 1px rgba(5, 5, 5, 0.5),
@@ -344,9 +344,9 @@ body {
 }
 
 .live-root.has-cam .lower-third {
-  left: 560px;
-  bottom: 56px;
-  min-width: 420px;
+  left: 420px;
+  bottom: 40px;
+  min-width: 320px;
 }
 
 .live-root.no-cam-frame .cam-frame {
@@ -359,18 +359,18 @@ body {
 
 .partner-row {
   position: absolute;
-  bottom: 36px;
+  bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 1.75rem;
+  gap: 1.25rem;
   opacity: 0.72;
   z-index: 2;
 }
 
 .partner-row img {
-  height: 28px;
+  height: 22px;
   width: auto;
   object-fit: contain;
   filter: grayscale(0.15);

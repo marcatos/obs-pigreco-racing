@@ -3,7 +3,7 @@
     "DesktopAudioDevice1": {
         "prev_ver": 536936450,
         "name": "Audio Desktop",
-        "uuid": "c2a2a29c-cf0c-4191-8018-183b04b76147",
+        "uuid": "e8184bc9-22a1-4717-a695-02d7161a53dc",
         "id": "wasapi_output_capture",
         "versioned_id": "wasapi_output_capture",
         "settings": {
@@ -29,7 +29,7 @@
     "AuxAudioDevice1": {
         "prev_ver": 536936450,
         "name": "Microfono",
-        "uuid": "87b315e1-cb00-4a38-ad44-4b32e7b9bb69",
+        "uuid": "79ab1e89-c992-4c71-8425-8c181e26bee4",
         "id": "wasapi_input_capture",
         "versioned_id": "wasapi_input_capture",
         "settings": {
@@ -56,7 +56,7 @@
         {
             "prev_ver": 536936450,
             "name": "StreamCam",
-            "uuid": "cb971072-b988-49f6-b2f0-03e61541a1e6",
+            "uuid": "5af583ed-b862-4277-bc9c-3e67235e198c",
             "id": "dshow_input",
             "versioned_id": "dshow_input",
             "settings": {
@@ -85,7 +85,7 @@
         {
             "prev_ver": 536936450,
             "name": "Monitor Centro",
-            "uuid": "594b4290-58ff-49e7-a664-ff52b3c18ea1",
+            "uuid": "0419beac-2ae1-467d-bad6-6815bfd52ca1",
             "id": "monitor_capture",
             "versioned_id": "monitor_capture",
             "settings": {
@@ -112,7 +112,7 @@
         {
             "prev_ver": 536936450,
             "name": "Monitor Singolo",
-            "uuid": "787a756e-f03d-4dbe-a303-a046a167f9a8",
+            "uuid": "8b014ab4-4d17-424d-bca0-4e8d8ed758b6",
             "id": "monitor_capture",
             "versioned_id": "monitor_capture",
             "settings": {
@@ -139,7 +139,7 @@
         {
             "prev_ver": 536936450,
             "name": "Game Capture",
-            "uuid": "57f8af31-d413-4d61-95c0-1c213adcd024",
+            "uuid": "16bd607e-9f70-41b3-b391-e10a5d09cdca",
             "id": "game_capture",
             "versioned_id": "game_capture",
             "settings": {
@@ -167,13 +167,13 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Starting Soon",
-            "uuid": "33b71171-cc5b-47a3-9f37-3b6532582f60",
+            "uuid": "9126d72c-e88d-44ba-b699-6a77758608d7",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
                 "url": "file:///C:/Users/simot/Documents/Projects/obs-pigreco-racing/overlays/starting-soon.html",
-                "width": 2560,
-                "height": 1440,
+                "width": 1920,
+                "height": 1080,
                 "fps": 30,
                 "shutdown": true,
                 "restart_when_active": true,
@@ -199,13 +199,13 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay BRB",
-            "uuid": "31857764-dfd3-4e27-ace4-791504a5f154",
+            "uuid": "d96bc79a-05b2-4838-ba20-5881c8414120",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
                 "url": "file:///C:/Users/simot/Documents/Projects/obs-pigreco-racing/overlays/brb.html",
-                "width": 2560,
-                "height": 1440,
+                "width": 1920,
+                "height": 1080,
                 "fps": 30,
                 "shutdown": true,
                 "restart_when_active": true,
@@ -231,13 +231,13 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Ending",
-            "uuid": "062d23fb-1c67-4747-bea4-5596e3fec14f",
+            "uuid": "8beed448-9223-407f-9812-327bcdb7034c",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
                 "url": "file:///C:/Users/simot/Documents/Projects/obs-pigreco-racing/overlays/ending.html",
-                "width": 2560,
-                "height": 1440,
+                "width": 1920,
+                "height": 1080,
                 "fps": 30,
                 "shutdown": true,
                 "restart_when_active": true,
@@ -263,13 +263,13 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Live Chrome",
-            "uuid": "65e56aff-e1c9-4941-8215-80138fb7dd7f",
+            "uuid": "1c8f9095-d8d2-43b8-ac77-6a710387f3fd",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
                 "url": "file:///C:/Users/simot/Documents/Projects/obs-pigreco-racing/overlays/live-chrome.html",
-                "width": 2560,
-                "height": 1440,
+                "width": 1920,
+                "height": 1080,
                 "fps": 30,
                 "shutdown": true,
                 "restart_when_active": true,
@@ -295,7 +295,7 @@
         {
             "prev_ver": 536936450,
             "name": "Starting Soon",
-            "uuid": "8414796c-bf41-4db7-9b9d-75f182bc1413",
+            "uuid": "481750ac-6f50-4257-8e05-48780371ffb1",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -304,16 +304,16 @@
                 "items": [
                     {
                         "name": "Overlay Starting Soon",
-                        "source_uuid": "33b71171-cc5b-47a3-9f37-3b6532582f60",
+                        "source_uuid": "9126d72c-e88d-44ba-b699-6a77758608d7",
                         "visible": true,
-                        "locked": false,
+                        "locked": true,
                         "rot": 0.0,
                         "scale_ref": {
-                            "x": 2560.0,
-                            "y": 1440.0
+                            "x": 1920.0,
+                            "y": 1080.0
                         },
                         "align": 5,
-                        "bounds_type": 0,
+                        "bounds_type": 2,
                         "bounds_align": 0,
                         "bounds_crop": false,
                         "crop_left": 0,
@@ -339,8 +339,8 @@
                             "y": 1.0
                         },
                         "bounds": {
-                            "x": 0.0,
-                            "y": 0.0
+                            "x": 1920.0,
+                            "y": 1080.0
                         },
                         "bounds_rel": {
                             "x": 0.0,
@@ -359,13 +359,13 @@
                     },
                     {
                         "name": "StreamCam",
-                        "source_uuid": "cb971072-b988-49f6-b2f0-03e61541a1e6",
+                        "source_uuid": "5af583ed-b862-4277-bc9c-3e67235e198c",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
                         "scale_ref": {
-                            "x": 2560.0,
-                            "y": 1440.0
+                            "x": 1920.0,
+                            "y": 1080.0
                         },
                         "align": 5,
                         "bounds_type": 0,
@@ -378,16 +378,16 @@
                         "id": 2,
                         "group_item_backup": false,
                         "pos": {
-                            "x": 1100.0,
-                            "y": 1157.5
+                            "x": 820.0,
+                            "y": 866.5
                         },
                         "pos_rel": {
                             "x": 0.0,
                             "y": 0.0
                         },
                         "scale": {
-                            "x": 0.1875,
-                            "y": 0.1875
+                            "x": 0.14583333333333334,
+                            "y": 0.14583333333333334
                         },
                         "scale_rel": {
                             "x": 1.0,
@@ -441,7 +441,7 @@
         {
             "prev_ver": 536936450,
             "name": "Live Race",
-            "uuid": "d52127a4-44a8-436a-b91f-cf37aa681c2e",
+            "uuid": "b83988bb-5a15-44c9-891a-219388ba7131",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -450,16 +450,16 @@
                 "items": [
                     {
                         "name": "Monitor Centro",
-                        "source_uuid": "594b4290-58ff-49e7-a664-ff52b3c18ea1",
+                        "source_uuid": "0419beac-2ae1-467d-bad6-6815bfd52ca1",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
                         "scale_ref": {
-                            "x": 2560.0,
-                            "y": 1440.0
+                            "x": 1920.0,
+                            "y": 1080.0
                         },
                         "align": 5,
-                        "bounds_type": 0,
+                        "bounds_type": 2,
                         "bounds_align": 0,
                         "bounds_crop": false,
                         "crop_left": 0,
@@ -485,8 +485,8 @@
                             "y": 1.0
                         },
                         "bounds": {
-                            "x": 0.0,
-                            "y": 0.0
+                            "x": 1920.0,
+                            "y": 1080.0
                         },
                         "bounds_rel": {
                             "x": 0.0,
@@ -505,13 +505,13 @@
                     },
                     {
                         "name": "Game Capture",
-                        "source_uuid": "57f8af31-d413-4d61-95c0-1c213adcd024",
+                        "source_uuid": "16bd607e-9f70-41b3-b391-e10a5d09cdca",
                         "visible": false,
                         "locked": false,
                         "rot": 0.0,
                         "scale_ref": {
-                            "x": 2560.0,
-                            "y": 1440.0
+                            "x": 1920.0,
+                            "y": 1080.0
                         },
                         "align": 5,
                         "bounds_type": 0,
@@ -560,16 +560,16 @@
                     },
                     {
                         "name": "Overlay Live Chrome",
-                        "source_uuid": "65e56aff-e1c9-4941-8215-80138fb7dd7f",
+                        "source_uuid": "1c8f9095-d8d2-43b8-ac77-6a710387f3fd",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
                         "scale_ref": {
-                            "x": 2560.0,
-                            "y": 1440.0
+                            "x": 1920.0,
+                            "y": 1080.0
                         },
                         "align": 5,
-                        "bounds_type": 0,
+                        "bounds_type": 2,
                         "bounds_align": 0,
                         "bounds_crop": false,
                         "crop_left": 0,
@@ -595,8 +595,8 @@
                             "y": 1.0
                         },
                         "bounds": {
-                            "x": 0.0,
-                            "y": 0.0
+                            "x": 1920.0,
+                            "y": 1080.0
                         },
                         "bounds_rel": {
                             "x": 0.0,
@@ -615,13 +615,13 @@
                     },
                     {
                         "name": "StreamCam",
-                        "source_uuid": "cb971072-b988-49f6-b2f0-03e61541a1e6",
+                        "source_uuid": "5af583ed-b862-4277-bc9c-3e67235e198c",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
                         "scale_ref": {
-                            "x": 2560.0,
-                            "y": 1440.0
+                            "x": 1920.0,
+                            "y": 1080.0
                         },
                         "align": 5,
                         "bounds_type": 0,
@@ -634,16 +634,16 @@
                         "id": 4,
                         "group_item_backup": false,
                         "pos": {
-                            "x": 48.0,
-                            "y": 1122.0
+                            "x": 36.0,
+                            "y": 842.0
                         },
                         "pos_rel": {
                             "x": 0.0,
                             "y": 0.0
                         },
                         "scale": {
-                            "x": 0.25,
-                            "y": 0.25
+                            "x": 0.1875,
+                            "y": 0.1875
                         },
                         "scale_rel": {
                             "x": 1.0,
@@ -701,7 +701,7 @@
         {
             "prev_ver": 536936450,
             "name": "Live Singolo",
-            "uuid": "781e41fd-bc21-4323-a801-924992e38329",
+            "uuid": "c6f479cb-4968-47cb-95e9-f535e6fcef6d",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -710,16 +710,16 @@
                 "items": [
                     {
                         "name": "Monitor Singolo",
-                        "source_uuid": "787a756e-f03d-4dbe-a303-a046a167f9a8",
+                        "source_uuid": "8b014ab4-4d17-424d-bca0-4e8d8ed758b6",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
                         "scale_ref": {
-                            "x": 2560.0,
-                            "y": 1440.0
+                            "x": 1920.0,
+                            "y": 1080.0
                         },
                         "align": 5,
-                        "bounds_type": 0,
+                        "bounds_type": 2,
                         "bounds_align": 0,
                         "bounds_crop": false,
                         "crop_left": 0,
@@ -745,8 +745,8 @@
                             "y": 1.0
                         },
                         "bounds": {
-                            "x": 0.0,
-                            "y": 0.0
+                            "x": 1920.0,
+                            "y": 1080.0
                         },
                         "bounds_rel": {
                             "x": 0.0,
@@ -765,16 +765,16 @@
                     },
                     {
                         "name": "Overlay Live Chrome",
-                        "source_uuid": "65e56aff-e1c9-4941-8215-80138fb7dd7f",
+                        "source_uuid": "1c8f9095-d8d2-43b8-ac77-6a710387f3fd",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
                         "scale_ref": {
-                            "x": 2560.0,
-                            "y": 1440.0
+                            "x": 1920.0,
+                            "y": 1080.0
                         },
                         "align": 5,
-                        "bounds_type": 0,
+                        "bounds_type": 2,
                         "bounds_align": 0,
                         "bounds_crop": false,
                         "crop_left": 0,
@@ -800,8 +800,8 @@
                             "y": 1.0
                         },
                         "bounds": {
-                            "x": 0.0,
-                            "y": 0.0
+                            "x": 1920.0,
+                            "y": 1080.0
                         },
                         "bounds_rel": {
                             "x": 0.0,
@@ -820,13 +820,13 @@
                     },
                     {
                         "name": "StreamCam",
-                        "source_uuid": "cb971072-b988-49f6-b2f0-03e61541a1e6",
+                        "source_uuid": "5af583ed-b862-4277-bc9c-3e67235e198c",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
                         "scale_ref": {
-                            "x": 2560.0,
-                            "y": 1440.0
+                            "x": 1920.0,
+                            "y": 1080.0
                         },
                         "align": 5,
                         "bounds_type": 0,
@@ -839,16 +839,16 @@
                         "id": 3,
                         "group_item_backup": false,
                         "pos": {
-                            "x": 48.0,
-                            "y": 1122.0
+                            "x": 36.0,
+                            "y": 842.0
                         },
                         "pos_rel": {
                             "x": 0.0,
                             "y": 0.0
                         },
                         "scale": {
-                            "x": 0.25,
-                            "y": 0.25
+                            "x": 0.1875,
+                            "y": 0.1875
                         },
                         "scale_rel": {
                             "x": 1.0,
@@ -904,7 +904,7 @@
         {
             "prev_ver": 536936450,
             "name": "BRB",
-            "uuid": "a52f97af-bd28-41b4-a70a-580bb7bb9d3d",
+            "uuid": "dd602a04-1f00-47da-acc6-ea1891235b58",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -913,16 +913,16 @@
                 "items": [
                     {
                         "name": "Overlay BRB",
-                        "source_uuid": "31857764-dfd3-4e27-ace4-791504a5f154",
+                        "source_uuid": "d96bc79a-05b2-4838-ba20-5881c8414120",
                         "visible": true,
-                        "locked": false,
+                        "locked": true,
                         "rot": 0.0,
                         "scale_ref": {
-                            "x": 2560.0,
-                            "y": 1440.0
+                            "x": 1920.0,
+                            "y": 1080.0
                         },
                         "align": 5,
-                        "bounds_type": 0,
+                        "bounds_type": 2,
                         "bounds_align": 0,
                         "bounds_crop": false,
                         "crop_left": 0,
@@ -948,8 +948,8 @@
                             "y": 1.0
                         },
                         "bounds": {
-                            "x": 0.0,
-                            "y": 0.0
+                            "x": 1920.0,
+                            "y": 1080.0
                         },
                         "bounds_rel": {
                             "x": 0.0,
@@ -968,13 +968,13 @@
                     },
                     {
                         "name": "StreamCam",
-                        "source_uuid": "cb971072-b988-49f6-b2f0-03e61541a1e6",
+                        "source_uuid": "5af583ed-b862-4277-bc9c-3e67235e198c",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
                         "scale_ref": {
-                            "x": 2560.0,
-                            "y": 1440.0
+                            "x": 1920.0,
+                            "y": 1080.0
                         },
                         "align": 5,
                         "bounds_type": 0,
@@ -987,16 +987,16 @@
                         "id": 2,
                         "group_item_backup": false,
                         "pos": {
-                            "x": 1100.0,
-                            "y": 1157.5
+                            "x": 820.0,
+                            "y": 866.5
                         },
                         "pos_rel": {
                             "x": 0.0,
                             "y": 0.0
                         },
                         "scale": {
-                            "x": 0.1875,
-                            "y": 0.1875
+                            "x": 0.14583333333333334,
+                            "y": 0.14583333333333334
                         },
                         "scale_rel": {
                             "x": 1.0,
@@ -1050,7 +1050,7 @@
         {
             "prev_ver": 536936450,
             "name": "Ending",
-            "uuid": "ca048a57-9c4c-488c-b28f-d9e581d3f3b7",
+            "uuid": "005d18c1-de26-4dbf-a66f-fa3738af1264",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -1059,16 +1059,16 @@
                 "items": [
                     {
                         "name": "Overlay Ending",
-                        "source_uuid": "062d23fb-1c67-4747-bea4-5596e3fec14f",
+                        "source_uuid": "8beed448-9223-407f-9812-327bcdb7034c",
                         "visible": true,
-                        "locked": false,
+                        "locked": true,
                         "rot": 0.0,
                         "scale_ref": {
-                            "x": 2560.0,
-                            "y": 1440.0
+                            "x": 1920.0,
+                            "y": 1080.0
                         },
                         "align": 5,
-                        "bounds_type": 0,
+                        "bounds_type": 2,
                         "bounds_align": 0,
                         "bounds_crop": false,
                         "crop_left": 0,
@@ -1094,8 +1094,8 @@
                             "y": 1.0
                         },
                         "bounds": {
-                            "x": 0.0,
-                            "y": 0.0
+                            "x": 1920.0,
+                            "y": 1080.0
                         },
                         "bounds_rel": {
                             "x": 0.0,
@@ -1194,8 +1194,8 @@
         }
     },
     "resolution": {
-        "x": 2560,
-        "y": 1440
+        "x": 1920,
+        "y": 1080
     },
     "version": 2
 }
