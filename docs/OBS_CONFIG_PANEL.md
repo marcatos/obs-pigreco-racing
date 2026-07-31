@@ -4,7 +4,12 @@
 
 Un **pannellino dentro OBS** (dock) per cambiare nick, sessione, countdown, BRB, ending, sponsor **senza editare file a mano**.
 
-Salva su `overlays/config.values.json` e rigenera `overlays/config.js`.
+Salva su **`config.values.json`** nel profilo overlay attivo e rigenera il rispettivo `config.js`:
+
+| Profilo | Cartella | File valori |
+|---------|----------|-------------|
+| PiGreco (default) | `overlays/` | `overlays/config.values.json` |
+| S.Marcato | `overlays-marcato/` | `overlays-marcato/config.values.json` |
 
 ## Setup (una volta)
 
@@ -41,7 +46,8 @@ Se non usi lo script: su ogni Browser Source overlay → tasto destro → **Refr
 
 Per editare `overlays-marcato/config.values.json` invece del pack PiGreco:
 
-- Apri il pannello con **`http://127.0.0.1:8766/?profile=marcato`** (menu **Profilo overlay → S.Marcato** nel dock).
+- **URL dock OBS (S.Marcato):** `http://127.0.0.1:8766/?profile=marcato`
+- In alternativa: apri `http://127.0.0.1:8766/` e usa **Profilo overlay → S.Marcato** (ricarica con `?profile=marcato`).
 - Salva e applica come sopra; rigenera `overlays-marcato/config.js`.
 
 Il dock può restare su un solo URL: cambia profilo dal menu a tendina (ricarica la pagina con `?profile=`).
@@ -49,6 +55,7 @@ Il dock può restare su un solo URL: cambia profilo dal menu a tendina (ricarica
 ## Note
 
 - Il server ascolta solo su `127.0.0.1` (locale).
-- Fonte di verità: `overlays/config.values.json`.
+- Fonte di verità: **`config.values.json` nel profilo scelto** (`overlays/` o `overlays-marcato/`).
 - `config.js` è **generato** — non editarlo a lungo termine.
-- `Setup.ps1` / `setup_streamer.py` aggiornano lo stesso JSON.
+- `Setup.ps1` / `setup_streamer.py` aggiornano lo stesso JSON del profilo PiGreco.
+- **Dopo un aggiornamento del pack** (nuovo supporto profili o dock che non carica / non salva): chiudi il server config, riavvia `Start-ConfigPanel.bat`, poi ricarica il dock OBS (URL con `?profile=` se usi S.Marcato).

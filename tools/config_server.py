@@ -150,10 +150,11 @@ class Handler(BaseHTTPRequestHandler):
             t0 = time.perf_counter()
             write_config_js(current, overlay_root=root)
             ms = (time.perf_counter() - t0) * 1000
+            profile_key = next(k for k, v in PROFILES.items() if v == root)
             log.info(
                 "config saved (%d keys) profile=%s in %.0f ms",
                 len(current),
-                next(k for k, v in PROFILES.items() if v == root),
+                profile_key,
                 ms,
             )
             self._json(
@@ -161,8 +162,13 @@ class Handler(BaseHTTPRequestHandler):
                 {
                     "ok": True,
                     "saved": True,
+                    "profile": profile_key,
                     "keys": len(current),
-                    "hint": "In OBS: tasto destro su ogni Browser Source overlay → Refresh cache of current page",
+                    "hint": (
+                        f"Salvato profilo «{profile_key}» "
+                        f"({root.name}/config.values.json). "
+                        "In OBS: refresh cache delle Browser Source overlay del profilo."
+                    ),
                 },
             )
             return
