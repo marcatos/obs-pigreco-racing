@@ -29,6 +29,15 @@ def test_write_config_js_marcato_root():
     assert "pigreco" not in data.get("teamName", "").lower()
 
 
+def test_marcato_theme_has_steel_tokens_not_pigreco():
+    css = (ROOT / "overlays-marcato" / "assets" / "theme.css").read_text(encoding="utf-8")
+    assert "--steel:" in css
+    assert "Orbitron" not in css
+    assert "#00c400" not in css.lower()
+    assert "#009fe5" not in css.lower()
+    assert "Syne" in css or "Space Grotesk" in css
+
+
 def test_write_config_js_default_overlay_root():
     assert VALUES == OVERLAYS / "config.values.json"
     assert OUT == OVERLAYS / "config.js"
