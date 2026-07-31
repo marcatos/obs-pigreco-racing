@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>S.Marcato 42 — Stinger</title>
+  <link rel="stylesheet" href="../assets/theme.css" />
+  <link rel="stylesheet" href="stinger.css" />
+</head>
+<body>
+  <!--
+    Preview / export helper for OBS Stinger (~800ms).
+    Query: ?preview=1 shows checkerboard + Replay; ?loop=1 repeats.
+    See docs/S_MARCATO_42.md.
+  -->
+  <div class="stage" id="stage" aria-hidden="true">
+    <div class="wipe" id="wipe"></div>
+    <p class="mark" aria-hidden="true">42</p>
+  </div>
+
+  <div class="hud" id="hud">
+    <button type="button" id="replay" title="Ricomincia lo sting">Replay</button>
+    <span>~800ms · black → steel wipe · 42</span>
+  </div>
+
+  <script src="stinger.js"></script>
+</body>
+</html>
