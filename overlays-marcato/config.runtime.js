@@ -46,5 +46,5 @@
 
   document.documentElement.dataset.username = cfg.username || "";
   document.title =
-    (cfg.teamName || "PiGreco") + " — " + (document.title.split("—").pop() || "").trim();
+    (cfg.teamName || "S.Marcato") + " — " + (document.title.split("—").pop() || "").trim();
 })();

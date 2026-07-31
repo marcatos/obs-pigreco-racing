@@ -46,7 +46,13 @@ def test_marcato_theme_has_steel_tokens_not_pigreco():
 
 def test_marcato_html_has_no_pigreco_assets():
     folder = ROOT / "overlays-marcato"
-    for name in ("starting-soon.html", "brb.html", "ending.html", "live-chrome.html"):
+    for name in (
+        "starting-soon.html",
+        "brb.html",
+        "ending.html",
+        "live-chrome.html",
+        "ending-cta.js",
+    ):
         text = (folder / name).read_text(encoding="utf-8")
         low = text.lower()
         assert "logo-pi" not in low

@@ -390,6 +390,27 @@ body {
   top: 28px;
 }
 
+.ending-cta {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.ending-cta-text {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--steel);
+  margin: 0 0 0.35rem;
+}
+
+.ending-follow {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
 @keyframes fade-in {
   from {
     opacity: 0;
