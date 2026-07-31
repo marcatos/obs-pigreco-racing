@@ -44,6 +44,18 @@ def test_marcato_theme_has_steel_tokens_not_pigreco():
     assert "IBM Plex Sans" in css
 
 
+def test_marcato_html_has_no_pigreco_assets():
+    folder = ROOT / "overlays-marcato"
+    for name in ("starting-soon.html", "brb.html", "ending.html", "live-chrome.html"):
+        text = (folder / name).read_text(encoding="utf-8")
+        low = text.lower()
+        assert "logo-pi" not in low
+        assert "logo-wordmark" not in low
+        assert "sponsors.js" not in low
+        assert "assets/official" not in low
+        assert "qr-discord" not in low
+
+
 def test_write_config_js_default_overlay_root():
     assert VALUES == OVERLAYS / "config.values.json"
     assert OUT == OVERLAYS / "config.js"
