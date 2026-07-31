@@ -53,6 +53,7 @@ Update this file when claiming or finishing an ID.
 | P4-01 | Setup wizard UI (WinForms/WebView) | later | |
 | P4-02 | Game presets (iRacing/ACC/LMU) | ready | config profiles JSON |
 | P4-03 | Pack lite (prebuilt, no Python) | later | |
+| P4-04 | Personal pack S.Marcato 42 | done | `overlays-marcato/`, `obs/S_Marcato_42.json`, `docs/S_MARCATO_42.md` |
 
 ## Suggested next agent claims
 

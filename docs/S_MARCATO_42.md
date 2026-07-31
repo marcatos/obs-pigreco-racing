@@ -1,6 +1,63 @@
-# S.Marcato 42 — overlay pack
+# S.Marcato 42 — overlay pack personale
 
-Broadcast overlays and transitions for pilot **S.Marcato** (car **42**): carbon/steel theme under `overlays-marcato/`. Full collection setup is documented in later tasks; this page starts with the stinger.
+Pacchetto broadcast **personale** per il pilota **S.Marcato** (auto **42**): tema carbon/acciaio in `overlays-marcato/`, collezione OBS **S.Marcato 42**. Nessun branding PiGreco, nessuno sponsor rotator.
+
+Il pack **PiGreco Racing** resta installato nello stesso repo: puoi alternare le due collezioni in OBS senza disinstallare nulla.
+
+## Setup rapido (collezione OBS)
+
+### 1. Chiudi OBS
+
+Prima di rigenerare o importare la collezione, **chiudi completamente OBS** (anche dalla tray). Evita di sovrascrivere JSON mentre OBS tiene i file aperti.
+
+### 2. Genera la collezione sul tuo PC
+
+I Browser Source nel JSON usano percorsi `file:///` locali. Esegui dal repo (Python come per `Setup.bat`):
+
+```powershell
+python tools/generate_pack.py --profile marcato
+```
+
+Output atteso: `obs/S_Marcato_42.json` (nome collezione **S.Marcato 42**, URL verso `overlays-marcato/*.html`).
+
+Dopo aver modificato `overlays-marcato/config.values.json` a mano, salva dal **pannello config** (profilo Marcato) oppure rigenera `config.js` dal repo con Python (vedi `tools/write_config_js.py`, argomento `overlay_root`).
+
+### 3. Importa o seleziona la collezione in OBS
+
+1. Apri OBS.
+2. Menu **Scene Collection** (Collezione scene) → **Import**.
+3. Scegli `obs\S_Marcato_42.json` dalla cartella del repo.
+4. Se la collezione è già importata: **Scene Collection → S.Marcato 42**.
+
+Scene previste (come PiGreco): Starting Soon, Live Race, Live Singolo, BRB, Ending — overlay da `overlays-marcato/`, canvas **1920×1080**.
+
+### 4. Pannello config (profilo Marcato)
+
+Avvia il server config (come per PiGreco):
+
+- Doppio clic su `Start-ConfigPanel.bat` (lascia la finestra aperta).
+
+In OBS, dock **Custom Browser Dock**:
+
+| Campo | Valore |
+|-------|--------|
+| Nome | es. `S.Marcato Config` |
+| URL | `http://127.0.0.1:8766/?profile=marcato` |
+
+Salva dal pannello → rigenera `overlays-marcato/config.js` → **Refresh** sui Browser Source delle scene Marcato (o riavvia le scene).
+
+Dettagli: [`docs/OBS_CONFIG_PANEL.md`](OBS_CONFIG_PANEL.md) (sezione **Profilo S.Marcato**).
+
+### 5. Sponsor: disabilitati per design
+
+`overlays-marcato/config.values.json` ha `sponsorsEnabled: false`. Gli HTML Marcato **non** montano `sponsors.js` — non compare alcuno slot sponsor (né placeholder PiGreco).
+
+### 6. PiGreco affiancato
+
+- Collezione team: **PiGreco Racing** (`obs/PiGreco_Racing.json`, `overlays/`).
+- Collezione personale: **S.Marcato 42** (`obs/S_Marcato_42.json`, `overlays-marcato/`).
+
+Passa da **Scene Collection** quando cambi stream (team vs personale). Il pannello config usa `?profile=marcato` solo quando lavori sul pack Marcato; per PiGreco usa `http://127.0.0.1:8766/` (default).
 
 ## Stinger transition (steel wipe)
 
@@ -40,3 +97,8 @@ Preview in a browser:
 
 - Do not use PiGreco green stinger media for the marcato collection.
 - Do not loop the sting on-air; one shot per scene change.
+
+## Riferimenti
+
+- Design: [`docs/superpowers/specs/2026-08-01-s-marcato-42-design.md`](superpowers/specs/2026-08-01-s-marcato-42-design.md)
+- Stinger generico: [`docs/STINGER.md`](STINGER.md)

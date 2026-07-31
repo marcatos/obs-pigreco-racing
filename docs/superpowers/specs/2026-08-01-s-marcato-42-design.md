@@ -1,7 +1,7 @@
 # S.Marcato 42 — Personal OBS Pack Design
 
 Date: 2026-08-01  
-Status: Approved (conversation) — pending user review of this file  
+Status: **Implemented** (v1 — personal pack + docs)  
 Owner: Simone Marcato (`@senormarcato`)
 
 ## Problem
