@@ -37,6 +37,15 @@ Se non usi lo script: su ogni Browser Source overlay → tasto destro → **Refr
 3. **Salva e applica**  
 4. Refresh browser (script o manuale)  
 
+## Profilo S.Marcato
+
+Per editare `overlays-marcato/config.values.json` invece del pack PiGreco:
+
+- Apri il pannello con **`http://127.0.0.1:8766/?profile=marcato`** (menu **Profilo overlay → S.Marcato** nel dock).
+- Salva e applica come sopra; rigenera `overlays-marcato/config.js`.
+
+Il dock può restare su un solo URL: cambia profilo dal menu a tendina (ricarica la pagina con `?profile=`).
+
 ## Note
 
 - Il server ascolta solo su `127.0.0.1` (locale).

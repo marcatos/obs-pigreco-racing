@@ -62,6 +62,13 @@ def test_marcato_html_has_no_pigreco_assets():
         assert "qr-discord" not in low
 
 
+def test_resolve_overlay_root_marcato():
+    import config_server as cs
+
+    assert cs.resolve_overlay_root({"profile": ["marcato"]}) == ROOT / "overlays-marcato"
+    assert cs.resolve_overlay_root({}) == ROOT / "overlays"
+
+
 def test_write_config_js_default_overlay_root():
     assert VALUES == OVERLAYS / "config.values.json"
     assert OUT == OVERLAYS / "config.js"

@@ -8,7 +8,7 @@ import sys
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
@@ -19,12 +19,31 @@ PANEL = OVERLAYS / "config-panel.html"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8766
 
+PROFILES = {
+    "pigreco": ROOT / "overlays",
+    "marcato": ROOT / "overlays-marcato",
+}
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("config_server")
 
 
-def load_values() -> dict:
-    return json.loads(VALUES.read_text(encoding="utf-8"))
+def resolve_overlay_root(query: dict | None = None) -> Path:
+    profile: str | None = None
+    if query:
+        raw = query.get("profile")
+        if raw:
+            profile = raw[0] if isinstance(raw, list) else str(raw)
+    key = (profile or "pigreco").strip().lower()
+    if key not in PROFILES:
+        key = "pigreco"
+    return PROFILES[key]
+
+
+def load_values(overlay_root: Path | None = None) -> dict:
+    root = overlay_root or OVERLAYS
+    values_path = root / "config.values.json"
+    return json.loads(values_path.read_text(encoding="utf-8"))
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -32,6 +51,15 @@ class Handler(BaseHTTPRequestHandler):
 
     def log_message(self, fmt: str, *args) -> None:
         log.info("%s - " + fmt, self.address_string(), *args)
+
+    def _parsed_url(self):
+        return urlparse(self.path)
+
+    def _query(self) -> dict:
+        return parse_qs(self._parsed_url().query, keep_blank_values=True)
+
+    def _overlay_root(self) -> Path:
+        return resolve_overlay_root(self._query())
 
     def _cors(self) -> None:
         self.send_header("Access-Control-Allow-Origin", "*")
@@ -61,13 +89,21 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self) -> None:
-        path = urlparse(self.path).path
+        path = self._parsed_url().path
         if path in ("/", "/index.html", "/config-panel.html"):
             data = PANEL.read_bytes()
             self._bytes(200, data, "text/html; charset=utf-8")
             return
         if path == "/api/config":
-            self._json(200, {"ok": True, "config": load_values()})
+            root = self._overlay_root()
+            self._json(
+                200,
+                {
+                    "ok": True,
+                    "profile": next(k for k, v in PROFILES.items() if v == root),
+                    "config": load_values(root),
+                },
+            )
             return
         if path == "/api/health":
             self._json(200, {"ok": True, "service": "pigreco-config"})
@@ -94,7 +130,7 @@ class Handler(BaseHTTPRequestHandler):
         self._json(404, {"ok": False, "error": "not found"})
 
     def do_POST(self) -> None:
-        path = urlparse(self.path).path
+        path = self._parsed_url().path
         length = int(self.headers.get("Content-Length", "0"))
         raw = self.rfile.read(length) if length else b"{}"
         try:
@@ -108,13 +144,18 @@ class Handler(BaseHTTPRequestHandler):
             if not isinstance(cfg, dict):
                 self._json(400, {"ok": False, "error": "missing config object"})
                 return
-            # merge onto existing to preserve unknown keys
-            current = load_values()
+            root = self._overlay_root()
+            current = load_values(root)
             current.update(cfg)
             t0 = time.perf_counter()
-            write_config_js(current)
+            write_config_js(current, overlay_root=root)
             ms = (time.perf_counter() - t0) * 1000
-            log.info("config saved (%d keys) in %.0f ms", len(current), ms)
+            log.info(
+                "config saved (%d keys) profile=%s in %.0f ms",
+                len(current),
+                next(k for k, v in PROFILES.items() if v == root),
+                ms,
+            )
             self._json(
                 200,
                 {
@@ -140,13 +181,17 @@ def main() -> None:
     if not VALUES.exists():
         raise SystemExit(f"Missing {VALUES}")
 
-    # Ensure config.js is in sync at boot
+    # Ensure config.js is in sync at boot for each profile that has values JSON
     write_config_js()
+    marcato_values = PROFILES["marcato"] / "config.values.json"
+    if marcato_values.is_file():
+        write_config_js(overlay_root=PROFILES["marcato"])
 
     httpd = ThreadingHTTPServer((args.host, args.port), Handler)
     url = f"http://{args.host}:{args.port}/"
     log.info("PiGreco Config Panel in ascolto su %s", url)
     log.info("OBS → Visualizza → Docks → Custom Browser Docks → URL = %s", url)
+    log.info("Profilo Marcato: %s?profile=marcato", url)
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

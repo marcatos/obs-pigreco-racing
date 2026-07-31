@@ -33,6 +33,14 @@
     header img { width: 28px; height: 28px; }
     header strong { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; }
     header span { color: var(--muted); font-size: 11px; }
+    header .profile-wrap {
+      margin-left: auto;
+      display: grid;
+      gap: 2px;
+      min-width: 120px;
+    }
+    header .profile-wrap label { font-size: 10px; color: var(--muted); margin: 0; }
+    header .profile-wrap select { padding: 4px 6px; font-size: 11px; }
     form { padding: 12px 14px 88px; display: grid; gap: 10px; }
     fieldset {
       margin: 0; border: 1px solid var(--line); background: var(--panel);
@@ -77,6 +85,13 @@
     <div>
       <strong>PiGreco Config</strong><br />
       <span>Pannello scene OBS</span>
+    </div>
+    <div class="profile-wrap">
+      <label for="profile">Profilo overlay</label>
+      <select id="profile" aria-label="Profilo overlay">
+        <option value="pigreco">PiGreco</option>
+        <option value="marcato">S.Marcato</option>
+      </select>
     </div>
   </header>
 
@@ -156,6 +171,28 @@
 
   <script>
     const $ = (s) => document.querySelector(s);
+
+    function currentProfile() {
+      const p = new URLSearchParams(location.search).get("profile");
+      return p === "marcato" ? "marcato" : "pigreco";
+    }
+
+    function apiConfigUrl() {
+      const profile = currentProfile();
+      const q = profile === "marcato" ? "?profile=marcato" : "";
+      return `/api/config${q}`;
+    }
+
+    const profileSelect = $("#profile");
+    profileSelect.value = currentProfile();
+    profileSelect.addEventListener("change", () => {
+      const v = profileSelect.value === "marcato" ? "marcato" : "pigreco";
+      const url = new URL(location.href);
+      if (v === "marcato") url.searchParams.set("profile", "marcato");
+      else url.searchParams.delete("profile");
+      location.href = url.toString();
+    });
+
     const status = (msg, cls) => {
       const el = $("#status");
       el.textContent = msg;
@@ -200,7 +237,7 @@
 
     async function load() {
       status("Carico config…");
-      const r = await fetch("/api/config");
+      const r = await fetch(apiConfigUrl());
       const data = await r.json();
       if (!data.ok) throw new Error(data.error || "load failed");
       fill(data.config);
@@ -211,7 +248,7 @@
       try {
         const config = readForm();
         status("Salvataggio…");
-        const r = await fetch("/api/config", {
+        const r = await fetch(apiConfigUrl(), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ config }),
