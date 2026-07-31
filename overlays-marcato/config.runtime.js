@@ -1,0 +1,50 @@
+(function applyConfig() {
+  const cfg = Object.assign({}, window.PIGRECO_CONFIG || {});
+  const params = new URLSearchParams(window.location.search);
+
+  Object.keys(cfg).forEach((key) => {
+    if (params.has(key) && typeof cfg[key] !== "object") cfg[key] = params.get(key);
+  });
+
+  if (params.has("user")) cfg.username = params.get("user");
+  if (params.has("nick")) cfg.username = params.get("nick");
+  if (params.has("sponsorsEnabled")) {
+    cfg.sponsorsEnabled =
+      params.get("sponsorsEnabled") !== "0" && params.get("sponsorsEnabled") !== "false";
+  }
+
+  if (!cfg.pilotName && cfg.username) cfg.pilotName = cfg.username;
+
+  let handle = (cfg.twitchHandle || cfg.username || "").trim();
+  if (handle && !handle.startsWith("@")) handle = "@" + handle;
+  cfg.twitchHandle = handle;
+  if (!cfg.twitchHandle && cfg.username) {
+    cfg.twitchHandle = "@" + String(cfg.username).replace(/^@/, "");
+  }
+
+  window.PIGRECO_CONFIG = cfg;
+
+  document.querySelectorAll("[data-cfg]").forEach((el) => {
+    const key = el.getAttribute("data-cfg");
+    if (cfg[key] != null && cfg[key] !== "") el.textContent = cfg[key];
+  });
+
+  document.querySelectorAll("[data-sponsors-static]").forEach((row) => {
+    const list = Array.isArray(cfg.sponsors) ? cfg.sponsors : [];
+    if (!list.length) {
+      row.hidden = true;
+      return;
+    }
+    row.innerHTML = "";
+    list.forEach((s) => {
+      const img = document.createElement("img");
+      img.src = s.src;
+      img.alt = s.name || "";
+      row.appendChild(img);
+    });
+  });
+
+  document.documentElement.dataset.username = cfg.username || "";
+  document.title =
+    (cfg.teamName || "PiGreco") + " — " + (document.title.split("—").pop() || "").trim();
+})();

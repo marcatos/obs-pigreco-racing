@@ -14,13 +14,18 @@ RUNTIME = OVERLAYS / "config.runtime.js"
 OUT = OVERLAYS / "config.js"
 
 
-def write_config_js(values: dict | None = None) -> Path:
-    if values is None:
-        values = json.loads(VALUES.read_text(encoding="utf-8"))
-    else:
-        VALUES.write_text(json.dumps(values, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+def write_config_js(values: dict | None = None, *, overlay_root: Path | None = None) -> Path:
+    root = Path(overlay_root) if overlay_root else OVERLAYS
+    values_path = root / "config.values.json"
+    runtime_path = root / "config.runtime.js"
+    out_path = root / "config.js"
 
-    runtime = RUNTIME.read_text(encoding="utf-8")
+    if values is None:
+        values = json.loads(values_path.read_text(encoding="utf-8"))
+    else:
+        values_path.write_text(json.dumps(values, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    runtime = runtime_path.read_text(encoding="utf-8")
     body = json.dumps(values, ensure_ascii=False, indent=2)
     text = (
         "/* GENERATED from config.values.json — usa il pannello OBS o modifica il JSON */\n"
@@ -29,9 +34,9 @@ def write_config_js(values: dict | None = None) -> Path:
         + ";\n\n"
         + runtime
     )
-    OUT.write_text(text, encoding="utf-8")
-    log.info("wrote %s (%d keys)", OUT.name, len(values))
-    return OUT
+    out_path.write_text(text, encoding="utf-8")
+    log.info("wrote %s (%d keys)", out_path.name, len(values))
+    return out_path
 
 
 if __name__ == "__main__":
