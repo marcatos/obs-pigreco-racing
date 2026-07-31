@@ -9,6 +9,15 @@ Ti chiede il nick, e se manca Python
 lo installa (comparira' una richiesta
 di amministratore: accetta).
 
+PANNELLO CONFIG DENTRO OBS:
+  1) Doppio clic su  Start-ConfigPanel.bat
+     (lascia la finestra aperta)
+  2) In OBS: Visualizza -> Docks ->
+     Custom Browser Docks
+     Nome: PiGreco Config
+     URL:  http://127.0.0.1:8766/
+  Guida: docs\OBS_CONFIG_PANEL.md
+
 Poi apri OBS e scegli la collezione
 "PiGreco Racing".
 

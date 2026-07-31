@@ -32,6 +32,8 @@ python tools/generate_showcase.py
 - se manca Python, lo installa con **privilegi amministratore** (UAC)
 - personalizza gli overlay e installa la collezione in OBS
 
+**Pannello config in OBS:** avvia [`Start-ConfigPanel.bat`](Start-ConfigPanel.bat), poi Dock → Custom Browser Docks → `http://127.0.0.1:8766/` — dettagli in [`docs/OBS_CONFIG_PANEL.md`](docs/OBS_CONFIG_PANEL.md).
+
 Alternativa da terminale (se Python c’è già):
 
 ```powershell

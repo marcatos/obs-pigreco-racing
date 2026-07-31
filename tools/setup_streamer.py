@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-import re
 import shutil
 import time
 from pathlib import Path
@@ -15,6 +14,7 @@ log = logging.getLogger("setup_streamer")
 ROOT = Path(__file__).resolve().parents[1]
 OVERLAYS = ROOT / "overlays"
 CONFIG_JS = OVERLAYS / "config.js"
+CONFIG_VALUES = OVERLAYS / "config.values.json"
 EXAMPLE = OVERLAYS / "config.example.js"
 OBS_JSON = ROOT / "obs" / "PiGreco_Racing.json"
 
@@ -45,29 +45,21 @@ def write_config(username: str, pilot_name: str, team_name: str, event_title: st
     nick = username.lstrip("@").strip()
     pilot = pilot_name.strip() or nick
     handle = "@" + nick
-    if not CONFIG_JS.exists() and EXAMPLE.exists():
-        shutil.copy2(EXAMPLE, CONFIG_JS)
-        log.info("created config.js from example")
 
-    text = CONFIG_JS.read_text(encoding="utf-8")
+    if not CONFIG_VALUES.exists():
+        raise SystemExit(f"Missing {CONFIG_VALUES}")
 
-    def repl_str(key: str, value: str, src: str) -> str:
-        pattern = rf'({key}\s*:\s*)"(.*?)"'
-        if re.search(pattern, src):
-            return re.sub(pattern, rf'\1"{value}"', src, count=1)
-        return src
+    values = json.loads(CONFIG_VALUES.read_text(encoding="utf-8"))
+    values["username"] = nick
+    values["pilotName"] = pilot
+    values["twitchHandle"] = handle
+    values["teamName"] = team_name
+    values["eventTitle"] = event_title
 
-    for key, value in [
-        ("username", nick),
-        ("pilotName", pilot),
-        ("twitchHandle", handle),
-        ("teamName", team_name),
-        ("eventTitle", event_title),
-    ]:
-        text = repl_str(key, value, text)
+    from write_config_js import write_config_js
 
-    CONFIG_JS.write_text(text, encoding="utf-8")
-    log.info("updated %s (username=%s, pilot=%s)", CONFIG_JS.name, nick, pilot)
+    write_config_js(values)
+    log.info("updated config.values.json + config.js (username=%s, pilot=%s)", nick, pilot)
 
 
 def regen_and_maybe_install(install: bool) -> None:

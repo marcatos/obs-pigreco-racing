@@ -14,6 +14,7 @@ Update this file when claiming or finishing an ID.
 | P0-04 | Setup.bat/ps1 + Python elevate | done |
 | P0-05 | Guida PDF brand + showcase | done |
 | P0-06 | Multi-agent scaffolding (this docs set) | done |
+| P0-07 | OBS Config Panel (Custom Browser Dock) | done | `Start-ConfigPanel.bat` + :8766 |
 
 ## Phase 1 — Broadcast polish (visual)
 

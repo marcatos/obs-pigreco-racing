@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PiGreco — Config OBS</title>
+  <style>
+    :root {
+      --bg: #080a0c;
+      --panel: #11161a;
+      --line: #283039;
+      --text: #f7fafc;
+      --muted: #a7b1ba;
+      --green: #00c400;
+      --blue: #009fe5;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font: 13px/1.4 Segoe UI, Rajdhani, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header {
+      position: sticky; top: 0; z-index: 2;
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 14px;
+      background: linear-gradient(180deg, #11161a, #0c1013);
+      border-bottom: 1px solid var(--line);
+      border-top: 3px solid var(--green);
+    }
+    header img { width: 28px; height: 28px; }
+    header strong { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; }
+    header span { color: var(--muted); font-size: 11px; }
+    form { padding: 12px 14px 88px; display: grid; gap: 10px; }
+    fieldset {
+      margin: 0; border: 1px solid var(--line); background: var(--panel);
+      border-left: 3px solid var(--blue); padding: 10px 10px 12px;
+    }
+    legend {
+      color: var(--green); font-size: 10px; letter-spacing: .18em;
+      text-transform: uppercase; padding: 0 6px;
+    }
+    label { display: grid; gap: 4px; margin-top: 8px; color: var(--muted); font-size: 11px; }
+    input, select, textarea {
+      width: 100%; padding: 8px 9px; border: 1px solid var(--line);
+      background: #080a0c; color: var(--text); border-radius: 0; font: inherit;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none; border-color: var(--green);
+    }
+    textarea { min-height: 88px; font-family: Consolas, monospace; font-size: 11px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .check { display: flex; align-items: center; gap: 8px; margin-top: 8px; color: var(--text); }
+    .check input { width: auto; }
+    footer {
+      position: fixed; left: 0; right: 0; bottom: 0;
+      padding: 10px 14px; background: #0c1013; border-top: 1px solid var(--line);
+      display: grid; gap: 6px;
+    }
+    button {
+      width: 100%; padding: 11px; border: 0; cursor: pointer;
+      background: var(--green); color: #050505; font-weight: 800;
+      text-transform: uppercase; letter-spacing: .08em;
+    }
+    button:hover { filter: brightness(1.08); }
+    button.secondary { background: transparent; color: var(--blue); border: 1px solid var(--blue); }
+    #status { font-size: 11px; color: var(--muted); min-height: 1.2em; }
+    #status.ok { color: var(--green); }
+    #status.err { color: #e35d6a; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="/assets/logo-pi-official.png" alt="" />
+    <div>
+      <strong>PiGreco Config</strong><br />
+      <span>Pannello scene OBS</span>
+    </div>
+  </header>
+
+  <form id="form">
+    <fieldset>
+      <legend>Identità</legend>
+      <label>Username<input name="username" autocomplete="off" /></label>
+      <label>Nome pilota<input name="pilotName" /></label>
+      <label>Twitch handle<input name="twitchHandle" placeholder="@nick" /></label>
+      <label>Team<input name="teamName" /></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Sessione live</legend>
+      <label>Titolo evento<input name="eventTitle" /></label>
+      <label>Tagline<input name="tagline" /></label>
+      <div class="row">
+        <label>Tipo sessione
+          <select name="sessionType">
+            <option value="practice">Practice</option>
+            <option value="quali">Qualifying</option>
+            <option value="race">Race</option>
+            <option value="cooldown">Cooldown</option>
+            <option value="custom">Custom</option>
+          </select>
+        </label>
+        <label>Label custom<input name="sessionLabel" placeholder="opzionale" /></label>
+      </div>
+      <label class="check"><input type="checkbox" name="sessionBadgeEnabled" /> Mostra badge sessione</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Starting Soon</legend>
+      <label>Messaggio<input name="startingMessage" /></label>
+      <div class="row">
+        <label>Countdown (sec)<input name="countdownSeconds" type="number" min="0" step="1" /></label>
+        <label>Oppure ora (HH:MM)<input name="goLiveAt" placeholder="21:30" /></label>
+      </div>
+      <label class="check"><input type="checkbox" name="countdownEnabled" /> Countdown attivo</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>BRB</legend>
+      <label>Messaggio<input name="brbMessage" /></label>
+      <label>Torno alle (HH:MM)<input name="brbUntil" placeholder="21:45" /></label>
+      <label class="check"><input type="checkbox" name="brbShowCountdown" /> Mostra countdown ritorno</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Ending</legend>
+      <label>Messaggio<input name="endingMessage" /></label>
+      <label>Sottotitolo<input name="endingSub" /></label>
+      <label>Discord invite URL<input name="discordInviteUrl" /></label>
+      <label>CTA Discord<input name="endingCtaText" /></label>
+      <label>Testo follow<input name="endingFollowText" placeholder="vuoto = usa handle Twitch" /></label>
+      <label class="check"><input type="checkbox" name="endingCtaEnabled" /> Mostra QR / CTA</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Sponsor</legend>
+      <label class="check"><input type="checkbox" name="sponsorsEnabled" /> Rotator attivo</label>
+      <div class="row">
+        <label>Display ms<input name="sponsorDisplayMs" type="number" min="1000" step="500" /></label>
+        <label>Pausa ms<input name="sponsorGapMs" type="number" min="0" step="500" /></label>
+      </div>
+      <label>Lista sponsor (JSON)
+        <textarea name="sponsorsJson" spellcheck="false"></textarea>
+      </label>
+    </fieldset>
+  </form>
+
+  <footer>
+    <div id="status">Caricamento…</div>
+    <button type="button" id="save">Salva e applica</button>
+    <button type="button" class="secondary" id="reload">Ricarica da disco</button>
+  </footer>
+
+  <script>
+    const $ = (s) => document.querySelector(s);
+    const status = (msg, cls) => {
+      const el = $("#status");
+      el.textContent = msg;
+      el.className = cls || "";
+    };
+
+    const BOOLS = [
+      "sessionBadgeEnabled", "countdownEnabled", "brbShowCountdown",
+      "endingCtaEnabled", "sponsorsEnabled"
+    ];
+
+    function fill(cfg) {
+      const form = $("#form");
+      for (const [k, v] of Object.entries(cfg)) {
+        if (k === "sponsors") {
+          form.sponsorsJson.value = JSON.stringify(v, null, 2);
+          continue;
+        }
+        const el = form.elements.namedItem(k);
+        if (!el) continue;
+        if (el.type === "checkbox") el.checked = Boolean(v);
+        else el.value = v == null ? "" : v;
+      }
+    }
+
+    function readForm() {
+      const form = $("#form");
+      const cfg = {};
+      for (const el of form.elements) {
+        if (!el.name || el.name === "sponsorsJson") continue;
+        if (el.type === "checkbox") cfg[el.name] = el.checked;
+        else if (el.type === "number") cfg[el.name] = el.value === "" ? 0 : Number(el.value);
+        else cfg[el.name] = el.value;
+      }
+      try {
+        cfg.sponsors = JSON.parse(form.sponsorsJson.value || "[]");
+      } catch (e) {
+        throw new Error("JSON sponsor non valido");
+      }
+      return cfg;
+    }
+
+    async function load() {
+      status("Carico config…");
+      const r = await fetch("/api/config");
+      const data = await r.json();
+      if (!data.ok) throw new Error(data.error || "load failed");
+      fill(data.config);
+      status("Pronto — modifica e premi Salva", "ok");
+    }
+
+    async function save() {
+      try {
+        const config = readForm();
+        status("Salvataggio…");
+        const r = await fetch("/api/config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ config }),
+        });
+        const data = await r.json();
+        if (!data.ok) throw new Error(data.error || "save failed");
+        status((data.hint || "Salvato.") + " · " + new Date().toLocaleTimeString(), "ok");
+      } catch (e) {
+        status(String(e.message || e), "err");
+      }
+    }
+
+    $("#save").addEventListener("click", save);
+    $("#reload").addEventListener("click", () => load().catch((e) => status(String(e), "err")));
+    load().catch((e) => status(String(e), "err"));
+  </script>
+</body>
+</html>
