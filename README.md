@@ -21,23 +21,21 @@ python tools/generate_showcase.py
 
 ## Condivisione con il team
 
-1. Condividi **tutta** la cartella del progetto (zip o repo locale).
-2. Il compagno estrae dove preferisce, poi:
+1. Condividi **tutta** la cartella del progetto (zip o copia).
+2. Allega / includi il PDF **[`Guida_PiGreco_OBS.pdf`](Guida_PiGreco_OBS.pdf)** — istruzioni semplificate per chi non è tecnico.
+3. Il compagno segue la guida, oppure (se a suo agio col terminale):
 
 ```powershell
 cd percorso\obs-pigreco-racing
 python tools/setup_streamer.py --username SUO_NICK --pilot-name "Nome Cognome" --install-obs
 ```
 
-Questo aggiorna `overlays/config.js`, rigenera `obs/PiGreco_Racing.json` con i **path locali** della sua macchina e copia la collezione in OBS.
-
-Solo config, senza install OBS:
+Rigenera il PDF dopo aver aggiornato gli screenshot:
 
 ```powershell
-python tools/setup_streamer.py --username SUO_NICK --pilot-name "Nome Cognome"
+python tools/generate_showcase.py
+python tools/generate_pdf_guide.py
 ```
-
-Template commentato: [`overlays/config.example.js`](overlays/config.example.js).
 
 ## Parametri editabili
 
@@ -63,6 +61,8 @@ Dopo ogni modifica a `config.js`: in OBS → Browser Source → **Refresh cache 
 
 | Percorso | Descrizione |
 |----------|-------------|
+| `Guida_PiGreco_OBS.pdf` | **Istruzioni semplificate** (parti da qui se condividi il pack) |
+| `LEGGIMI.txt` | Promemoria rapido in chiaro |
 | `obs/PiGreco_Racing.json` | Collezione scene OBS |
 | `overlays/*.html` | Browser Source |
 | `overlays/config.js` | Parametri streamer |
