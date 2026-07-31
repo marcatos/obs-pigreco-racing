@@ -628,3 +628,24 @@ body {
   font-size: 0.95rem;
   font-weight: 600;
 }
+
+/* Telemetry stub (P3) — bottom-left margin; hidden unless telemetryEnabled */
+.telemetry-widget {
+  position: absolute;
+  left: 48px;
+  bottom: 48px;
+  z-index: 6;
+  padding: 0.45rem 0.75rem;
+  font-family: var(--font-display, "Segoe UI", sans-serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #f2f4f5;
+  background: rgba(8, 10, 12, 0.72);
+  border-left: 3px solid var(--pgr-green, #00c400);
+  pointer-events: none;
+}
+
+.telemetry-widget[hidden] {
+  display: none !important;
+}

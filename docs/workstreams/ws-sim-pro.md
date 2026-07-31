@@ -5,12 +5,12 @@
 
 ## First step (mandatory)
 
-Land **ADR-005** contract + mock telemetry producer before any HTML binds to a sim.
+Land **ADR-005** contract + mock telemetry producer before any HTML binds to a sim. **Done (P3-01):** see `adapters/telemetry/CONTRACT.md` and `mock_server.py`.
 
 ## Tasks
 
-- P3-01 Contract + mock server/file
-- P3-02 Position/gap widget consuming contract
+- P3-01 Contract + mock server/file — **done**
+- P3-02 Position/gap widget consuming contract — **ready**
 - P3-03 Minimap (later)
 - P3-04 Auto scene on flags via obs-websocket
 - P3-05 Audio bus / VOD documentation for OBS profile

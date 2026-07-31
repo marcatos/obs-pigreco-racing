@@ -18,3 +18,7 @@ showcase/_logo_*_pdf.png
 showcase/_preview_pdf_*
 overlays/stinger/frames/
 logs/
+
+# Telemetry mock runtime output
+adapters/telemetry/telemetry.json
+adapters/telemetry/telemetry.json.tmp

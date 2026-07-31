@@ -47,15 +47,15 @@ flowchart TB
 1. **Regenerate, don’t hand-edit** OBS JSON for layout math — change `tools/generate_pack.py`.
 2. New on-stream widgets = new small JS module + CSS in theme + config keys.
 3. Official logos live under `overlays/assets/official/`; processed copies in `overlays/assets/`.
-4. Telemetry (Phase 3) must enter via a **port** (e.g. local websocket/file) — never hardcode a sim SDK inside HTML forever without an adapter folder (`adapters/telemetry/` planned).
+4. Telemetry (Phase 3) must enter via a **port** (local WebSocket / JSON file) — never hardcode a sim SDK inside HTML. Contract + mock live in `adapters/telemetry/` (ADR-005).
 
-## Planned folders (create when first needed)
+## Folders
 
 ```
 adapters/
-  telemetry/          # SimHub / iRacing bridges
-  streamelements/     # CSS/theme exports
-  streamdeck/         # profile exports
+  telemetry/          # CONTRACT.md + mock_server.py (+ future SimHub/iRacing bridges)
+  streamelements/     # CSS/theme exports (planned)
+  streamdeck/         # profile exports (planned)
 overlays/
   modules/            # optional future home for JS modules
 docs/

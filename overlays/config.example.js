@@ -60,5 +60,9 @@ window.PIGRECO_CONFIG = {
     { name: "SimGrid", src: "assets/official/simgrid-white.png" },
     { name: "Tektrama", src: "assets/official/tektrama-white.png" },
     { name: "GoSetups", src: "assets/official/gosetups.png" }
-  ]
+  ],
+
+  // --- Telemetry bridge (P3 — disabled by default; needs mock/real adapter) ---
+  telemetryEnabled: false,
+  telemetryWsUrl: "ws://127.0.0.1:8765"
 };

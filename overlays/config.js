@@ -55,7 +55,11 @@ window.PIGRECO_CONFIG = {
     { name: "SimGrid", src: "assets/official/simgrid-white.png" },
     { name: "Tektrama", src: "assets/official/tektrama-white.png" },
     { name: "GoSetups", src: "assets/official/gosetups.png" }
-  ]
+  ],
+
+  // --- Telemetry (off until mock/real bridge is running) ---
+  telemetryEnabled: false,
+  telemetryWsUrl: "ws://127.0.0.1:8765"
 };
 
 (function applyConfig() {
@@ -71,6 +75,10 @@ window.PIGRECO_CONFIG = {
   if (params.has("sponsorsEnabled")) {
     cfg.sponsorsEnabled =
       params.get("sponsorsEnabled") !== "0" && params.get("sponsorsEnabled") !== "false";
+  }
+  if (params.has("telemetryEnabled")) {
+    cfg.telemetryEnabled =
+      params.get("telemetryEnabled") !== "0" && params.get("telemetryEnabled") !== "false";
   }
 
   if (!cfg.pilotName && cfg.username) cfg.pilotName = cfg.username;
