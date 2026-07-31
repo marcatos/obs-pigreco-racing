@@ -13,3 +13,6 @@ __pycache__/
 
 # Local OBS exports / temp
 *.tmp
+showcase/_pdf_*
+showcase/_logo_*_pdf.png
+showcase/_preview_pdf_*
