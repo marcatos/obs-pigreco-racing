@@ -17,16 +17,21 @@ CHROME = Path(r"C:\Program Files\Google\Chrome\Application\chrome.exe")
 SHOTS = [
     ("01-starting-soon.png", "starting-soon.html", "Starting Soon"),
     ("02-live-chrome.png", "showcase-live.html", "Live Race / Live Singolo chrome"),
-    ("03-brb.png", "brb.html", "BRB"),
+    # Query shows BRB return timer in preview (config default leaves brbUntil empty)
+    ("03-brb.png", "brb.html?brbUntil=21:45", "BRB"),
     ("04-ending.png", "ending.html", "Ending"),
 ]
 
 
-def file_url(path: Path) -> str:
-    return path.resolve().as_uri()
+def file_url(path: Path, query: str = "") -> str:
+    uri = path.resolve().as_uri()
+    if query:
+        return uri + ("&" if "?" in uri else "?") + query.lstrip("?")
+    return uri
 
 
-def capture(html_name: str, out_png: Path) -> None:
+def capture(html_spec: str, out_png: Path) -> None:
+    html_name, _, query = html_spec.partition("?")
     html = OVERLAYS / html_name
     if not html.exists():
         raise FileNotFoundError(html)
@@ -42,7 +47,7 @@ def capture(html_name: str, out_png: Path) -> None:
         f"--screenshot={out_png.resolve()}",
         # Allow timed sponsor rotator / CSS animations to paint
         "--virtual-time-budget=3500",
-        file_url(html),
+        file_url(html, query),
     ]
     t0 = time.perf_counter()
     log.info("capturing %s -> %s", html_name, out_png.name)
