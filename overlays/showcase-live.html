@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PiGreco — Live Showcase</title>
+  <link rel="stylesheet" href="assets/theme.css" />
+  <style>
+    .mock-game {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(5, 5, 5, 0.2), rgba(5, 5, 5, 0.55)),
+        url("assets/hero-racing.jpg") center / cover no-repeat;
+    }
+    .mock-hud {
+      position: absolute;
+      top: 16%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 0;
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      letter-spacing: 0.35em;
+      color: rgba(247, 250, 252, 0.28);
+      text-transform: uppercase;
+    }
+    .cam-placeholder {
+      position: absolute;
+      left: 36px;
+      bottom: 36px;
+      width: 360px;
+      height: 202px;
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg, #1a2228, #0c1014);
+      color: var(--muted);
+      font-family: var(--font-display);
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="mock-game"></div>
+    <div class="mock-hud">MOCK GAMEPLAY · SHOWCASE</div>
+    <div class="cam-placeholder">STREAMCAM</div>
+    <div class="live-root has-cam">
+      <div class="watermark">
+        <img src="assets/logo-pi-official.png" alt="" />
+        <div class="watermark-text">
+          <strong data-cfg="teamName">PiGreco Racing</strong>
+          <span data-cfg="twitchHandle">@senormarcato</span>
+        </div>
+      </div>
+      <div class="cam-frame"><span class="cam-badge">CAM</span></div>
+      <div class="lower-third">
+        <div class="lower-body">
+          <div class="lower-label" data-cfg="teamName">PiGreco Racing</div>
+          <div class="lower-name" data-cfg="pilotName">Simone Marcato</div>
+          <div class="lower-meta" data-cfg="eventTitle">Sim Racing Session</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="config.js"></script>
+</body>
+</html>

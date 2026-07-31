@@ -2,46 +2,96 @@
 
 Collezione scene OBS per streaming sim racing (triplo monitor + monitor singolo), con StreamCam e overlay a brand **PiGreco Racing**.
 
+## Showcase
+
+Anteprime 1920×1080 in [`showcase/`](showcase/) (apri [`showcase/index.html`](showcase/index.html)):
+
+| File | Scena |
+|------|--------|
+| `01-starting-soon.png` | Starting Soon |
+| `02-live-chrome.png` | Live Race / Live Singolo (chrome + mock gameplay) |
+| `03-brb.png` | BRB |
+| `04-ending.png` | Ending |
+
+Rigenera gli screenshot:
+
+```powershell
+python tools/generate_showcase.py
+```
+
+## Condivisione con il team
+
+1. Condividi **tutta** la cartella del progetto (zip o repo locale).
+2. Il compagno estrae dove preferisce, poi:
+
+```powershell
+cd percorso\obs-pigreco-racing
+python tools/setup_streamer.py --username SUO_NICK --pilot-name "Nome Cognome" --install-obs
+```
+
+Questo aggiorna `overlays/config.js`, rigenera `obs/PiGreco_Racing.json` con i **path locali** della sua macchina e copia la collezione in OBS.
+
+Solo config, senza install OBS:
+
+```powershell
+python tools/setup_streamer.py --username SUO_NICK --pilot-name "Nome Cognome"
+```
+
+Template commentato: [`overlays/config.example.js`](overlays/config.example.js).
+
+## Parametri editabili
+
+In [`overlays/config.js`](overlays/config.js):
+
+| Chiave | Uso |
+|--------|-----|
+| `username` | Nick base (deriva anche l’handle se manca) |
+| `pilotName` | Nome in lower-third / ending |
+| `twitchHandle` | Handle con o senza `@` (normalizzato) |
+| `teamName` | Brand watermark / label |
+| `eventTitle` | Sottotitolo sessione |
+| `tagline` | Motto |
+| `startingMessage` / `brbMessage` / `endingMessage` / `endingSub` | Testi scene |
+
+Override al volo via query string sul Browser Source, es.:
+
+`live-chrome.html?username=altro_nick&eventTitle=PiGreco%20Night`
+
+Dopo ogni modifica a `config.js`: in OBS → Browser Source → **Refresh cache of current page**.
+
 ## Contenuto
 
 | Percorso | Descrizione |
 |----------|-------------|
 | `obs/PiGreco_Racing.json` | Collezione scene OBS |
-| `overlays/*.html` | Browser Source (Starting / Live / BRB / Ending) |
-| `overlays/config.js` | Testi editabili (pilota, evento, handle) |
+| `overlays/*.html` | Browser Source |
+| `overlays/config.js` | Parametri streamer |
 | `overlays/assets/` | Logo, theme, hero |
-| `overlays/assets/official/` | Asset scaricati da [pigrecoracing.com](https://www.pigrecoracing.com/) |
+| `showcase/` | Screenshot per preview/share |
+| `overlays/assets/official/` | Asset da [pigrecoracing.com](https://www.pigrecoracing.com/) |
 
 ### Scene
 
-1. **Starting Soon** — overlay fullscreen + StreamCam
-2. **Live Race** — Display Capture monitor centrale + chrome live + StreamCam
-3. **Live Singolo** — Display Capture quarto monitor + stessi overlay
-4. **BRB** — “Torno subito” + webcam
-5. **Ending** — grazie + handle Twitch
+1. **Starting Soon** — overlay fullscreen + StreamCam  
+2. **Live Race** — monitor centrale + chrome live + StreamCam  
+3. **Live Singolo** — quarto monitor + stessi overlay  
+4. **BRB** — “Torno subito” + webcam  
+5. **Ending** — grazie + handle  
 
-Canvas / uscita: **1920×1080** (OBS 32.x: le scene usano le coordinate relative `pos_rel` / `scale_rel`).
+Canvas / uscita: **1920×1080** (OBS 32.x con `pos_rel` / `scale_rel`).
 
-> Se OBS è aperto mentre si riscrive `PiGreco_Racing.json`, alla chiusura può sovrascrivere il file. Chiudi OBS prima di reinstallare la collezione, poi riapri.
+> Chiudi OBS prima di riscrivere `PiGreco_Racing.json`, altrimenti alla chiusura può sovrascrivere il file.
 
-## Installazione OBS
+## Installazione OBS (manuale)
 
-1. Chiudi OBS (consigliato).
-2. Copia `obs/PiGreco_Racing.json` in:
-   `%APPDATA%\obs-studio\basic\scenes\`
-3. Apri OBS → **Scene Collection** → seleziona **PiGreco Racing**  
-   (se non compare: *Import* / riapri OBS).
-4. Nelle sorgenti **Monitor Centro** e **Monitor Singolo**: apri Proprietà e scegli il display corretto  
-   - triplo acceso → Centro = monitor centrale della pista  
-   - solo quarto monitor → usa scena **Live Singolo** e seleziona quel display
-5. Verifica **StreamCam** (device Logitech StreamCam).
-6. Gli overlay Browser Source puntano già a:
-   `C:\Users\simot\Documents\Projects\obs-pigreco-racing\overlays\...`  
-   Se sposti la cartella, aggiorna gli URL o riesegui `python tools/generate_pack.py`.
+1. Chiudi OBS.
+2. Copia `obs/PiGreco_Racing.json` in `%APPDATA%\obs-studio\basic\scenes\`  
+   (oppure usa `--install-obs` con `setup_streamer.py`).
+3. Apri OBS → **Scene Collection** → **PiGreco Racing**.
+4. Imposta **Monitor Centro** / **Monitor Singolo** sul display corretto.
+5. Verifica **StreamCam**.
 
 ### Hotkey consigliate
-
-In OBS → Impostazioni → Hotkey:
 
 | Hotkey | Scena |
 |--------|--------|
@@ -51,32 +101,19 @@ In OBS → Impostazioni → Hotkey:
 | F4 | BRB |
 | F5 | Ending |
 
-## Personalizzare i testi
-
-Modifica `overlays/config.js`, poi in OBS su ogni Browser Source: **Refresh cache of current page**.
-
-Puoi anche passare override via query string, es.  
-`live-chrome.html?eventTitle=iRacing%20Night&pilotName=...`
-
 ## Asset ufficiali
 
-Prelevati da https://www.pigrecoracing.com/ :
-
-- `images/restyle/logo-pigreco.png` (π verde)
-- `images/logo.png` (wordmark PIGRECO RACING)
-- `images/restyle/hero-racing.jpg`
-- partner / social: SimGrid, Tektrama, GoSetups, Discord, Instagram
-- palette da `css/pigreco-restyle.css` (`#00C400`, `#009FE5`, `#050505`)
-
-Dettagli e licenza d’uso: vedi [ATTRIBUTION.md](ATTRIBUTION.md).
+Vedi [ATTRIBUTION.md](ATTRIBUTION.md). Palette: `#00C400`, `#009FE5`, `#050505`.
 
 ## Tool
 
 ```powershell
-python tools/process_official_assets.py   # ri-processa loghi (fondo trasparente)
-python tools/generate_pack.py             # rigenera PNG fallback + JSON OBS
+python tools/setup_streamer.py --username NICK --install-obs
+python tools/generate_showcase.py
+python tools/process_official_assets.py
+python tools/generate_pack.py
 ```
 
 ## Note triplo monitor
 
-I tre display sono separati (non Surround). In stream si acquisisce **solo il monitor centrale** per leggibilità. Il quarto monitor ha la scena dedicata **Live Singolo**.
+Tre display separati (non Surround). In stream si acquisisce **solo il monitor centrale**. Il quarto monitor usa **Live Singolo**.

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>PiGreco Racing — OBS Pack Showcase</title>
+  <style>
+    :root { --bg:#080a0c; --text:#f7fafc; --green:#00c400; --blue:#009fe5; --muted:#a7b1ba; }
+    body { margin:0; font-family: Segoe UI, Arial, sans-serif; background:var(--bg); color:var(--text); }
+    header { padding:48px 32px 24px; max-width:1100px; margin:0 auto; }
+    h1 { margin:0 0 8px; font-size:2rem; }
+    p { color:var(--muted); max-width:62ch; line-height:1.5; }
+    .grid { display:grid; gap:28px; padding:16px 32px 64px; max-width:1100px; margin:0 auto; }
+    figure { margin:0; background:#11161a; border:1px solid rgba(255,255,255,.1); border-top:4px solid var(--green); }
+    img { display:block; width:100%; height:auto; }
+    figcaption { padding:12px 14px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--blue); }
+    code { color:var(--green); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>PiGreco Racing — OBS Pack</h1>
+    <p>
+      Showcase delle scene overlay (1920×1080). Per personalizzare nick/handle modifica
+      <code>overlays/config.js</code> (template in <code>config.example.js</code>),
+      poi esegui <code>python tools/setup_streamer.py --username tuo_nick</code>.
+    </p>
+  </header>
+  <div class="grid">
+    <figure>
+      <img src="01-starting-soon.png" alt="Starting Soon" width="960" />
+      <figcaption>Starting Soon</figcaption>
+    </figure>
+
+    <figure>
+      <img src="02-live-chrome.png" alt="Live Race / Live Singolo chrome" width="960" />
+      <figcaption>Live Race / Live Singolo chrome</figcaption>
+    </figure>
+
+    <figure>
+      <img src="03-brb.png" alt="BRB" width="960" />
+      <figcaption>BRB</figcaption>
+    </figure>
+
+    <figure>
+      <img src="04-ending.png" alt="Ending" width="960" />
+      <figcaption>Ending</figcaption>
+    </figure>
+  </div>
+</body>
+</html>
