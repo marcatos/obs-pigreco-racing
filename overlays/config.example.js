@@ -23,6 +23,16 @@ window.PIGRECO_CONFIG = {
   endingMessage: "GRAZIE PER AVER SEGUITO",
   endingSub: "Ci vediamo alla prossima sessione",
 
+  // --- Sessione / countdown ---
+  sessionBadgeEnabled: true,
+  sessionType: "race", // practice | quali | race | cooldown | custom
+  sessionLabel: "",
+  countdownEnabled: true,
+  countdownSeconds: 600,
+  goLiveAt: "", // es. "21:30" oppure "2026-07-31T21:30:00"
+  countdownLabel: "SI PARTE TRA",
+  countdownDoneLabel: "IN DIRETTA",
+
   // --- Sponsor rotator (Live Race / Live Singolo) ---
   // Appare in alto a sinistra, un logo alla volta, poi scompare per non appesantire lo stream.
   sponsorsEnabled: true,

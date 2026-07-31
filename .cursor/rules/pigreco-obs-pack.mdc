@@ -1,0 +1,25 @@
+---
+description: PiGreco OBS pack — always-on project constraints for agents
+alwaysApply: true
+---
+
+# obs-pigreco-racing
+
+Before changing code, read `AGENTS.md` and the relevant `docs/workstreams/*.md`.
+
+## Must
+
+- Follow `STRATEGY.md` tracks; claim a `docs/ROADMAP.md` ID.
+- Keep canvas/overlays at **1920×1080**.
+- Use brand tokens from `docs/DESIGN_SYSTEM.md` (`#00C400`, `#009FE5`, `#080A0C`).
+- Extend OBS layouts via `tools/generate_pack.py` (correct `pos_rel`), not fragile hand JSON.
+- Sync new config keys to `overlays/config.example.js`.
+- Conventional Commits; local git only unless user asks otherwise.
+- Preserve `Setup.bat` as the non-technical entry path.
+
+## Must not
+
+- Do not reverse ADRs in `docs/adr/` without a new ADR.
+- Do not cover center gameplay with widgets.
+- Do not add cloud-only dependencies to the core pack.
+- Do not edit `Guida_PiGreco_OBS.pdf` by hand — regenerate with `tools/generate_pdf_guide.py`.

@@ -13,6 +13,19 @@ window.PIGRECO_CONFIG = {
   endingMessage: "GRAZIE PER AVER SEGUITO",
   endingSub: "Ci vediamo alla prossima sessione",
 
+  // --- Sessione / countdown ---
+  sessionBadgeEnabled: true,
+  /** practice | quali | race | cooldown | custom */
+  sessionType: "race",
+  sessionLabel: "",
+  countdownEnabled: true,
+  /** Secondi da ora (usato se goLiveAt è vuoto) */
+  countdownSeconds: 600,
+  /** Alternativa: "21:30" oggi oppure ISO datetime */
+  goLiveAt: "",
+  countdownLabel: "SI PARTE TRA",
+  countdownDoneLabel: "IN DIRETTA",
+
   // --- Sponsor (rotazione discreta in Live) ---
   sponsorsEnabled: true,
   sponsorLabel: "PARTNER",

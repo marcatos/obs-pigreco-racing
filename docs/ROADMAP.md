@@ -1,0 +1,69 @@
+# Roadmap
+
+Status legend: `done` · `in_progress` · `ready` · `blocked` · `later`
+
+Update this file when claiming or finishing an ID.
+
+## Phase 0 — Pack core (baseline)
+
+| ID | Item | Status |
+|----|------|--------|
+| P0-01 | Scene collection 5 scene + StreamCam + monitor dual | done |
+| P0-02 | Brand overlays + official assets | done |
+| P0-03 | Sponsor rotator discreto | done |
+| P0-04 | Setup.bat/ps1 + Python elevate | done |
+| P0-05 | Guida PDF brand + showcase | done |
+| P0-06 | Multi-agent scaffolding (this docs set) | done |
+
+## Phase 1 — Broadcast polish (visual)
+
+| ID | Item | Status | Notes |
+|----|------|--------|-------|
+| P1-01 | Countdown Starting Soon | done | `goLiveAt` / `countdownSeconds` |
+| P1-02 | Badge sessione (Practice/Quali/Race) | done | pill top-center |
+| P1-03 | Stinger transition (webm/mov or HTML) | ready | OBS stinger path + asset |
+| P1-04 | Dual cam layout (face + wheel) toggle | ready | second dshow + hotkey hide |
+| P1-05 | Ending ricco (Discord QR + CTA) | ready | config URLs + optional QR gen |
+| P1-06 | BRB smart timer “torno alle HH:MM” | ready | |
+
+## Phase 2 — Engagement
+
+| ID | Item | Status | Notes |
+|----|------|--------|-------|
+| P2-01 | Chat overlay theme PiGreco | ready | CSS for SE/Streamlabs/own |
+| P2-02 | Alert box theme (follow/sub/raid) | ready | |
+| P2-03 | Hotkey map + Stream Deck profile export | ready | JSON/docs |
+| P2-04 | Instant Replay / Highlight scene | ready | replay buffer media source |
+
+## Phase 3 — Sim pro
+
+| ID | Item | Status | Notes |
+|----|------|--------|-------|
+| P3-01 | Telemetry bridge design (SimHub/iRacing) | ready | ADR first |
+| P3-02 | Live relative / position widget | later | needs P3-01 |
+| P3-03 | Minimap / track map | later | |
+| P3-04 | Auto scene on flags | later | obs-websocket |
+| P3-05 | Audio buses + VOD track guide | ready | docs + OBS profile notes |
+
+## Phase 4 — Team distribution
+
+| ID | Item | Status | Notes |
+|----|------|--------|-------|
+| P4-01 | Setup wizard UI (WinForms/WebView) | later | |
+| P4-02 | Game presets (iRacing/ACC/LMU) | ready | config profiles JSON |
+| P4-03 | Pack lite (prebuilt, no Python) | later | |
+
+## Suggested next agent claims
+
+1. `P1-03` Stinger (media + OBS transition notes)  
+2. `P1-06` BRB smart timer (pairs with countdown patterns)  
+3. `P2-01` + `P2-02` engagement CSS pack  
+4. `P3-01` telemetry contract (ADR-005)  
+
+## Definition of done (any ID)
+
+- [ ] Behavior matches acceptance in workstream brief  
+- [ ] `config.example.js` updated if new keys  
+- [ ] Showcase regenerated if visible overlay change  
+- [ ] Conventional Commit  
+- [ ] ROADMAP status → `done`  

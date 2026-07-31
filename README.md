@@ -2,6 +2,8 @@
 
 Collezione scene OBS per streaming sim racing (triplo monitor + monitor singolo), con StreamCam e overlay a brand **PiGreco Racing**.
 
+**Direzione prodotto / multi-agente:** parti da [`STRATEGY.md`](STRATEGY.md) e [`AGENTS.md`](AGENTS.md). Backlog: [`docs/ROADMAP.md`](docs/ROADMAP.md).
+
 ## Showcase
 
 Anteprime 1920×1080 in [`showcase/`](showcase/) (apri [`showcase/index.html`](showcase/index.html)):

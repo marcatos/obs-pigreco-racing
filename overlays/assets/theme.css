@@ -466,3 +466,90 @@ body {
   opacity: 0.5;
   pointer-events: none;
 }
+
+/* --- Countdown (Starting Soon) --- */
+.countdown {
+  margin-top: 1.35rem;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.75rem 1.4rem 0.85rem;
+  background: rgba(5, 5, 5, 0.55);
+  border: 1px solid rgba(0, 196, 0, 0.35);
+  border-top: 2px solid var(--pgr-green);
+}
+
+.countdown-label {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 0.28em;
+  color: var(--pgr-blue);
+}
+
+.countdown-value {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  letter-spacing: 0.12em;
+  color: var(--pgr-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.countdown.is-zero .countdown-value {
+  color: var(--pgr-green);
+}
+
+/* --- Session badge --- */
+.session-badge {
+  position: absolute;
+  top: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.85rem;
+  background: rgba(5, 5, 5, 0.78);
+  border: 1px solid rgba(0, 159, 229, 0.4);
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.28em;
+  color: var(--pgr-text);
+}
+
+.session-badge::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--pgr-green);
+  box-shadow: 0 0 8px var(--pgr-green);
+}
+
+.session-badge[data-session="practice"]::before {
+  background: var(--pgr-blue);
+  box-shadow: 0 0 8px var(--pgr-blue);
+}
+
+.session-badge[data-session="quali"],
+.session-badge[data-session="qualifying"] {
+  border-color: rgba(214, 175, 54, 0.45);
+}
+
+.session-badge[data-session="quali"]::before,
+.session-badge[data-session="qualifying"]::before {
+  background: #d6af36;
+  box-shadow: 0 0 8px #d6af36;
+}
+
+.session-badge[data-session="cooldown"]::before {
+  background: var(--pgr-muted);
+  box-shadow: none;
+}
+
+/* Live: keep badge from colliding with top-left sponsors */
+.live-root .session-badge {
+  top: 36px;
+}

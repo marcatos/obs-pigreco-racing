@@ -16,12 +16,19 @@
       <div class="corner corner-bl"></div>
       <div class="corner corner-br"></div>
       <div class="scanline"></div>
+      <div class="session-badge" data-session-badge>
+        <span data-session-value>RACE</span>
+      </div>
       <div class="panel-inner">
         <img class="logo-mark" src="assets/logo-pi-official.png" alt="PiGreco π" />
         <img class="logo-wordmark" src="assets/logo-wordmark-official.png" alt="PiGreco Racing" />
         <p class="eyebrow" data-cfg="teamName">PiGreco Racing</p>
         <h1 class="headline" data-cfg="startingMessage">IN ARRIVO</h1>
         <p class="subline" data-cfg="eventTitle">Sim Racing Session</p>
+        <div class="countdown" data-countdown>
+          <span class="countdown-label" data-countdown-label>SI PARTE TRA</span>
+          <span class="countdown-value" data-countdown-value>--:--</span>
+        </div>
         <p class="tagline" data-cfg="tagline">Competizione · Rispetto · Ironia</p>
         <div class="handle" data-cfg="twitchHandle">@senormarcato</div>
       </div>
@@ -29,5 +36,7 @@
     </div>
   </div>
   <script src="config.js"></script>
+  <script src="session-badge.js"></script>
+  <script src="countdown.js"></script>
 </body>
 </html>

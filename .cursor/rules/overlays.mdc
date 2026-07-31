@@ -1,0 +1,13 @@
+---
+description: Overlay HTML/CSS/JS conventions
+globs: overlays/**/*
+alwaysApply: false
+---
+
+# Overlays
+
+- Load `config.js` first, then feature modules (`sponsors.js`, `countdown.js`, …).
+- Put shared visuals in `assets/theme.css` using `--pgr-*` variables.
+- Keep modules small; one concern per file.
+- After visual changes: `python tools/generate_showcase.py`.
+- Interstitials use `.panel`; live uses `.live-root` transparent chrome.
