@@ -1,0 +1,15 @@
+# OS / editor
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.bak
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Local OBS exports / temp
+*.tmp
