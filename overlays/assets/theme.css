@@ -357,6 +357,58 @@ body {
   display: none;
 }
 
+/* --- Sponsor rotator (discreto, top-left) --- */
+.sponsor-rotator {
+  position: absolute;
+  top: 36px;
+  left: 36px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  max-width: 280px;
+  padding: 0.4rem 0.7rem 0.4rem 0.55rem;
+  background: linear-gradient(135deg, rgba(5, 5, 5, 0.72), rgba(17, 22, 26, 0.55));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 3px solid var(--pgr-blue);
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+  transition:
+    opacity var(--sponsor-fade-ms, 700ms) ease,
+    transform var(--sponsor-fade-ms, 700ms) ease;
+}
+
+.sponsor-rotator.is-visible {
+  opacity: 0.92;
+  transform: translateY(0);
+}
+
+.sponsor-label {
+  font-family: var(--font-display);
+  font-size: 0.55rem;
+  letter-spacing: 0.22em;
+  color: var(--pgr-blue);
+  white-space: nowrap;
+}
+
+.sponsor-logo-frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 88px;
+  height: 28px;
+}
+
+.sponsor-logo {
+  max-height: 26px;
+  max-width: 140px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+}
+
 .partner-row {
   position: absolute;
   bottom: 24px;

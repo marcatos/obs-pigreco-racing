@@ -58,6 +58,13 @@ In [`overlays/config.js`](overlays/config.js):
 | `eventTitle` | Sottotitolo sessione |
 | `tagline` | Motto |
 | `startingMessage` / `brbMessage` / `endingMessage` / `endingSub` | Testi scene |
+| `sponsors` | Lista loghi partner (rotazione in Live) |
+| `sponsorDisplayMs` / `sponsorGapMs` | Quanto resta a schermo / pausa tra uno e l’altro |
+| `sponsorsEnabled` | `false` per disattivare il rotator |
+
+Gli sponsor in **Live Race / Live Singolo** compaiono in alto a sinistra, un logo alla volta, poi spariscono per non appesantire la gara. In Starting Soon restano in fila in basso.
+
+Per aggiungere un partner: metti il PNG in `overlays/assets/official/` e aggiungi una riga in `sponsors`.
 
 Override al volo via query string sul Browser Source, es.:
 

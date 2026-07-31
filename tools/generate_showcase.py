@@ -40,6 +40,8 @@ def capture(html_name: str, out_png: Path) -> None:
         "--force-device-scale-factor=1",
         f"--window-size=1920,1080",
         f"--screenshot={out_png.resolve()}",
+        # Allow timed sponsor rotator / CSS animations to paint
+        "--virtual-time-budget=3500",
         file_url(html),
     ]
     t0 = time.perf_counter()

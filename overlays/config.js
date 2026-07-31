@@ -11,7 +11,23 @@ window.PIGRECO_CONFIG = {
   startingMessage: "IN ARRIVO",
   brbMessage: "TORNO SUBITO",
   endingMessage: "GRAZIE PER AVER SEGUITO",
-  endingSub: "Ci vediamo alla prossima sessione"
+  endingSub: "Ci vediamo alla prossima sessione",
+
+  // --- Sponsor (rotazione discreta in Live) ---
+  sponsorsEnabled: true,
+  sponsorLabel: "PARTNER",
+  /** ms in cui il logo resta visibile */
+  sponsorDisplayMs: 8000,
+  /** ms di pausa tra uno sponsor e il successivo */
+  sponsorGapMs: 18000,
+  /** ritardo prima della prima apparizione dopo il load scena */
+  sponsorInitialDelayMs: 12000,
+  sponsorFadeMs: 700,
+  sponsors: [
+    { name: "SimGrid", src: "assets/official/simgrid-white.png" },
+    { name: "Tektrama", src: "assets/official/tektrama-white.png" },
+    { name: "GoSetups", src: "assets/official/gosetups.png" }
+  ]
 };
 
 (function applyConfig() {
@@ -19,12 +35,15 @@ window.PIGRECO_CONFIG = {
   const params = new URLSearchParams(window.location.search);
 
   Object.keys(cfg).forEach((key) => {
-    if (params.has(key)) cfg[key] = params.get(key);
+    if (params.has(key) && typeof cfg[key] !== "object") cfg[key] = params.get(key);
   });
 
-  // Aliases / derived fields
   if (params.has("user")) cfg.username = params.get("user");
   if (params.has("nick")) cfg.username = params.get("nick");
+  if (params.has("sponsorsEnabled")) {
+    cfg.sponsorsEnabled =
+      params.get("sponsorsEnabled") !== "0" && params.get("sponsorsEnabled") !== "false";
+  }
 
   if (!cfg.pilotName && cfg.username) cfg.pilotName = cfg.username;
 
@@ -42,6 +61,22 @@ window.PIGRECO_CONFIG = {
     if (cfg[key] != null && cfg[key] !== "") el.textContent = cfg[key];
   });
 
+  document.querySelectorAll("[data-sponsors-static]").forEach((row) => {
+    const list = Array.isArray(cfg.sponsors) ? cfg.sponsors : [];
+    if (!list.length) {
+      row.hidden = true;
+      return;
+    }
+    row.innerHTML = "";
+    list.forEach((s) => {
+      const img = document.createElement("img");
+      img.src = s.src;
+      img.alt = s.name || "";
+      row.appendChild(img);
+    });
+  });
+
   document.documentElement.dataset.username = cfg.username || "";
-  document.title = (cfg.teamName || "PiGreco") + " — " + (document.title.split("—").pop() || "").trim();
+  document.title =
+    (cfg.teamName || "PiGreco") + " — " + (document.title.split("—").pop() || "").trim();
 })();

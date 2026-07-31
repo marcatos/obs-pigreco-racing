@@ -5,27 +5,36 @@
  * 2) Compila i campi QUI SOTTO
  * 3) In OBS, su ogni Browser Source: tasto destro → Refresh cache of current page
  *
- * Override opzionali via URL (utile in OBS senza ritoccare il file):
+ * Override opzionali via URL:
  *   live-chrome.html?username=MioNick&eventTitle=Night%20Race
  * ============================================================================= */
 
 window.PIGRECO_CONFIG = {
-  // --- Identità (obbligatori per personalizzare) ---
-  /** Nick / display name in lower-third e ending */
-  username: "senormarcato",
-  /** Nome completo mostrato in overlay (se vuoto usa username) */
-  pilotName: "Simone Marcato",
-  /** Handle Twitch senza o con @ (normalizzato automaticamente) */
-  twitchHandle: "@senormarcato",
+  username: "tuo_nick",
+  pilotName: "Nome Cognome",
+  twitchHandle: "@tuo_nick",
 
-  // --- Team / evento ---
   teamName: "PiGreco Racing",
   eventTitle: "Sim Racing Session",
   tagline: "Competizione · Rispetto · Ironia",
 
-  // --- Testi scene ---
   startingMessage: "IN ARRIVO",
   brbMessage: "TORNO SUBITO",
   endingMessage: "GRAZIE PER AVER SEGUITO",
-  endingSub: "Ci vediamo alla prossima sessione"
+  endingSub: "Ci vediamo alla prossima sessione",
+
+  // --- Sponsor rotator (Live Race / Live Singolo) ---
+  // Appare in alto a sinistra, un logo alla volta, poi scompare per non appesantire lo stream.
+  sponsorsEnabled: true,
+  sponsorLabel: "PARTNER",
+  sponsorDisplayMs: 8000,       // quanto resta a schermo
+  sponsorGapMs: 18000,          // pausa prima del prossimo
+  sponsorInitialDelayMs: 12000, // attesa dopo ingresso in scena Live
+  sponsorFadeMs: 700,
+  // Aggiungi/rimuovi voci; metti i file PNG/SVG in overlays/assets/official/
+  sponsors: [
+    { name: "SimGrid", src: "assets/official/simgrid-white.png" },
+    { name: "Tektrama", src: "assets/official/tektrama-white.png" },
+    { name: "GoSetups", src: "assets/official/gosetups.png" }
+  ]
 };

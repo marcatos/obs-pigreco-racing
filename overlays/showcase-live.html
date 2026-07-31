@@ -48,6 +48,7 @@
     <div class="mock-hud">MOCK GAMEPLAY · SHOWCASE</div>
     <div class="cam-placeholder">STREAMCAM</div>
     <div class="live-root has-cam">
+      <div class="sponsor-rotator" data-sponsor-rotator aria-hidden="true"></div>
       <div class="watermark">
         <img src="assets/logo-pi-official.png" alt="" />
         <div class="watermark-text">
@@ -66,5 +67,11 @@
     </div>
   </div>
   <script src="config.js"></script>
+  <script>
+    window.PIGRECO_CONFIG.sponsorInitialDelayMs = 300;
+    window.PIGRECO_CONFIG.sponsorDisplayMs = 5000;
+    window.PIGRECO_CONFIG.sponsorGapMs = 800;
+  </script>
+  <script src="sponsors.js"></script>
 </body>
 </html>
