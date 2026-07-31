@@ -1,6 +1,7 @@
 """Generate logo PNG and OBS scene collection for PiGreco Racing."""
 from __future__ import annotations
 
+import argparse
 import json
 import logging
 import time
@@ -191,8 +192,14 @@ def make_scene(name: str, items: list[dict]) -> dict:
     }
 
 
-def build_collection() -> Path:
+def build_collection(
+    *,
+    overlays: Path | None = None,
+    collection_name: str = "PiGreco Racing",
+    output_filename: str = "PiGreco_Racing.json",
+) -> Path:
     t0 = time.perf_counter()
+    overlays_dir = overlays or OVERLAYS
     OBS_DIR.mkdir(parents=True, exist_ok=True)
 
     desktop = source_base(
@@ -245,7 +252,7 @@ def build_collection() -> Path:
             name,
             "browser_source",
             {
-                "url": file_url(OVERLAYS / html),
+                "url": file_url(overlays_dir / html),
                 "width": CANVAS_W,
                 "height": CANVAS_H,
                 "fps": 30,
@@ -372,7 +379,7 @@ def build_collection() -> Path:
     ]
 
     collection = {
-        "name": "PiGreco Racing",
+        "name": collection_name,
         "DesktopAudioDevice1": desktop,
         "AuxAudioDevice1": mic,
         "sources": sources,
@@ -422,7 +429,7 @@ def build_collection() -> Path:
     # So remove desktop/mic from sources array.
     collection["sources"] = [s for s in sources if s["name"] not in ("Audio Desktop", "Microfono")]
 
-    out = OBS_DIR / "PiGreco_Racing.json"
+    out = OBS_DIR / output_filename
     out.write_text(json.dumps(collection, indent=4), encoding="utf-8")
     log.info(
         "scene collection written to %s (%d sources) in %.0f ms",
@@ -434,16 +441,37 @@ def build_collection() -> Path:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Generate OBS scene collection and optional logo PNG.")
+    parser.add_argument(
+        "--profile",
+        choices=("pigreco", "marcato"),
+        default="pigreco",
+        help="pigreco: PiGreco_Racing.json + logo sync; marcato: S_Marcato_42.json only",
+    )
+    args = parser.parse_args()
+
     started = time.perf_counter()
-    log.info("start generating PiGreco OBS pack")
-    ASSETS.mkdir(parents=True, exist_ok=True)
-    logo = export_logo_png()
-    scene = build_collection()
+    logo_name = "skipped"
+
+    if args.profile == "marcato":
+        log.info("start generating S.Marcato 42 OBS collection (marcato profile)")
+        scene = build_collection(
+            overlays=ROOT / "overlays-marcato",
+            collection_name="S.Marcato 42",
+            output_filename="S_Marcato_42.json",
+        )
+    else:
+        log.info("start generating PiGreco OBS pack")
+        ASSETS.mkdir(parents=True, exist_ok=True)
+        logo = export_logo_png()
+        logo_name = logo.name
+        scene = build_collection()
+
     elapsed = (time.perf_counter() - started) * 1000
     log.info(
         "done in %.0f ms | logo=%s | collection=%s",
         elapsed,
-        logo.name,
+        logo_name,
         scene.name,
     )
 

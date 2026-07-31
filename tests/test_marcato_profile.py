@@ -75,3 +75,12 @@ def test_write_config_js_default_overlay_root():
     out = write_config_js()
     assert out == ROOT / "overlays" / "config.js"
     assert out == OUT
+
+
+def test_marcato_collection_urls():
+    path = ROOT / "obs" / "S_Marcato_42.json"
+    assert path.is_file()
+    text = path.read_text(encoding="utf-8")
+    assert "S.Marcato 42" in text or "S.Marcato" in text
+    assert "overlays-marcato" in text.replace("\\\\", "/")
+    assert "overlays/starting-soon.html" not in text.replace("\\\\", "/")
