@@ -119,6 +119,14 @@ Canvas / uscita: **1920×1080** (OBS 32.x con `pos_rel` / `scale_rel`).
 | F4 | BRB |
 | F5 | Ending |
 
+### Stinger
+
+Transizione scene brand (~0.8 s): WebM in [`overlays/stinger/pigreco-stinger.webm`](overlays/stinger/pigreco-stinger.webm).
+
+In OBS → **Transitions** → **+** → **Stinger** → seleziona quel file → **Transition Point ~55%**. Guida completa: [`docs/STINGER.md`](docs/STINGER.md).
+
+Anteprima HTML: `overlays/stinger/index.html?preview=1`.
+
 ## Engagement
 
 Temi chat/alert PiGreco (StreamElements / preview OBS): [`adapters/streamelements/`](adapters/streamelements/).
@@ -134,6 +142,7 @@ python tools/setup_streamer.py --username NICK --install-obs
 python tools/generate_showcase.py
 python tools/process_official_assets.py
 python tools/generate_pack.py
+python tools/generate_stinger.py
 ```
 
 ## Note triplo monitor

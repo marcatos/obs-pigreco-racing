@@ -21,7 +21,7 @@ Update this file when claiming or finishing an ID.
 |----|------|--------|-------|
 | P1-01 | Countdown Starting Soon | done | `goLiveAt` / `countdownSeconds` |
 | P1-02 | Badge sessione (Practice/Quali/Race) | done | pill top-center |
-| P1-03 | Stinger transition (webm/mov or HTML) | in_progress | OBS stinger path + asset |
+| P1-03 | Stinger transition (webm/mov or HTML) | done | `overlays/stinger/` + `docs/STINGER.md` |
 | P1-04 | Dual cam layout (face + wheel) toggle | ready | second dshow + hotkey hide |
 | P1-05 | Ending ricco (Discord QR + CTA) | done | config URLs + QR PNG |
 | P1-06 | BRB smart timer “torno alle HH:MM” | done | `brbUntil` + optional countdown |
@@ -55,10 +55,10 @@ Update this file when claiming or finishing an ID.
 
 ## Suggested next agent claims
 
-1. `P1-03` Stinger (media + OBS transition notes)  
-2. `P1-06` BRB smart timer (pairs with countdown patterns)  
-3. `P2-03` hotkey map + Stream Deck  
-4. `P3-01` telemetry contract (ADR-005)  
+1. `P1-04` Dual cam layout (second dshow + hotkey)  
+2. `P2-03` hotkey map + Stream Deck  
+3. `P3-01` telemetry contract (ADR-005)  
+4. `P3-05` audio buses + VOD track guide  
 
 ## Definition of done (any ID)
 

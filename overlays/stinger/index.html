@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PiGreco Racing — Stinger</title>
+  <link rel="stylesheet" href="stinger.css" />
+</head>
+<body>
+  <!--
+    Preview / export helper for OBS Stinger (~800ms).
+    Production media: pigreco-stinger.webm (see docs/STINGER.md).
+    Query: ?preview=1 shows checkerboard + Replay; ?loop=1 repeats.
+  -->
+  <div class="stage" id="stage" aria-hidden="true">
+    <div class="wipe" id="wipe"></div>
+    <div class="flash" aria-hidden="true"></div>
+    <img
+      class="mark"
+      src="../assets/logo-pi-official.png"
+      alt=""
+      width="220"
+      height="208"
+    />
+  </div>
+
+  <div class="hud" id="hud">
+    <button type="button" id="replay" title="Ricomincia lo sting">Replay</button>
+    <span>~800ms · black → green π wipe</span>
+  </div>
+
+  <script src="stinger.js"></script>
+</body>
+</html>
