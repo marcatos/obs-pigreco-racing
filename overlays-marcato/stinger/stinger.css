@@ -47,11 +47,11 @@ body {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(225, 6, 0, 0.35) 30%,
-    var(--accent, #e10600) 62%,
+    rgba(200, 200, 208, 0.35) 30%,
+    var(--ice-dim, #c8c8d0) 62%,
     #ffffff 100%
   );
-  box-shadow: 0 0 28px rgba(225, 6, 0, 0.35);
+  box-shadow: 0 0 28px rgba(200, 200, 208, 0.28);
 }
 
 .mark {

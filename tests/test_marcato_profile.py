@@ -53,9 +53,19 @@ def test_marcato_theme_matches_brand_identity():
     assert "Audiowide" in css
     assert "IBM Plex Sans" in css
     brand_dir = ROOT / "overlays-marcato" / "assets" / "brand"
-    assert (brand_dir / "primary_rosso_corsa_transparent.png").is_file()
+    assert (brand_dir / "wordmark_smarcato_transparent.png").is_file()
     assert (brand_dir / "mark42_rosso_corsa_transparent.png").is_file()
+    assert (brand_dir / "tag_racing_transparent.png").is_file()
     assert (brand_dir / "brand-tokens.json").is_file()
+    # Interstitials must use ice wordmark/tag + rosso only on mark 42
+    for page in ("starting-soon.html", "brb.html", "ending.html"):
+        html = (ROOT / "overlays-marcato" / page).read_text(encoding="utf-8")
+        assert "wordmark_smarcato_transparent.png" in html
+        assert "mark42_rosso_corsa_transparent.png" in html
+        assert "tag_racing_transparent.png" in html
+        assert "primary_rosso_corsa_transparent.png" not in html
+        assert "tag_racing_rosso_corsa" not in html
+        assert "wordmark_rosso_corsa" not in html
 
 
 def test_marcato_html_has_no_pigreco_assets():
