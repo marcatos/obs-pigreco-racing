@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OVERLAYS = ROOT / "overlays"
 ASSETS = OVERLAYS / "assets"
 OBS_DIR = ROOT / "obs"
+AUDIO_DIR = ROOT / "audio" / "interstitials"
 
 # Match OBS base canvas + stream output (1920x1080)
 CANVAS_W = 1920
@@ -267,6 +268,50 @@ def build_collection(
     ov_end = browser("Overlay Ending", "ending.html")
     ov_live = browser("Overlay Live Chrome", "live-chrome.html")
 
+    def music(name: str, filename: str, *, volume: float = 0.28) -> dict | None:
+        path = AUDIO_DIR / filename
+        if not path.is_file():
+            log.warning("music missing, skip %s (%s)", name, path)
+            return None
+        return source_base(
+            name,
+            "ffmpeg_source",
+            {
+                "local_file": str(path.resolve()),
+                "looping": True,
+                "restart_on_activate": True,
+                "close_when_inactive": True,
+                "clear_on_media_end": False,
+                "hw_decode": False,
+                "speed_percent": 100,
+                "is_local_file": True,
+            },
+            mixers=255,
+            volume=volume,
+        )
+
+    # Beds only on interstitials (no game audio focus)
+    mus_soon = music("Music Starting Soon", "starting-soon.mp3", volume=0.30)
+    mus_brb = music("Music BRB", "brb.mp3", volume=0.26)
+    mus_end = music("Music Ending", "ending.mp3", volume=0.28)
+
+    def audio_bed_item(src: dict | None, item_id: int) -> list[dict]:
+        """Tiny visible item so OBS keeps audio active (hidden sources mute media)."""
+        if src is None:
+            return []
+        return [
+            scene_item(
+                src["name"],
+                src["uuid"],
+                item_id,
+                pos=(-40.0, -40.0),
+                scale=(0.001, 0.001),
+                visible=True,
+                locked=True,
+                scale_ref=(1920.0, 1080.0),
+            )
+        ]
+
     # Webcam ~360x202 inside cam frame (left 36, bottom 36 on 1920x1080)
     cam_w, cam_h = 360.0, 202.0
     cam_scale = cam_w / 1920.0
@@ -305,6 +350,7 @@ def build_collection(
                 scale=(cam_sm_scale, cam_sm_scale),
                 scale_ref=cam_ref,
             ),
+            *audio_bed_item(mus_soon, 3),
         ],
     )
     scene_race = make_scene(
@@ -350,16 +396,21 @@ def build_collection(
                 scale=(cam_sm_scale, cam_sm_scale),
                 scale_ref=cam_ref,
             ),
+            *audio_bed_item(mus_brb, 3),
         ],
     )
     scene_end = make_scene(
         "Ending",
         [
             fullscreen(ov_end["name"], ov_end["uuid"], 1, locked=True),
+            *audio_bed_item(mus_end, 2),
         ],
     )
 
     # Attach scene uuids already set in make_scene; collect sources
+    music_sources = [s for s in (mus_soon, mus_brb, mus_end) if s is not None]
+    if music_sources:
+        log.info("interstitial music beds: %s", ", ".join(s["name"] for s in music_sources))
     sources = [
         desktop,
         mic,
@@ -371,6 +422,7 @@ def build_collection(
         ov_brb,
         ov_end,
         ov_live,
+        *music_sources,
         scene_soon,
         scene_race,
         scene_single,

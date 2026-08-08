@@ -3,7 +3,7 @@
     "DesktopAudioDevice1": {
         "prev_ver": 536936450,
         "name": "Audio Desktop",
-        "uuid": "22b5f87e-29a5-4c76-b59c-69dc34c65daa",
+        "uuid": "c81ed67e-2adc-4f2c-a0c2-da410c6b49fb",
         "id": "wasapi_output_capture",
         "versioned_id": "wasapi_output_capture",
         "settings": {
@@ -29,7 +29,7 @@
     "AuxAudioDevice1": {
         "prev_ver": 536936450,
         "name": "Microfono",
-        "uuid": "08b8fbac-3253-4c17-a24d-3cda3afff128",
+        "uuid": "00d4dcb0-c7da-4b69-a6b3-190c9c020bea",
         "id": "wasapi_input_capture",
         "versioned_id": "wasapi_input_capture",
         "settings": {
@@ -56,7 +56,7 @@
         {
             "prev_ver": 536936450,
             "name": "StreamCam",
-            "uuid": "438633c5-f8dc-402e-bd97-18fdbc4f514b",
+            "uuid": "abc041e8-3afb-48eb-b95c-1a6ea8288b14",
             "id": "dshow_input",
             "versioned_id": "dshow_input",
             "settings": {
@@ -85,7 +85,7 @@
         {
             "prev_ver": 536936450,
             "name": "Monitor Centro",
-            "uuid": "c844c769-941e-4faa-84a6-6d80c10fe8ec",
+            "uuid": "b1e3ea4d-fc15-41fd-b959-4bdd6a7f4cbf",
             "id": "monitor_capture",
             "versioned_id": "monitor_capture",
             "settings": {
@@ -112,7 +112,7 @@
         {
             "prev_ver": 536936450,
             "name": "Monitor Singolo",
-            "uuid": "1b6fe1e9-eea6-4072-9a16-2212890a1332",
+            "uuid": "1dd40456-405b-4aa3-bfff-c17585dce80b",
             "id": "monitor_capture",
             "versioned_id": "monitor_capture",
             "settings": {
@@ -139,7 +139,7 @@
         {
             "prev_ver": 536936450,
             "name": "Game Capture",
-            "uuid": "5d27e580-5e42-4a8a-aba0-dff0fafb918a",
+            "uuid": "29d29c58-6099-472e-81c0-9fe04a540a65",
             "id": "game_capture",
             "versioned_id": "game_capture",
             "settings": {
@@ -167,7 +167,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Starting Soon",
-            "uuid": "cfc0e28e-456b-4f36-8a18-e23be51467e9",
+            "uuid": "33b203ba-e49e-4a66-8e68-fd92ab1c5bd7",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -199,7 +199,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay BRB",
-            "uuid": "88e51bdc-94e3-4036-a473-0848aed03e69",
+            "uuid": "f04c3cbb-4e87-4e32-9169-414c5be6a2ea",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -231,7 +231,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Ending",
-            "uuid": "0ef3fc7d-c297-4864-9f66-579f3a8174c3",
+            "uuid": "bcac76dd-a59c-4429-8930-ca64c42a02c8",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -263,7 +263,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Live Chrome",
-            "uuid": "755a62c1-c25e-4a1c-b5be-c9a3a00be931",
+            "uuid": "6d44fe63-f0fc-4e2e-83f9-9b643afcab4f",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -294,17 +294,116 @@
         },
         {
             "prev_ver": 536936450,
+            "name": "Music Starting Soon",
+            "uuid": "8afaa5c7-b0dc-4f80-9e61-40f9a67b30b0",
+            "id": "ffmpeg_source",
+            "versioned_id": "ffmpeg_source",
+            "settings": {
+                "local_file": "C:\\Users\\simot\\Documents\\Projects\\obs-pigreco-racing\\audio\\interstitials\\starting-soon.mp3",
+                "looping": true,
+                "restart_on_activate": true,
+                "close_when_inactive": true,
+                "clear_on_media_end": false,
+                "hw_decode": false,
+                "speed_percent": 100,
+                "is_local_file": true
+            },
+            "mixers": 255,
+            "sync": 0,
+            "flags": 0,
+            "volume": 0.3,
+            "balance": 0.5,
+            "enabled": true,
+            "muted": false,
+            "push-to-mute": false,
+            "push-to-mute-delay": 0,
+            "push-to-talk": false,
+            "push-to-talk-delay": 0,
+            "hotkeys": {},
+            "deinterlace_mode": 0,
+            "deinterlace_field_order": 0,
+            "monitoring_type": 0,
+            "private_settings": {}
+        },
+        {
+            "prev_ver": 536936450,
+            "name": "Music BRB",
+            "uuid": "c8302903-6c01-4066-b412-0b815d8f5048",
+            "id": "ffmpeg_source",
+            "versioned_id": "ffmpeg_source",
+            "settings": {
+                "local_file": "C:\\Users\\simot\\Documents\\Projects\\obs-pigreco-racing\\audio\\interstitials\\brb.mp3",
+                "looping": true,
+                "restart_on_activate": true,
+                "close_when_inactive": true,
+                "clear_on_media_end": false,
+                "hw_decode": false,
+                "speed_percent": 100,
+                "is_local_file": true
+            },
+            "mixers": 255,
+            "sync": 0,
+            "flags": 0,
+            "volume": 0.26,
+            "balance": 0.5,
+            "enabled": true,
+            "muted": false,
+            "push-to-mute": false,
+            "push-to-mute-delay": 0,
+            "push-to-talk": false,
+            "push-to-talk-delay": 0,
+            "hotkeys": {},
+            "deinterlace_mode": 0,
+            "deinterlace_field_order": 0,
+            "monitoring_type": 0,
+            "private_settings": {}
+        },
+        {
+            "prev_ver": 536936450,
+            "name": "Music Ending",
+            "uuid": "78594281-d6c5-4f7f-ba06-be40c1356757",
+            "id": "ffmpeg_source",
+            "versioned_id": "ffmpeg_source",
+            "settings": {
+                "local_file": "C:\\Users\\simot\\Documents\\Projects\\obs-pigreco-racing\\audio\\interstitials\\ending.mp3",
+                "looping": true,
+                "restart_on_activate": true,
+                "close_when_inactive": true,
+                "clear_on_media_end": false,
+                "hw_decode": false,
+                "speed_percent": 100,
+                "is_local_file": true
+            },
+            "mixers": 255,
+            "sync": 0,
+            "flags": 0,
+            "volume": 0.28,
+            "balance": 0.5,
+            "enabled": true,
+            "muted": false,
+            "push-to-mute": false,
+            "push-to-mute-delay": 0,
+            "push-to-talk": false,
+            "push-to-talk-delay": 0,
+            "hotkeys": {},
+            "deinterlace_mode": 0,
+            "deinterlace_field_order": 0,
+            "monitoring_type": 0,
+            "private_settings": {}
+        },
+        {
+            "prev_ver": 536936450,
             "name": "Starting Soon",
-            "uuid": "f5613d63-976b-4c0f-bced-6bfe24f01012",
+            "uuid": "64a2d24f-00ca-482e-b20f-f31e6b8892bc",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
-                "id_counter": 2,
+                "id_counter": 3,
                 "custom_size": false,
                 "items": [
                     {
                         "name": "Overlay Starting Soon",
-                        "source_uuid": "cfc0e28e-456b-4f36-8a18-e23be51467e9",
+                        "source_uuid": "33b203ba-e49e-4a66-8e68-fd92ab1c5bd7",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -359,7 +458,7 @@
                     },
                     {
                         "name": "StreamCam",
-                        "source_uuid": "438633c5-f8dc-402e-bd97-18fdbc4f514b",
+                        "source_uuid": "abc041e8-3afb-48eb-b95c-1a6ea8288b14",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -411,6 +510,61 @@
                             "duration": 300
                         },
                         "private_settings": {}
+                    },
+                    {
+                        "name": "Music Starting Soon",
+                        "source_uuid": "8afaa5c7-b0dc-4f80-9e61-40f9a67b30b0",
+                        "visible": true,
+                        "locked": true,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 3,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": -40.0,
+                            "y": -40.0
+                        },
+                        "pos_rel": {
+                            "x": -1.8518518518518519,
+                            "y": -1.0740740740740742
+                        },
+                        "scale": {
+                            "x": 0.001,
+                            "y": 0.001
+                        },
+                        "scale_rel": {
+                            "x": 0.001,
+                            "y": 0.001
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
                     }
                 ]
             },
@@ -430,7 +584,9 @@
                 "libobs.show_scene_item.1": [],
                 "libobs.hide_scene_item.1": [],
                 "libobs.show_scene_item.2": [],
-                "libobs.hide_scene_item.2": []
+                "libobs.hide_scene_item.2": [],
+                "libobs.show_scene_item.3": [],
+                "libobs.hide_scene_item.3": []
             },
             "deinterlace_mode": 0,
             "deinterlace_field_order": 0,
@@ -441,7 +597,7 @@
         {
             "prev_ver": 536936450,
             "name": "Live Race",
-            "uuid": "bdd12f38-80f4-44d4-86c2-82bf4968823b",
+            "uuid": "67052391-8460-419a-98bb-545848d8ec17",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -450,7 +606,7 @@
                 "items": [
                     {
                         "name": "Monitor Centro",
-                        "source_uuid": "c844c769-941e-4faa-84a6-6d80c10fe8ec",
+                        "source_uuid": "b1e3ea4d-fc15-41fd-b959-4bdd6a7f4cbf",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -505,7 +661,7 @@
                     },
                     {
                         "name": "Game Capture",
-                        "source_uuid": "5d27e580-5e42-4a8a-aba0-dff0fafb918a",
+                        "source_uuid": "29d29c58-6099-472e-81c0-9fe04a540a65",
                         "visible": false,
                         "locked": false,
                         "rot": 0.0,
@@ -560,7 +716,7 @@
                     },
                     {
                         "name": "Overlay Live Chrome",
-                        "source_uuid": "755a62c1-c25e-4a1c-b5be-c9a3a00be931",
+                        "source_uuid": "6d44fe63-f0fc-4e2e-83f9-9b643afcab4f",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -615,7 +771,7 @@
                     },
                     {
                         "name": "StreamCam",
-                        "source_uuid": "438633c5-f8dc-402e-bd97-18fdbc4f514b",
+                        "source_uuid": "abc041e8-3afb-48eb-b95c-1a6ea8288b14",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -701,7 +857,7 @@
         {
             "prev_ver": 536936450,
             "name": "Live Singolo",
-            "uuid": "fbc0301a-36a3-4c8c-80d1-43f5d2d55d23",
+            "uuid": "b37cf26f-65dc-45c9-8b17-5a533dfe5ca5",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -710,7 +866,7 @@
                 "items": [
                     {
                         "name": "Monitor Singolo",
-                        "source_uuid": "1b6fe1e9-eea6-4072-9a16-2212890a1332",
+                        "source_uuid": "1dd40456-405b-4aa3-bfff-c17585dce80b",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -765,7 +921,7 @@
                     },
                     {
                         "name": "Overlay Live Chrome",
-                        "source_uuid": "755a62c1-c25e-4a1c-b5be-c9a3a00be931",
+                        "source_uuid": "6d44fe63-f0fc-4e2e-83f9-9b643afcab4f",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -820,7 +976,7 @@
                     },
                     {
                         "name": "StreamCam",
-                        "source_uuid": "438633c5-f8dc-402e-bd97-18fdbc4f514b",
+                        "source_uuid": "abc041e8-3afb-48eb-b95c-1a6ea8288b14",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -904,16 +1060,16 @@
         {
             "prev_ver": 536936450,
             "name": "BRB",
-            "uuid": "a4577e76-9d4e-492d-9c8c-7d931ab12794",
+            "uuid": "3e1aa989-e685-4fc6-8959-f48f5982344c",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
-                "id_counter": 2,
+                "id_counter": 3,
                 "custom_size": false,
                 "items": [
                     {
                         "name": "Overlay BRB",
-                        "source_uuid": "88e51bdc-94e3-4036-a473-0848aed03e69",
+                        "source_uuid": "f04c3cbb-4e87-4e32-9169-414c5be6a2ea",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -968,7 +1124,7 @@
                     },
                     {
                         "name": "StreamCam",
-                        "source_uuid": "438633c5-f8dc-402e-bd97-18fdbc4f514b",
+                        "source_uuid": "abc041e8-3afb-48eb-b95c-1a6ea8288b14",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -1020,6 +1176,61 @@
                             "duration": 300
                         },
                         "private_settings": {}
+                    },
+                    {
+                        "name": "Music BRB",
+                        "source_uuid": "c8302903-6c01-4066-b412-0b815d8f5048",
+                        "visible": true,
+                        "locked": true,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 3,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": -40.0,
+                            "y": -40.0
+                        },
+                        "pos_rel": {
+                            "x": -1.8518518518518519,
+                            "y": -1.0740740740740742
+                        },
+                        "scale": {
+                            "x": 0.001,
+                            "y": 0.001
+                        },
+                        "scale_rel": {
+                            "x": 0.001,
+                            "y": 0.001
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
                     }
                 ]
             },
@@ -1039,7 +1250,9 @@
                 "libobs.show_scene_item.1": [],
                 "libobs.hide_scene_item.1": [],
                 "libobs.show_scene_item.2": [],
-                "libobs.hide_scene_item.2": []
+                "libobs.hide_scene_item.2": [],
+                "libobs.show_scene_item.3": [],
+                "libobs.hide_scene_item.3": []
             },
             "deinterlace_mode": 0,
             "deinterlace_field_order": 0,
@@ -1050,16 +1263,16 @@
         {
             "prev_ver": 536936450,
             "name": "Ending",
-            "uuid": "228e8153-a33e-4964-bf23-a3a31f42c8e9",
+            "uuid": "421aaeed-5ff9-4908-bf5b-b452d34c4221",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
-                "id_counter": 1,
+                "id_counter": 2,
                 "custom_size": false,
                 "items": [
                     {
                         "name": "Overlay Ending",
-                        "source_uuid": "0ef3fc7d-c297-4864-9f66-579f3a8174c3",
+                        "source_uuid": "bcac76dd-a59c-4429-8930-ca64c42a02c8",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -1111,6 +1324,61 @@
                             "duration": 300
                         },
                         "private_settings": {}
+                    },
+                    {
+                        "name": "Music Ending",
+                        "source_uuid": "78594281-d6c5-4f7f-ba06-be40c1356757",
+                        "visible": true,
+                        "locked": true,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 2,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": -40.0,
+                            "y": -40.0
+                        },
+                        "pos_rel": {
+                            "x": -1.8518518518518519,
+                            "y": -1.0740740740740742
+                        },
+                        "scale": {
+                            "x": 0.001,
+                            "y": 0.001
+                        },
+                        "scale_rel": {
+                            "x": 0.001,
+                            "y": 0.001
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
                     }
                 ]
             },
@@ -1128,7 +1396,9 @@
             "hotkeys": {
                 "OBSBasic.SelectScene": [],
                 "libobs.show_scene_item.1": [],
-                "libobs.hide_scene_item.1": []
+                "libobs.hide_scene_item.1": [],
+                "libobs.show_scene_item.2": [],
+                "libobs.hide_scene_item.2": []
             },
             "deinterlace_mode": 0,
             "deinterlace_field_order": 0,
