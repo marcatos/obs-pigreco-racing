@@ -1,8 +1,8 @@
-/* S.Marcato 42 — OBS stinger (~800ms). Steel hairline wipe, center mark 42 */
+/* S.Marcato 42 — OBS stinger (~800ms). Carbon wipe + Rosso Corsa mark */
 
 :root {
   --sting-ms: 800ms;
-  --sting-bg: var(--bg, #0a0b0d);
+  --sting-bg: var(--bg, #08080a);
 }
 
 html,
@@ -47,11 +47,11 @@ body {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    var(--steel-dim) 25%,
-    var(--steel) 55%,
+    rgba(225, 6, 0, 0.35) 30%,
+    var(--accent, #e10600) 62%,
     #ffffff 100%
   );
-  box-shadow: 0 0 28px rgba(197, 204, 212, 0.45);
+  box-shadow: 0 0 28px rgba(225, 6, 0, 0.35);
 }
 
 .mark {
@@ -59,15 +59,12 @@ body {
   left: 50%;
   top: 50%;
   margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(4.5rem, 8vw, 7.5rem);
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.04em;
-  color: var(--steel);
+  width: clamp(160px, 18vw, 280px);
+  height: auto;
+  object-fit: contain;
   transform: translate(-50%, -50%) scale(0.72);
   opacity: 0;
-  text-shadow: 0 0 32px rgba(197, 204, 212, 0.35);
+  filter: drop-shadow(0 0 28px rgba(225, 6, 0, 0.35));
   pointer-events: none;
   z-index: 2;
 }

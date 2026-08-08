@@ -1,0 +1,56 @@
+{
+  "brand": "S.Marcato 42 Racing",
+  "colors": {
+    "carbon": "#08080A",
+    "carbon_mid": "#121216",
+    "ice": "#F8F8FA",
+    "ice_dim": "#C8C8D0",
+    "silver": "#A8A8B0",
+    "black": "#000000",
+    "white": "#FFFFFF"
+  },
+  "typography": {
+    "display_name": "Audiowide + italic shear 0.36",
+    "hero_number": "Custom racing italic 42 mark",
+    "tagline": "Candara Light tracked \u2014 Racing",
+    "ui": "Segoe UI / system sans"
+  },
+  "clearspace": "1/8 of logo height",
+  "minimum_sizes_px": {
+    "stacked_height": 120,
+    "mark_42": 32,
+    "favicon": 16
+  },
+  "racing_colors": {
+    "rosso_corsa": {
+      "hex": "#E10600",
+      "name": "Rosso Corsa",
+      "use": "Accent hero / number / CTA"
+    },
+    "papaya": {
+      "hex": "#FF8700",
+      "name": "Papaya",
+      "use": "Energy / endurance night"
+    },
+    "signal_yellow": {
+      "hex": "#F5C400",
+      "name": "Signal Yellow",
+      "use": "High-vis / safety stripe"
+    },
+    "electric_blue": {
+      "hex": "#00A3E0",
+      "name": "Electric Blue",
+      "use": "Modern GT / tech night"
+    },
+    "racing_green": {
+      "hex": "#004225",
+      "name": "Racing Green",
+      "use": "Heritage / classic GT"
+    },
+    "titanium": {
+      "hex": "#8A8F98",
+      "name": "Titanium",
+      "use": "Secondary metal / carbon trim"
+    }
+  }
+}

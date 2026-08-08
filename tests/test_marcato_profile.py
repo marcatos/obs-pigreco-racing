@@ -29,9 +29,19 @@ def test_write_config_js_marcato_root():
     assert "pigreco" not in data.get("teamName", "").lower()
 
 
-def test_marcato_theme_has_steel_tokens_not_pigreco():
+def test_marcato_theme_matches_brand_identity():
     css = (ROOT / "overlays-marcato" / "assets" / "theme.css").read_text(encoding="utf-8")
-    assert "--steel:" in css
+    tokens = json.loads(
+        (ROOT / "overlays-marcato" / "assets" / "brand" / "brand-tokens.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert tokens["colors"]["carbon"].lower() == "#08080a"
+    assert tokens["racing_colors"]["rosso_corsa"]["hex"].lower() == "#e10600"
+    assert "--carbon:" in css or "--bg:" in css
+    assert "--accent:" in css or "--rosso:" in css
+    assert "#08080a" in css.lower() or "#08080A" in css
+    assert "#e10600" in css.lower()
     assert "--line:" in css
     assert "--panel:" in css
     assert "--font-display:" in css
@@ -40,8 +50,12 @@ def test_marcato_theme_has_steel_tokens_not_pigreco():
     assert "Space Grotesk" not in css
     assert "#00c400" not in css.lower()
     assert "#009fe5" not in css.lower()
-    assert "Syne" in css
+    assert "Audiowide" in css
     assert "IBM Plex Sans" in css
+    brand_dir = ROOT / "overlays-marcato" / "assets" / "brand"
+    assert (brand_dir / "primary_rosso_corsa_transparent.png").is_file()
+    assert (brand_dir / "mark42_rosso_corsa_transparent.png").is_file()
+    assert (brand_dir / "brand-tokens.json").is_file()
 
 
 def test_marcato_html_has_no_pigreco_assets():

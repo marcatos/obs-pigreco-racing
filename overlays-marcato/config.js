@@ -6,7 +6,7 @@ window.PIGRECO_CONFIG = {
   "twitchHandle": "@senormarcato",
   "teamName": "",
   "eventTitle": "Sim Racing Session",
-  "tagline": "Sim racing · Broadcast",
+  "tagline": "Racing",
   "startingMessage": "IN DIRETTA A BREVE",
   "brbMessage": "TORNO SUBITO",
   "endingMessage": "GRAZIE",
