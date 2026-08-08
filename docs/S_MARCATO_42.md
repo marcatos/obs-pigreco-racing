@@ -35,6 +35,8 @@ Scene previste (come PiGreco): Starting Soon, Live Race, Live Singolo, BRB, Endi
 
 **Audio:** sulle scene interstiziali (Starting Soon / BRB / Ending) parte un loop musicale royalty-free (`audio/interstitials/`). Su Live Race / Live Singolo non c’è bed musicale (resta l’audio gioco/desktop). Volume regolabile in Mixer OBS sulle fonti `Music …`.
 
+**Transizioni:** default **S.Marcato Stinger** (dual-blade carbon + mark 42 + whoosh). Dettagli e alternative: `docs/TRANSITIONS.md`.
+
 ### 4. Pannello config (profilo Marcato)
 
 Avvia il server config (come per PiGreco):

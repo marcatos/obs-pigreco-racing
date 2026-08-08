@@ -157,6 +157,102 @@ def scene_item(
     }
 
 
+def transition_source(
+    name: str,
+    source_id: str,
+    settings: dict,
+    *,
+    volume: float = 1.0,
+) -> dict:
+    """OBS scene-collection transition entry (same shape as a source)."""
+    return {
+        "prev_ver": PREV_VER,
+        "name": name,
+        "uuid": new_uuid(),
+        "id": source_id,
+        "versioned_id": source_id,
+        "settings": settings,
+        "mixers": 0,
+        "sync": 0,
+        "flags": 0,
+        "volume": volume,
+        "balance": 0.5,
+        "enabled": True,
+        "muted": False,
+        "push-to-mute": False,
+        "push-to-mute-delay": 0,
+        "push-to-talk": False,
+        "push-to-talk-delay": 0,
+        "hotkeys": {},
+        "deinterlace_mode": 0,
+        "deinterlace_field_order": 0,
+        "monitoring_type": 0,
+        "private_settings": {},
+    }
+
+
+def build_transitions(*, overlays_dir: Path, profile: str) -> tuple[list[dict], str, int]:
+    """Return (transitions, current_name, duration_ms). Prefer branded stinger WebM."""
+    if profile == "marcato":
+        stinger_path = ROOT / "overlays-marcato" / "stinger" / "marcato-stinger.webm"
+        stinger_name = "S.Marcato Stinger"
+    else:
+        stinger_path = ROOT / "overlays" / "stinger" / "pigreco-stinger.webm"
+        stinger_name = "PiGreco Stinger"
+
+    fade = transition_source("Dissolvenza", "fade_transition", {})
+    cut = transition_source("Taglio", "cut_transition", {})
+    swipe = transition_source(
+        "Swipe Racing",
+        "swipe_transition",
+        {"direction": "right"},
+    )
+    slide = transition_source(
+        "Slide Racing",
+        "slide_transition",
+        {"direction": "left"},
+    )
+    flash = transition_source(
+        "Flash Carbon",
+        "fade_to_color_transition",
+        {"color": 0x08080A if profile == "marcato" else 0x080A0C},
+    )
+
+    transitions = [cut, fade, swipe, slide, flash]
+    current = "Swipe Racing"
+    duration = 420
+
+    if stinger_path.is_file():
+        # tp_type 0 = milliseconds; ~50% of ~850ms stinger
+        stinger = transition_source(
+            stinger_name,
+            "obs_stinger_transition",
+            {
+                "path": str(stinger_path.resolve()),
+                "transition_point": 420,
+                "tp_type": 0,
+                "hw_decode": True,
+                "audio_monitoring": 0,
+                "audio_fade_style": 1,
+                "track_matte_enabled": False,
+                "preload": True,
+            },
+            volume=1.0,
+        )
+        transitions.insert(0, stinger)
+        current = stinger_name
+        duration = 850
+        log.info("stinger transition ready: %s", stinger_path.name)
+    else:
+        log.warning(
+            "stinger WebM missing (%s) — run: python tools/generate_stinger.py --profile %s --with-whoosh",
+            stinger_path,
+            profile,
+        )
+
+    return transitions, current, duration
+
+
 def make_scene(name: str, items: list[dict]) -> dict:
     hotkeys = {"OBSBasic.SelectScene": []}
     for it in items:
@@ -198,6 +294,7 @@ def build_collection(
     overlays: Path | None = None,
     collection_name: str = "PiGreco Racing",
     output_filename: str = "PiGreco_Racing.json",
+    profile: str = "pigreco",
 ) -> Path:
     t0 = time.perf_counter()
     overlays_dir = overlays or OVERLAYS
@@ -449,10 +546,7 @@ def build_collection(
         "current_transition": "Dissolvenza",
         "transition_duration": 300,
         "transitions": [],
-        "quick_transitions": [
-            {"name": "Taglio", "duration": 300, "hotkeys": [], "id": 1, "fade_to_black": False},
-            {"name": "Dissolvenza", "duration": 300, "hotkeys": [], "id": 2, "fade_to_black": False},
-        ],
+        "quick_transitions": [],
         "saved_projectors": [],
         "preview_locked": False,
         "scaling_enabled": False,
@@ -480,6 +574,19 @@ def build_collection(
     # From the read: sources starts with avermedia, Browser, logitech - Desktop is top-level only.
     # So remove desktop/mic from sources array.
     collection["sources"] = [s for s in sources if s["name"] not in ("Audio Desktop", "Microfono")]
+
+    transitions, current_tr, tr_dur = build_transitions(overlays_dir=overlays_dir, profile=profile)
+    collection["transitions"] = transitions
+    collection["current_transition"] = current_tr
+    collection["transition_duration"] = tr_dur
+    collection["quick_transitions"] = [
+        {"name": "Taglio", "duration": 0, "hotkeys": [], "id": 1, "fade_to_black": False},
+        {"name": current_tr, "duration": tr_dur, "hotkeys": [], "id": 2, "fade_to_black": False},
+        {"name": "Swipe Racing", "duration": 420, "hotkeys": [], "id": 3, "fade_to_black": False},
+        {"name": "Flash Carbon", "duration": 280, "hotkeys": [], "id": 4, "fade_to_black": False},
+        {"name": "Dissolvenza", "duration": 350, "hotkeys": [], "id": 5, "fade_to_black": False},
+    ]
+    log.info("default transition=%s (%d ms), %d transitions", current_tr, tr_dur, len(transitions))
 
     out = OBS_DIR / output_filename
     out.write_text(json.dumps(collection, indent=4), encoding="utf-8")
@@ -511,13 +618,14 @@ def main() -> None:
             overlays=ROOT / "overlays-marcato",
             collection_name="S.Marcato 42",
             output_filename="S_Marcato_42.json",
+            profile="marcato",
         )
     else:
         log.info("start generating PiGreco OBS pack")
         ASSETS.mkdir(parents=True, exist_ok=True)
         logo = export_logo_png()
         logo_name = logo.name
-        scene = build_collection()
+        scene = build_collection(profile="pigreco")
 
     elapsed = (time.perf_counter() - started) * 1000
     log.info(
