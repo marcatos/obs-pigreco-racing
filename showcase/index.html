@@ -2,48 +2,90 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <title>PiGreco Racing — OBS Pack Showcase</title>
+  <title>OBS Sim Racing Pack — Showcase</title>
   <style>
-    :root { --bg:#080a0c; --text:#f7fafc; --green:#00c400; --blue:#009fe5; --muted:#a7b1ba; }
-    body { margin:0; font-family: Segoe UI, Arial, sans-serif; background:var(--bg); color:var(--text); }
-    header { padding:48px 32px 24px; max-width:1100px; margin:0 auto; }
+    :root {
+      --bg:#08080a; --text:#f8f8fa; --muted:#a8a8b0;
+      --green:#00c400; --blue:#009fe5; --rosso:#e10600;
+    }
+    body { margin:0; font-family: "Segoe UI", system-ui, sans-serif; background:var(--bg); color:var(--text); }
+    .hero { padding:48px 32px 16px; max-width:1100px; margin:0 auto; }
     h1 { margin:0 0 8px; font-size:2rem; }
+    h2 { margin:32px 0 0; font-size:1.15rem; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
     p { color:var(--muted); max-width:62ch; line-height:1.5; }
-    .grid { display:grid; gap:28px; padding:16px 32px 64px; max-width:1100px; margin:0 auto; }
-    figure { margin:0; background:#11161a; border:1px solid rgba(255,255,255,.1); border-top:4px solid var(--green); }
+    .grid { display:grid; gap:28px; padding:16px 32px 48px; max-width:1100px; margin:0 auto; }
+    figure { margin:0; background:#121216; border:1px solid rgba(255,255,255,.1); border-top:4px solid var(--green); }
     img { display:block; width:100%; height:auto; }
-    figcaption { padding:12px 14px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--blue); }
+    figcaption { padding:12px 14px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
     code { color:var(--green); }
   </style>
 </head>
 <body>
-  <header>
-    <h1>PiGreco Racing — OBS Pack</h1>
+  <div class="hero">
+    <h1>OBS Sim Racing Pack — Showcase</h1>
     <p>
-      Showcase delle scene overlay (1920×1080). Per personalizzare nick/handle modifica
-      <code>overlays/config.js</code> (template in <code>config.example.js</code>),
-      poi esegui <code>python tools/setup_streamer.py --username tuo_nick</code>.
+      Anteprime overlay 1920×1080. Rigenera con
+      <code>python tools/generate_showcase.py</code>.
     </p>
+  </div>
+  
+  <header>
+    <h2>PiGreco Racing</h2>
   </header>
   <div class="grid">
-    <figure>
-      <img src="01-starting-soon.png" alt="Starting Soon" width="960" />
-      <figcaption>Starting Soon</figcaption>
+    <figure style="border-top-color:var(--green)">
+      <img src="01-starting-soon.png" alt="Starting Soon" width="960" loading="lazy" />
+      <figcaption style="color:var(--green)">Starting Soon</figcaption>
     </figure>
 
-    <figure>
-      <img src="02-live-chrome.png" alt="Live Race / Live Singolo chrome" width="960" />
-      <figcaption>Live Race / Live Singolo chrome</figcaption>
+    <figure style="border-top-color:var(--green)">
+      <img src="02-live-chrome.png" alt="Live Race / Live Singolo" width="960" loading="lazy" />
+      <figcaption style="color:var(--green)">Live Race / Live Singolo</figcaption>
     </figure>
 
-    <figure>
-      <img src="03-brb.png" alt="BRB" width="960" />
-      <figcaption>BRB</figcaption>
+    <figure style="border-top-color:var(--green)">
+      <img src="03-brb.png" alt="BRB" width="960" loading="lazy" />
+      <figcaption style="color:var(--green)">BRB</figcaption>
     </figure>
 
-    <figure>
-      <img src="04-ending.png" alt="Ending" width="960" />
-      <figcaption>Ending</figcaption>
+    <figure style="border-top-color:var(--green)">
+      <img src="04-ending.png" alt="Ending" width="960" loading="lazy" />
+      <figcaption style="color:var(--green)">Ending</figcaption>
+    </figure>
+  </div>
+  
+  <header>
+    <h2>S.Marcato 42</h2>
+  </header>
+  <div class="grid">
+    <figure style="border-top-color:var(--rosso)">
+      <img src="marcato-01-starting-soon.png" alt="Starting Soon" width="960" loading="lazy" />
+      <figcaption style="color:var(--rosso)">Starting Soon</figcaption>
+    </figure>
+
+    <figure style="border-top-color:var(--rosso)">
+      <img src="marcato-02-live-chrome.png" alt="Live Chrome" width="960" loading="lazy" />
+      <figcaption style="color:var(--rosso)">Live Chrome</figcaption>
+    </figure>
+
+    <figure style="border-top-color:var(--rosso)">
+      <img src="marcato-03-brb.png" alt="BRB" width="960" loading="lazy" />
+      <figcaption style="color:var(--rosso)">BRB</figcaption>
+    </figure>
+
+    <figure style="border-top-color:var(--rosso)">
+      <img src="marcato-04-ending.png" alt="Ending" width="960" loading="lazy" />
+      <figcaption style="color:var(--rosso)">Ending</figcaption>
+    </figure>
+
+    <figure style="border-top-color:var(--rosso)">
+      <img src="marcato-05-triple-frame.png" alt="Live Triplo" width="960" loading="lazy" />
+      <figcaption style="color:var(--rosso)">Live Triplo</figcaption>
+    </figure>
+
+    <figure style="border-top-color:var(--rosso)">
+      <img src="marcato-06-replay-chrome.png" alt="Replay Chrome" width="960" loading="lazy" />
+      <figcaption style="color:var(--rosso)">Replay Chrome</figcaption>
     </figure>
   </div>
 </body>

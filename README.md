@@ -13,6 +13,44 @@ Due profili nello stesso repo:
 
 ---
 
+## Showcase
+
+Anteprime **1920×1080** (gallery locale: [`showcase/index.html`](showcase/index.html)).
+
+### S.Marcato 42
+
+| Starting Soon | Live Triplo |
+|:---:|:---:|
+| ![Starting Soon](showcase/marcato-01-starting-soon.png) | ![Live Triplo](showcase/marcato-05-triple-frame.png) |
+
+| BRB | Ending |
+|:---:|:---:|
+| ![BRB](showcase/marcato-03-brb.png) | ![Ending](showcase/marcato-04-ending.png) |
+
+<p align="center">
+  <img src="showcase/marcato-02-live-chrome.png" alt="Live Chrome" width="720" />
+  <br />
+  <sub>Live Chrome (lower-third + CAM)</sub>
+</p>
+
+### PiGreco Racing
+
+| Starting Soon | Live |
+|:---:|:---:|
+| ![PiGreco Starting Soon](showcase/01-starting-soon.png) | ![PiGreco Live](showcase/02-live-chrome.png) |
+
+| BRB | Ending |
+|:---:|:---:|
+| ![PiGreco BRB](showcase/03-brb.png) | ![PiGreco Ending](showcase/04-ending.png) |
+
+Rigenera gli screenshot:
+
+```powershell
+python tools/generate_showcase.py
+```
+
+---
+
 ## Cosa include
 
 - Scene ready: **Starting Soon**, **Live**, **BRB**, **Ending**, più layout **Rec** (registrazione pulita) e pack **Replay**
