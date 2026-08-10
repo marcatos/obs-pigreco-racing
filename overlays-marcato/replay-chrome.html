@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>S.Marcato 42 — Replay Chrome</title>
+  <link rel="stylesheet" href="assets/theme.css" />
+</head>
+<body>
+  <div class="stage">
+    <div class="live-root has-cam">
+      <div class="session-badge session-badge-replay" data-session-badge>
+        <span data-session-value>REPLAY</span>
+      </div>
+
+      <div class="watermark" aria-hidden="true">
+        <img src="assets/brand/monogram_sm42_transparent.png" alt="" />
+      </div>
+
+      <div class="cam-frame">
+        <span class="cam-badge">CAM</span>
+      </div>
+
+      <div class="lower-third">
+        <img
+          class="lower-mark"
+          src="assets/brand/mark42_rosso_corsa_transparent.png"
+          alt=""
+        />
+        <div class="lower-body">
+          <div class="lower-name" data-cfg="pilotName">S.Marcato</div>
+          <div class="lower-meta">
+            <span class="lower-race" data-cfg="raceNumber">42</span>
+            <span class="lower-sep"> · </span>
+            <span data-cfg="eventTitle">Sim Racing Session</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="config.js"></script>
+  <script>
+    (function lockReplayBadge() {
+      const el = document.querySelector("[data-session-badge]");
+      if (!el) return;
+      el.hidden = false;
+      const value = el.querySelector("[data-session-value]") || el;
+      value.textContent = "REPLAY";
+    })();
+  </script>
+</body>
+</html>

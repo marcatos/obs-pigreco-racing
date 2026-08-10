@@ -1,152 +1,200 @@
-# OBS PiGreco Racing
+# OBS Sim Racing Pack
 
-Collezione scene OBS per streaming sim racing (triplo monitor + monitor singolo), con StreamCam e overlay a brand **PiGreco Racing**.
+Pacchetto **OBS Studio** per streaming sim racing a **1920×1080**, pensato per setup a **triplo monitor** (+ eventuale monitor singolo), webcam e overlay HTML brandizzati.
 
-**Direzione prodotto / multi-agente:** parti da [`STRATEGY.md`](STRATEGY.md) e [`AGENTS.md`](AGENTS.md). Backlog: [`docs/ROADMAP.md`](docs/ROADMAP.md).
+Due profili nello stesso repo:
 
-## Showcase
+| Profilo | Brand | Overlay | Collezioni OBS |
+|---------|--------|---------|----------------|
+| **PiGreco Racing** | Team `#00C400` / `#009FE5` | `overlays/` | `obs/PiGreco_Racing.json` |
+| **S.Marcato 42** | Personale carbon / ice / Rosso Corsa | `overlays-marcato/` | `obs/S_Marcato_42.json`, `obs/S_Marcato_Replay.json` |
 
-Anteprime 1920×1080 in [`showcase/`](showcase/) (apri [`showcase/index.html`](showcase/index.html)):
+> Non-technical? Apri **`LEGGIMI.txt`** oppure fai doppio clic su **`Setup.bat`**.
 
-| File | Scena |
-|------|--------|
-| `01-starting-soon.png` | Starting Soon |
-| `02-live-chrome.png` | Live Race / Live Singolo (chrome + mock gameplay) |
-| `03-brb.png` | BRB |
-| `04-ending.png` | Ending |
+---
 
-Rigenera gli screenshot:
+## Cosa include
 
-```powershell
-python tools/generate_showcase.py
+- Scene ready: **Starting Soon**, **Live**, **BRB**, **Ending**, più layout **Rec** (registrazione pulita) e pack **Replay**
+- Overlay Browser Source (HTML/CSS/JS) — niente grafica “baked” in OBS
+- Acquisizione **Game Capture** iRacing + **Display Capture** per i monitor
+- **StreamCam** in PIP / riquadro CAM
+- Musiche interstiziali **sintetizzate in locale** (niente Content ID Twitch tipico delle librerie royalty-free)
+- Transizioni **Move** + stinger brand
+- Setup guidato Windows (`Setup.bat` / `Setup.ps1`) e pannello config in OBS
+
+Canvas target: **1920×1080** @ 60 fps (OBS 32.x, transform relativi `pos_rel` / `scale_rel`).
+
+---
+
+## Avvio rapido (Windows)
+
+### 1. Setup streamer
+
+```text
+doppio clic → Setup.bat
 ```
 
-## Condivisione con il team
+Ti chiede nick / nome pilota, installa Python se manca (UAC), personalizza gli overlay e copia la collezione in:
 
-1. Condividi **tutta** la cartella del progetto (zip o copia).
-2. Il compagno apre **`LEGGIMI.txt`** oppure fa doppio clic su **`Setup.bat`**.
-3. Guida con immagini: **[`Guida_PiGreco_OBS.pdf`](Guida_PiGreco_OBS.pdf)**.
+`%APPDATA%\obs-studio\basic\scenes\`
 
-`Setup.bat` / `Setup.ps1`:
-- chiede nick e nome
-- se manca Python, lo installa con **privilegi amministratore** (UAC)
-- personalizza gli overlay e installa la collezione in OBS
+### 2. Apri OBS
 
-**Pannello config in OBS:** avvia [`Start-ConfigPanel.bat`](Start-ConfigPanel.bat), poi Dock → Custom Browser Docks → `http://127.0.0.1:8766/` — dettagli in [`docs/OBS_CONFIG_PANEL.md`](docs/OBS_CONFIG_PANEL.md).
+**Scene Collection** → scegli:
 
-Alternativa da terminale (se Python c’è già):
+- **PiGreco Racing** — stream team
+- **S.Marcato 42** — gara live personale
+- **S.Marcato Replay** — commento / stream di un replay iRacing
 
-```powershell
-.\Setup.ps1 -Username SUO_NICK -PilotName "Nome Cognome"
-# oppure
-python tools/setup_streamer.py --username SUO_NICK --pilot-name "Nome Cognome" --install-obs
-```
+### 3. Pannello config (opzionale ma comodo)
 
-Rigenera PDF/screenshot:
+1. Doppio clic su `Start-ConfigPanel.bat` (lascia aperta la finestra)
+2. In OBS: **Visualizza → Docks → Custom Browser Docks**
+3. URL:
+   - PiGreco: `http://127.0.0.1:8766/`
+   - Marcato: `http://127.0.0.1:8766/?profile=marcato`
 
-```powershell
-python tools/generate_showcase.py
-python tools/generate_pdf_guide.py
-```
+Dettagli: [`docs/OBS_CONFIG_PANEL.md`](docs/OBS_CONFIG_PANEL.md)
 
-## Parametri editabili
+### 4. Dopo ogni modifica overlay
 
-In [`overlays/config.js`](overlays/config.js):
+Browser Source → **Refresh cache of current page** (o riavvia OBS).
+
+> Chiudi OBS prima di riscrivere i JSON in `obs/`, altrimenti alla chiusura può sovrascrivere i file.
+
+---
+
+## Scene — S.Marcato 42 (live)
+
+| Scena | Uso |
+|-------|-----|
+| Starting Soon | Countdown / teaser + music bed |
+| Live Race | Monitor centro + chrome + cam |
+| Live Singolo | Monitor singolo + chrome + cam |
+| Live Triplo | Finestra iRacing + bande brand + cam |
+| Rec Singolo / Rec Triplo | Solo gameplay (registrazione clean) |
+| Rec \* Live | Alias stream (stesso layout delle Live) |
+| BRB / Ending | Pausa e chiusura |
+
+Guida: [`docs/S_MARCATO_42.md`](docs/S_MARCATO_42.md)
+
+## Scene — S.Marcato Replay
+
+Solo pack replay (niente Live Race/Singolo/Triplo):
+
+| Scena | Uso |
+|-------|-----|
+| Replay iRacing | Game Capture + badge REPLAY + cam |
+| Replay Monitor | Monitor centrale + REPLAY + cam |
+| Rec Singolo / Rec Triplo | Registrazione clean |
+| Rec \* Live | Stream commentato sul replay |
+| BRB / Ending | Pausa e chiusura |
+
+Guida breve: [`replays/LEGGIMI.txt`](replays/LEGGIMI.txt)
+
+## Scene — PiGreco Racing
+
+Starting Soon · Live Race · Live Singolo · Rec… · BRB · Ending  
+Guida PDF: [`Guida_PiGreco_OBS.pdf`](Guida_PiGreco_OBS.pdf)  
+Showcase: [`showcase/`](showcase/)
+
+---
+
+## Config streamer
+
+### PiGreco — `overlays/config.js` (o pannello)
 
 | Chiave | Uso |
 |--------|-----|
-| `username` | Nick base (deriva anche l’handle se manca) |
-| `pilotName` | Nome in lower-third / ending |
-| `twitchHandle` | Handle con o senza `@` (normalizzato) |
-| `teamName` | Brand watermark / label |
-| `eventTitle` | Sottotitolo sessione |
-| `tagline` | Motto |
-| `startingMessage` / `brbMessage` / `endingMessage` / `endingSub` | Testi scene |
-| `sponsors` | Lista loghi partner (rotazione in Live) |
-| `sponsorDisplayMs` / `sponsorGapMs` | Quanto resta a schermo / pausa tra uno e l’altro |
-| `sponsorsEnabled` | `false` per disattivare il rotator |
+| `username` / `pilotName` / `twitchHandle` | Identità |
+| `teamName` / `eventTitle` / `tagline` | Brand e sessione |
+| `sponsors` / `sponsorsEnabled` | Rotator partner |
 
-Gli sponsor in **Live Race / Live Singolo** compaiono in alto a sinistra, un logo alla volta, poi spariscono per non appesantire la gara. In Starting Soon restano in fila in basso.
+### Marcato — `overlays-marcato/config.values.json`
 
-Per aggiungere un partner: metti il PNG in `overlays/assets/official/` e aggiungi una riga in `sponsors`.
+Stesse idee, senza sponsor team. Brand kit: carbon `#08080A`, ice, accent **Rosso Corsa** `#E10600`, abstract system (weave / stripes −18°).
 
-Override al volo via query string sul Browser Source, es.:
+Override al volo via query string, es.:
 
-`live-chrome.html?username=altro_nick&eventTitle=PiGreco%20Night`
+```text
+live-chrome.html?eventTitle=Night%20Race
+triple-frame.html?cam=1&badge=LIVE
+```
 
-Dopo ogni modifica a `config.js`: in OBS → Browser Source → **Refresh cache of current page**.
+---
 
-## Contenuto
+## Struttura repo
 
-| Percorso | Descrizione |
-|----------|-------------|
-| `Setup.bat` / `Setup.ps1` | **Setup guidato** (installa Python se manca + configura OBS) |
-| `Guida_PiGreco_OBS.pdf` | Istruzioni semplificate con grafiche PiGreco |
-| `LEGGIMI.txt` | Promemoria rapido in chiaro |
-| `obs/PiGreco_Racing.json` | Collezione scene OBS |
-| `overlays/*.html` | Browser Source |
-| `overlays/config.js` | Parametri streamer |
-| `overlays/assets/` | Logo, theme, hero |
-| `showcase/` | Screenshot per preview/share |
-| `overlays/assets/official/` | Asset da [pigrecoracing.com](https://www.pigrecoracing.com/) |
+```text
+Setup.bat / Setup.ps1     Setup guidato
+LEGGIMI.txt               Promemoria rapido
+obs/                      Collezioni scene JSON
+overlays/                 Pack PiGreco
+overlays-marcato/         Pack S.Marcato 42
+audio/interstitials/      Music beds (generati)
+replays/                  Note + slot race-replay.mp4
+tools/                    Generatori e setup
+docs/                     Architettura, roadmap, guide
+adapters/                 StreamElements / engagement
+showcase/                 Anteprime PNG
+tests/                    Pytest
+```
 
-### Scene
+---
 
-1. **Starting Soon** — overlay fullscreen + StreamCam  
-2. **Live Race** — monitor centrale + chrome live + StreamCam  
-3. **Live Singolo** — quarto monitor + stessi overlay  
-4. **BRB** — “Torno subito” + webcam  
-5. **Ending** — grazie + handle  
+## Tool per sviluppatori / agent
 
-Canvas / uscita: **1920×1080** (OBS 32.x con `pos_rel` / `scale_rel`).
+```powershell
+# Rigenera collezioni OBS (chiudi OBS prima)
+python tools/generate_pack.py --profile pigreco
+python tools/generate_pack.py --profile marcato
 
-> Chiudi OBS prima di riscrivere `PiGreco_Racing.json`, altrimenti alla chiusura può sovrascrivere il file.
+# Music beds originali (anti Content ID)
+python tools/generate_interstitial_music.py
 
-## Installazione OBS (manuale)
+# Showcase / guida PDF
+python tools/generate_showcase.py
+python tools/generate_pdf_guide.py
 
-1. Chiudi OBS.
-2. Copia `obs/PiGreco_Racing.json` in `%APPDATA%\obs-studio\basic\scenes\`  
-   (oppure usa `--install-obs` con `setup_streamer.py`).
-3. Apri OBS → **Scene Collection** → **PiGreco Racing**.
-4. Imposta **Monitor Centro** / **Monitor Singolo** sul display corretto.
-5. Verifica **StreamCam**.
+# Test
+python -m pytest -q
+```
 
-### Hotkey consigliate
+Documentazione agent: [`AGENTS.md`](AGENTS.md) · strategia: [`STRATEGY.md`](STRATEGY.md) · roadmap: [`docs/ROADMAP.md`](docs/ROADMAP.md)
 
-| Hotkey | Scena |
-|--------|--------|
+---
+
+## Hardware / acquisizione tipica
+
+- Triplo monitor **separati** (non Surround): in live classica si usa spesso il **centro**; **Live Triplo** acquisisce la **finestra iRacing** (span triplo se attivo in-game)
+- Webcam: Logitech StreamCam (ID già cablato nel pack — modifica se cambi device)
+- Streaming multi-piattaforma: Restream / plugin multistream (fuori da questo repo)
+
+---
+
+## Licenze e attribution
+
+- Brand **PiGreco Racing**: vedi [`ATTRIBUTION.md`](ATTRIBUTION.md)
+- Brand **S.Marcato 42**: asset personali del pilota (kit in `overlays-marcato/assets/brand/`)
+- Music beds: sintetizzati da `tools/generate_interstitial_music.py` — originali del pack
+
+**Non committare** stream key, token OAuth, JWT StreamElements o secret URL.
+
+---
+
+## Hotkey consigliate (esempio)
+
+| Tasto | Scena |
+|-------|--------|
 | F1 | Starting Soon |
-| F2 | Live Race |
-| F3 | Live Singolo |
+| F2 | Live Race / Replay iRacing |
+| F3 | Live Singolo / Live Triplo |
 | F4 | BRB |
 | F5 | Ending |
 
-### Stinger
+---
 
-Transizione scene brand (~0.8 s): WebM in [`overlays/stinger/pigreco-stinger.webm`](overlays/stinger/pigreco-stinger.webm).
+## Supporto
 
-In OBS → **Transitions** → **+** → **Stinger** → seleziona quel file → **Transition Point ~55%**. Guida completa: [`docs/STINGER.md`](docs/STINGER.md).
-
-Anteprima HTML: `overlays/stinger/index.html?preview=1`.
-
-## Engagement
-
-Temi chat/alert PiGreco (StreamElements / preview OBS): [`adapters/streamelements/`](adapters/streamelements/).
-
-## Asset ufficiali
-
-Vedi [ATTRIBUTION.md](ATTRIBUTION.md). Palette: `#00C400`, `#009FE5`, `#050505`.
-
-## Tool
-
-```powershell
-python tools/setup_streamer.py --username NICK --install-obs
-python tools/generate_showcase.py
-python tools/process_official_assets.py
-python tools/generate_pack.py
-python tools/generate_stinger.py
-```
-
-## Note triplo monitor
-
-Tre display separati (non Surround). In stream si acquisisce **solo il monitor centrale**. Il quarto monitor usa **Live Singolo**.
+Issue e PR su questo repository. Per setup team non tecnico resta valido il percorso **`Setup.bat` → OBS → Refresh overlay**.

@@ -1,21 +1,23 @@
+/**
+ * Ending socials — Twitch + YouTube with shared handle (SenorMarcato).
+ */
 (function initEndingCta() {
   const root = document.querySelector("[data-ending-cta]");
   if (!root) return;
+
   const cfg = window.PIGRECO_CONFIG || {};
   if (cfg.endingCtaEnabled === false) {
     root.hidden = true;
     return;
   }
-  const ctaEl = root.querySelector("[data-ending-cta-text]");
-  const followEl = root.querySelector("[data-ending-follow]");
-  if (ctaEl) ctaEl.textContent = (cfg.endingCtaText || "Segui su Twitch").trim();
-  if (followEl) {
-    const handle = (cfg.twitchHandle || "").trim();
-    const dynamicFollow = ("Segui " + handle + " su Twitch").trim();
-    const custom = (cfg.endingFollowText || "").trim();
-    followEl.textContent = custom || dynamicFollow;
-  }
-  const qr = root.querySelector("[data-ending-qr]");
-  if (qr) qr.hidden = true;
+
+  let handle = (cfg.socialHandle || cfg.twitchHandle || "SenorMarcato").trim();
+  handle = handle.replace(/^@/, "");
+  if (!handle) handle = "SenorMarcato";
+
+  root.querySelectorAll(".ending-social-handle").forEach((el) => {
+    el.textContent = handle;
+  });
+
   root.hidden = false;
 })();

@@ -1,0 +1,27 @@
+S.Marcato Replay — solo replay (+ rec)
+
+Usa questa collezione per streamare/commentare un replay.
+Per la gara in diretta usa invece "S.Marcato 42" (Live Race / Live Singolo / Live Triplo).
+
+Streaming replay
+1. Apri iRacing → Replay → file .rpy della corsa.
+2. In OBS: collezione "S.Marcato Replay".
+3. Starting Soon → avvia stream → Replay iRacing (o Replay Monitor / Rec Triplo Live).
+4. Play in iRacing e commenta in cam.
+
+Scene
+- Replay iRacing       Game Capture + badge REPLAY + cam
+- Replay Monitor       monitor centrale + REPLAY + cam
+- Rec Triplo Live      iRacing + bande brand (REPLAY) + cam
+- Rec Singolo Live     centrale + REPLAY + cam
+
+Registrazione (pulita, senza overlay/cam)
+- Rec Singolo          monitor centrale
+- Rec Triplo           solo Game Capture iRacing
+
+Per Rec Triplo / Replay iRacing: avvia iRacing (o il replay) prima, così Game Capture
+trova "iRacing.com Simulator". Se è nero: proprietà → seleziona la finestra.
+
+Video file (opzionale)
+- Se metti qui un file race-replay.mp4 e rigeneri il pack, compare Replay Video.
+- Senza quel file OBS non deve chiedere nulla: usa Replay iRacing / Rec.

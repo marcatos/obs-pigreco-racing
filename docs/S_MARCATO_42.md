@@ -1,6 +1,6 @@
 # S.Marcato 42 — overlay pack personale
 
-Pacchetto broadcast **personale** per il pilota **S.Marcato** (auto **42**): grafica allineata alla **brand identity** (Audiowide + mark 42, carbon `#08080A`, ice, accent **Rosso Corsa** `#E10600`) in `overlays-marcato/`, asset in `overlays-marcato/assets/brand/`, collezione OBS **S.Marcato 42**. Nessun branding PiGreco, nessuno sponsor rotator.
+Pacchetto broadcast **personale** per il pilota **S.Marcato** (auto **42**): grafica allineata alla **brand identity** (Audiowide + mark 42, carbon `#08080A`, ice, accent **Rosso Corsa** `#E10600`, abstract system weave/stripes −18°) in `overlays-marcato/`, asset in `overlays-marcato/assets/brand/` (+ `abstract/`), collezione OBS **S.Marcato 42**. Nessun branding PiGreco, nessuno sponsor rotator.
 
 Fonte brand kit: `Pictures\Wallpapers\SMarcato42\brand-identity\` (token in `assets/brand/brand-tokens.json`).
 
@@ -31,9 +31,31 @@ Dopo aver modificato `overlays-marcato/config.values.json` a mano, salva dal **p
 3. Scegli `obs\S_Marcato_42.json` dalla cartella del repo.
 4. Se la collezione è già importata: **Scene Collection → S.Marcato 42**.
 
-Scene previste (come PiGreco): Starting Soon, Live Race, Live Singolo, BRB, Ending — overlay da `overlays-marcato/`, canvas **1920×1080**.
+Scene previste (come PiGreco): Starting Soon, Live Race, Live Singolo, **Live Triplo**, BRB, Ending — overlay da `overlays-marcato/`, canvas **1920×1080**.
 
-**Audio:** sulle scene interstiziali (Starting Soon / BRB / Ending) parte un loop musicale royalty-free (`audio/interstitials/`). Su Live Race / Live Singolo non c’è bed musicale (resta l’audio gioco/desktop). Volume regolabile in Mixer OBS sulle fonti `Music …`.
+- **Live\*** = streaming gara (overlay + cam)
+- **Rec Singolo / Rec Triplo** = registrazione pulita (solo gameplay, niente grafica/cam)
+- **Rec \* Live** = alias delle Live (stesso layout, nomi legacy)
+- Nessuna scena **Replay \*** qui → usa la collezione **S.Marcato Replay**
+
+### Collezione **S.Marcato Replay** (stream del replay, senza upload)
+
+Generata insieme al pack Marcato: `obs/S_Marcato_Replay.json`. Solo scene **Replay** (+ Rec per registrare), niente Live Race/Singolo/Triplo.
+
+| Scena | Uso |
+|-------|-----|
+| Starting Soon | Teaser / countdown |
+| **Replay iRacing** | Game Capture + badge REPLAY + cam (apri il `.rpy` in iRacing e dai Play) |
+| Replay Monitor | Monitor centrale + REPLAY + cam |
+| Replay Video | File `replays/race-replay.mp4` (o scegli il file nella fonte Race Video) |
+| **Rec Singolo** | Solo monitor centrale, senza overlay — registrazione clean |
+| **Rec Triplo** | Solo finestra iRacing — registrazione clean |
+| Rec Singolo Live / Rec Triplo Live | Stream commentato sul replay (chrome REPLAY / bande + cam) |
+| BRB / Ending | Pausa e chiusura |
+
+Guida breve: [`replays/LEGGIMI.txt`](../replays/LEGGIMI.txt). Replay di stasera tipicamente in `%USERPROFILE%\Documents\iRacing\replay\` (es. `subses87837780.rpy`).
+
+**Audio:** sulle scene interstiziali (Starting Soon / BRB / Ending) parte un loop **sintetizzato in locale** (`audio/interstitials/`, generato con `tools/generate_interstitial_music.py`) — niente librerie tipo Pixabay/SoundHelix che Twitch spesso muta. Su Live Race / Live Singolo non c’è bed musicale (resta l’audio gioco/desktop). Volume regolabile in Mixer OBS sulle fonti `Music …`.
 
 **Transizioni:** default **S.Marcato Stinger** (dual-blade carbon + mark 42 + whoosh). Dettagli e alternative: `docs/TRANSITIONS.md`.
 

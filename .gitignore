@@ -5,11 +5,16 @@ Desktop.ini
 *.bak
 .vscode/
 .idea/
+.cursor/
+.pytest_cache/
 
 # Python
 __pycache__/
 *.pyc
 .venv/
+
+# Agent scratch / local session artifacts
+.superpowers/
 
 # Local OBS exports / temp
 *.tmp
@@ -22,3 +27,9 @@ logs/
 # Telemetry mock runtime output
 adapters/telemetry/telemetry.json
 adapters/telemetry/telemetry.json.tmp
+
+# Secrets / local credentials (never commit)
+.env
+.env.*
+**/service.json
+**/*credentials*

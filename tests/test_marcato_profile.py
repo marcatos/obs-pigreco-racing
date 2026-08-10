@@ -38,6 +38,8 @@ def test_marcato_theme_matches_brand_identity():
     )
     assert tokens["colors"]["carbon"].lower() == "#08080a"
     assert tokens["racing_colors"]["rosso_corsa"]["hex"].lower() == "#e10600"
+    assert "abstract_system" in tokens
+    assert tokens["abstract_system"]["stripe_angle_deg"] == -18.0
     assert "--carbon:" in css or "--bg:" in css
     assert "--accent:" in css or "--rosso:" in css
     assert "#08080a" in css.lower() or "#08080A" in css
@@ -52,11 +54,15 @@ def test_marcato_theme_matches_brand_identity():
     assert "#009fe5" not in css.lower()
     assert "Audiowide" in css
     assert "IBM Plex Sans" in css
+    assert "weave_fine_1024_transparent.png" in css
+    assert "chevron_row.svg" in css
     brand_dir = ROOT / "overlays-marcato" / "assets" / "brand"
     assert (brand_dir / "wordmark_smarcato_transparent.png").is_file()
     assert (brand_dir / "mark42_rosso_corsa_transparent.png").is_file()
     assert (brand_dir / "tag_racing_transparent.png").is_file()
     assert (brand_dir / "brand-tokens.json").is_file()
+    assert (brand_dir / "abstract" / "weave_fine_1024_transparent.png").is_file()
+    assert (brand_dir / "abstract" / "stripe_single_rosso_1400.png").is_file()
     # Interstitials must use ice wordmark/tag + rosso only on mark 42
     for page in ("starting-soon.html", "brb.html", "ending.html"):
         html = (ROOT / "overlays-marcato" / page).read_text(encoding="utf-8")
@@ -108,3 +114,129 @@ def test_marcato_collection_urls():
     assert "S.Marcato 42" in text or "S.Marcato" in text
     assert "overlays-marcato" in text.replace("\\\\", "/")
     assert "overlays/starting-soon.html" not in text.replace("\\\\", "/")
+
+
+def test_marcato_collection_uses_move_transition():
+    path = ROOT / "obs" / "S_Marcato_42.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    assert data.get("current_transition") == "S.Marcato Move"
+    assert data.get("transition_duration") == 650
+    moves = [t for t in data.get("transitions", []) if t.get("id") == "move_transition"]
+    assert len(moves) == 1
+    assert moves[0]["name"] == "S.Marcato Move"
+    settings = moves[0].get("settings") or {}
+    assert settings.get("name_part_match") is True
+    assert settings.get("name_number_match") is True
+    assert settings.get("position_in") == (1 << 1) | (1 << 2)  # EDGE|LEFT
+    assert settings.get("position_out") == (1 << 1) | (1 << 3)  # EDGE|RIGHT
+
+
+def test_pigreco_collection_uses_move_transition():
+    path = ROOT / "obs" / "PiGreco_Racing.json"
+    assert path.is_file()
+    data = json.loads(path.read_text(encoding="utf-8"))
+    assert data.get("current_transition") == "PiGreco Move"
+    assert data.get("transition_duration") == 650
+    moves = [t for t in data.get("transitions", []) if t.get("id") == "move_transition"]
+    assert len(moves) == 1
+    assert moves[0]["name"] == "PiGreco Move"
+
+
+def test_marcato_replay_collection():
+    path = ROOT / "obs" / "S_Marcato_Replay.json"
+    assert path.is_file()
+    data = json.loads(path.read_text(encoding="utf-8"))
+    assert data.get("name") == "S.Marcato Replay"
+    names = {s.get("name") for s in data.get("scene_order", [])}
+    # Replay pack: replay + rec only (no Live Race / Live Singolo / Live Triplo)
+    assert "Live Race" not in names
+    assert "Live Singolo" not in names
+    assert "Live Triplo" not in names
+    assert "Replay iRacing" in names
+    assert "Replay Monitor" in names
+    # Replay Video only if replays/race-replay.mp4 exists
+    if (ROOT / "replays" / "race-replay.mp4").is_file():
+        assert "Replay Video" in names
+    else:
+        assert "Replay Video" not in names
+        assert "Race Video" not in path.read_text(encoding="utf-8")
+    assert "Rec Singolo" in names
+    assert "Rec Triplo" in names
+    assert "Rec Singolo Live" in names
+    assert "Rec Triplo Live" in names
+    text = path.read_text(encoding="utf-8")
+    assert "overlays-marcato" in text.replace("\\\\", "/")
+    assert "replay-chrome.html" in text
+    assert "live-chrome.html" not in text
+    assert "Monitor Sinistro" in text
+    assert "iRacing.com Simulator:SimWinClass:iRacingSim64DX11.exe" in text
+    rec_triple = next(s for s in data["sources"] if s.get("name") == "Rec Triplo")
+    assert [it.get("name") for it in rec_triple.get("settings", {}).get("items", [])] == [
+        "Game Capture"
+    ]
+    rec_triple_live = next(s for s in data["sources"] if s.get("name") == "Rec Triplo Live")
+    assert [it.get("name") for it in rec_triple_live.get("settings", {}).get("items", [])] == [
+        "Game Capture",
+        "Overlay Triple Frame Live",
+        "StreamCam",
+    ]
+    ov = next(s for s in data["sources"] if s.get("name") == "Overlay Triple Frame Live")
+    assert "badge=REPLAY" in ov.get("settings", {}).get("url", "")
+    assert (ROOT / "overlays-marcato" / "triple-frame.html").is_file()
+    assert (ROOT / "overlays-marcato" / "replay-chrome.html").is_file()
+    assert (ROOT / "replays" / "LEGGIMI.txt").is_file()
+
+
+def test_marcato_live_has_rec_scenes():
+    path = ROOT / "obs" / "S_Marcato_42.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    names = {s.get("name") for s in data.get("scene_order", [])}
+    assert "Live Race" in names
+    assert "Live Singolo" in names
+    assert "Live Triplo" in names
+    assert "Replay iRacing" not in names
+    assert "Replay Monitor" not in names
+    assert "Rec Singolo" in names
+    assert "Rec Triplo" in names
+    assert "Rec Singolo Live" in names
+    assert "Rec Triplo Live" in names
+    rec_triple = next(s for s in data["sources"] if s.get("name") == "Rec Triplo")
+    assert [it.get("name") for it in rec_triple["settings"]["items"]] == ["Game Capture"]
+    live_triple = next(s for s in data["sources"] if s.get("name") == "Live Triplo")
+    assert [it.get("name") for it in live_triple["settings"]["items"]] == [
+        "Game Capture",
+        "Overlay Triple Frame Live",
+        "StreamCam",
+    ]
+    ov = next(s for s in data["sources"] if s.get("name") == "Overlay Triple Frame Live")
+    assert "badge=LIVE" in ov.get("settings", {}).get("url", "")
+
+
+def test_rec_triplo_game_bounds_and_cam_slot():
+    """OBS relative bounds use size_from_absolute (2*px/canvas_h), not /canvas_w."""
+    sys.path.insert(0, str(ROOT / "tools"))
+    import generate_pack as gp
+
+    band_h = gp._TRIPLE_SAFE_H
+    brel = gp.size_rel((1920.0, band_h))
+    assert abs(brel["x"] - (2.0 * 1920.0 / 1080.0)) < 1e-9
+    assert abs(brel["y"] - (2.0 * band_h / 1080.0)) < 1e-9
+    cam_x, cam_y = gp.triple_cam_pos()
+    assert abs(cam_x - 1480.0) < 1e-6
+    assert abs(cam_y - 840.0) < 1e-6
+
+    for coll in ("S_Marcato_42.json", "S_Marcato_Replay.json"):
+        data = json.loads((ROOT / "obs" / coll).read_text(encoding="utf-8"))
+        scene = next(s for s in data["sources"] if s.get("name") == "Rec Triplo Live")
+        items = {it["name"]: it for it in scene["settings"]["items"]}
+        game = items["Game Capture"]
+        assert game["bounds_type"] == 3  # Scale Outer (zoom/crop)
+        assert game["bounds_crop"] is True
+        assert abs(game["bounds"]["x"] - 1920.0) < 1e-6
+        assert abs(game["bounds"]["y"] - band_h) < 1e-6
+        assert abs(game["bounds_rel"]["x"] - brel["x"]) < 1e-9
+        assert abs(game["bounds_rel"]["y"] - brel["y"]) < 1e-9
+        assert abs(game["pos"]["y"] - gp.triple_band_h()) < 1e-6
+        cam = items["StreamCam"]
+        assert abs(cam["pos"]["x"] - cam_x) < 1e-6
+        assert abs(cam["pos"]["y"] - cam_y) < 1e-6

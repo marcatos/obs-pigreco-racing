@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>S.Marcato 42 — Triple Frame</title>
+  <link rel="stylesheet" href="assets/theme.css" />
+</head>
+<body>
+  <div class="stage triple-frame">
+    <div class="triple-band triple-band-top">
+      <div class="triple-band-inner">
+        <div class="lockup triple-lockup">
+          <img
+            class="lockup-wordmark"
+            src="assets/brand/wordmark_smarcato_transparent.png"
+            alt="S.Marcato"
+          />
+          <img
+            class="lockup-mark"
+            src="assets/brand/mark42_rosso_corsa_transparent.png"
+            alt="42"
+          />
+          <img
+            class="lockup-tag"
+            src="assets/brand/tag_racing_transparent.png"
+            alt="Racing"
+          />
+        </div>
+        <div class="triple-meta">
+          <div class="session-badge" data-triple-badge hidden>
+            <span data-triple-badge-label>LIVE</span>
+          </div>
+          <p class="triple-title" data-cfg="eventTitle">Sim Racing Session</p>
+          <p class="triple-sub" data-cfg="tagline">Racing</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="triple-safe" aria-hidden="true"></div>
+
+    <div class="triple-band triple-band-bottom">
+      <div class="triple-band-inner triple-band-bottom-inner">
+        <div class="triple-pilot">
+          <img
+            class="triple-pilot-mark"
+            src="assets/brand/mark42_rosso_corsa_transparent.png"
+            alt=""
+          />
+          <div>
+            <div class="triple-pilot-name" data-cfg="pilotName">S.Marcato</div>
+            <div class="triple-pilot-line">
+              <span data-cfg="raceNumber">42</span>
+              <span class="lower-sep"> · </span>
+              <span data-cfg="eventTitle">Sim Racing Session</span>
+            </div>
+          </div>
+        </div>
+        <div class="ending-socials triple-socials" data-ending-cta>
+          <div class="ending-social">
+            <img class="ending-social-logo" src="assets/brand/twitch.svg" alt="Twitch" />
+            <span class="ending-social-handle" data-cfg="socialHandle">SenorMarcato</span>
+          </div>
+          <div class="ending-social">
+            <img class="ending-social-logo" src="assets/brand/youtube.svg" alt="YouTube" />
+            <span class="ending-social-handle" data-cfg="socialHandle">SenorMarcato</span>
+          </div>
+        </div>
+        <div class="triple-cam-slot" aria-hidden="true">
+          <span class="cam-badge">CAM</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="config.js"></script>
+  <script src="ending-cta.js"></script>
+  <script>
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("cam") === "1") document.body.classList.add("has-cam");
+
+      const cfg = window.PIGRECO_CONFIG || {};
+      const raw =
+        (params.get("badge") || params.get("mode") || "").trim() ||
+        (cfg.sessionLabel || "").trim() ||
+        (cfg.sessionType || "race");
+      const key = String(raw).toLowerCase();
+      const labels = {
+        live: "LIVE",
+        race: "RACE",
+        practice: "PRACTICE",
+        quali: "QUALI",
+        qualifying: "QUALI",
+        cooldown: "COOLDOWN",
+        replay: "REPLAY",
+        none: "",
+        off: "",
+        hide: "",
+      };
+      const label =
+        labels[key] !== undefined
+          ? labels[key]
+          : String(raw).toUpperCase().slice(0, 16);
+
+      const badge = document.querySelector("[data-triple-badge]");
+      const badgeText = document.querySelector("[data-triple-badge-label]");
+      if (!badge || !badgeText) return;
+      if (!label || cfg.sessionBadgeEnabled === false) {
+        badge.hidden = true;
+        return;
+      }
+      badgeText.textContent = label;
+      badge.hidden = false;
+      badge.classList.toggle("session-badge-replay", label === "REPLAY");
+      badge.classList.toggle("session-badge-live", label === "LIVE" || label === "RACE");
+    })();
+  </script>
+</body>
+</html>
