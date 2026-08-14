@@ -61,6 +61,8 @@ window.PIGRECO_CONFIG = {
   "broadcastTickerSpeed": 85,
   "broadcastTickerIdleMs": 60000,
   "broadcastTickerFirstDelayMs": 4000,
+  "broadcastBattlePanel": true,
+  "broadcastRaceBest": true,
   "broadcastDirector": "auto",
   "broadcastDirectorSensitivity": "normal",
   "trackMapEnabled": false,

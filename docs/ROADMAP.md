@@ -50,6 +50,8 @@ Update this file when claiming or finishing an ID.
 | P3-07 | Official iRacing SVG track maps | done | sync CLI + local cache; overlay SVG; `docs/TRACK_MAP.md` |
 | P3-08 | Sector timing on broadcast chrome | done | SplitTimeInfo + live Δ; focus S1–Sn; map ticks |
 | P3-09 | NASCAR-style field ticker | done | bottom scroll strip; `broadcastTicker` |
+| P3-10 | Live Battle for Px panel | done | bottom-center fight pack; show/hide on close gaps |
+| P3-11 | Race best lap panel | done | field best so far + driver; right of session strip |
 
 ## Phase 4 — Team distribution
 

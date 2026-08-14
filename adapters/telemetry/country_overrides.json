@@ -1,0 +1,302 @@
+{
+  "byUserId": {
+    "1544813": {
+      "code": "NG",
+      "name": "Nigeria"
+    },
+    "1530040": {
+      "code": "IT",
+      "name": "Italy"
+    },
+    "1322166": {
+      "code": "ES",
+      "name": "Spain"
+    },
+    "602622": {
+      "code": "NL",
+      "name": "Netherlands"
+    },
+    "1219122": {
+      "code": "BR",
+      "name": "Brazil"
+    },
+    "1129668": {
+      "code": "NL",
+      "name": "Netherlands"
+    },
+    "845064": {
+      "code": "GB",
+      "name": "United Kingdom"
+    },
+    "129967": {
+      "code": "PL",
+      "name": "Poland"
+    },
+    "1431682": {
+      "code": "BR",
+      "name": "Brazil"
+    },
+    "1034216": {
+      "code": "BR",
+      "name": "Brazil"
+    },
+    "1054478": {
+      "code": "CR",
+      "name": "Costa Rica"
+    },
+    "1526151": {
+      "code": "US",
+      "name": "United States"
+    },
+    "515766": {
+      "code": "IT",
+      "name": "Italy"
+    },
+    "612774": {
+      "code": "AU",
+      "name": "Australia"
+    },
+    "1508894": {
+      "code": "CA",
+      "name": "Canada"
+    },
+    "1329269": {
+      "code": "US",
+      "name": "United States"
+    },
+    "1069397": {
+      "code": "US",
+      "name": "United States"
+    },
+    "1073907": {
+      "code": "BR",
+      "name": "Brazil"
+    },
+    "1522831": {
+      "code": "PT",
+      "name": "Portugal"
+    },
+    "1101625": {
+      "code": "US",
+      "name": "United States"
+    },
+    "781243": {
+      "code": "KZ",
+      "name": "Kazakhstan"
+    },
+    "730049": {
+      "code": "ES",
+      "name": "Spain"
+    },
+    "1544950": {
+      "code": "CH",
+      "name": "Switzerland"
+    },
+    "1434694": {
+      "code": "CO",
+      "name": "Colombia"
+    },
+    "1028959": {
+      "code": "ZA",
+      "name": "South Africa"
+    },
+    "44357": {
+      "code": "IT",
+      "name": "Italy"
+    },
+    "1449677": {
+      "code": "ES",
+      "name": "Spain"
+    },
+    "1301308": {
+      "code": "TW",
+      "name": "Taiwan"
+    },
+    "1507035": {
+      "code": "PL",
+      "name": "Poland"
+    },
+    "1301638": {
+      "code": "ES",
+      "name": "Spain"
+    },
+    "1319619": {
+      "code": "ES",
+      "name": "Spain"
+    },
+    "1379353": {
+      "code": "SI",
+      "name": "Slovenia"
+    },
+    "1223800": {
+      "code": "AU",
+      "name": "Australia"
+    },
+    "1261188": {
+      "code": "NL",
+      "name": "Netherlands"
+    },
+    "1144020": {
+      "code": "DE",
+      "name": "Germany"
+    },
+    "1344577": {
+      "code": "FR",
+      "name": "France"
+    },
+    "1207835": {
+      "code": "FR",
+      "name": "France"
+    }
+  },
+  "byName": {
+    "yoan m neshev": {
+      "code": "NG",
+      "name": "Nigeria"
+    },
+    "simone marcato": {
+      "code": "IT",
+      "name": "Italy"
+    },
+    "kike martin2": {
+      "code": "ES",
+      "name": "Spain"
+    },
+    "alexander gorissen": {
+      "code": "NL",
+      "name": "Netherlands"
+    },
+    "mauricio ferreira3": {
+      "code": "BR",
+      "name": "Brazil"
+    },
+    "marcel gorissen": {
+      "code": "NL",
+      "name": "Netherlands"
+    },
+    "ste holmes": {
+      "code": "GB",
+      "name": "United Kingdom"
+    },
+    "maciek sakowicz": {
+      "code": "PL",
+      "name": "Poland"
+    },
+    "marino separovic": {
+      "code": "BR",
+      "name": "Brazil"
+    },
+    "joao victor buzin": {
+      "code": "BR",
+      "name": "Brazil"
+    },
+    "daniel soto diaz": {
+      "code": "CR",
+      "name": "Costa Rica"
+    },
+    "diego fajardo2": {
+      "code": "US",
+      "name": "United States"
+    },
+    "manuel franzetti2": {
+      "code": "IT",
+      "name": "Italy"
+    },
+    "graham bradford": {
+      "code": "AU",
+      "name": "Australia"
+    },
+    "ali kangal": {
+      "code": "CA",
+      "name": "Canada"
+    },
+    "jacob matheny2": {
+      "code": "US",
+      "name": "United States"
+    },
+    "adam jichi": {
+      "code": "US",
+      "name": "United States"
+    },
+    "jean jorge cantazini": {
+      "code": "BR",
+      "name": "Brazil"
+    },
+    "xavier costa": {
+      "code": "PT",
+      "name": "Portugal"
+    },
+    "jonathan curley2": {
+      "code": "US",
+      "name": "United States"
+    },
+    "ilya orekhov": {
+      "code": "KZ",
+      "name": "Kazakhstan"
+    },
+    "alejandro soler3": {
+      "code": "ES",
+      "name": "Spain"
+    },
+    "jace malcolm": {
+      "code": "CH",
+      "name": "Switzerland"
+    },
+    "juan monterrosa": {
+      "code": "CO",
+      "name": "Colombia"
+    },
+    "katlego mokale": {
+      "code": "ZA",
+      "name": "South Africa"
+    },
+    "francesco paolo basso": {
+      "code": "IT",
+      "name": "Italy"
+    },
+    "marc borràs": {
+      "code": "ES",
+      "name": "Spain"
+    },
+    "keng in ng": {
+      "code": "TW",
+      "name": "Taiwan"
+    },
+    "sebastian szut": {
+      "code": "PL",
+      "name": "Poland"
+    },
+    "hugo priego2": {
+      "code": "ES",
+      "name": "Spain"
+    },
+    "david rodriguez arellano": {
+      "code": "ES",
+      "name": "Spain"
+    },
+    "marko malovrh": {
+      "code": "SI",
+      "name": "Slovenia"
+    },
+    "lawrence luk": {
+      "code": "AU",
+      "name": "Australia"
+    },
+    "vladyslav shkelebei": {
+      "code": "NL",
+      "name": "Netherlands"
+    },
+    "marius herder": {
+      "code": "DE",
+      "name": "Germany"
+    },
+    "théo gaston": {
+      "code": "FR",
+      "name": "France"
+    },
+    "béranger ambroise": {
+      "code": "FR",
+      "name": "France"
+    }
+  }
+}
