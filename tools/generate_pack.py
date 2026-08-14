@@ -466,6 +466,7 @@ def source_base(
     *,
     mixers: int = 0,
     volume: float = 1.0,
+    muted: bool = False,
     filters: list[dict] | None = None,
 ) -> dict:
     out = {
@@ -481,7 +482,7 @@ def source_base(
         "volume": volume,
         "balance": 0.5,
         "enabled": True,
-        "muted": False,
+        "muted": bool(muted),
         "push-to-mute": False,
         "push-to-mute-delay": 0,
         "push-to-talk": False,
@@ -1395,6 +1396,19 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
             )
         ]
 
+    def mic_live_item(item_id: int) -> dict:
+        """Mic only on Live — tiny locked item so the source stays in the mixer."""
+        return scene_item(
+            mic["name"],
+            mic["uuid"],
+            item_id,
+            pos=(-60.0, -60.0),
+            scale=(0.001, 0.001),
+            visible=True,
+            locked=True,
+            scale_ref=(1920.0, 1080.0),
+        )
+
     cam_w, cam_h = 360.0, 202.0
     cam_scale = cam_w / 1920.0
     cam_x, cam_y = 36.0, CANVAS_H - 36.0 - cam_h
@@ -1538,6 +1552,7 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
             *telecronaca_items(3),
             cam_pip_item(5),
             cam2_pip_item(6, visible=False),
+            mic_live_item(7),
         ],
     )
     scene_lobby = make_scene(
@@ -1639,8 +1654,8 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
     collection = {
         "name": "S.Marcato 42",
         "DesktopAudioDevice1": desktop,
-        "AuxAudioDevice1": mic,
-        "sources": [s for s in sources if s["name"] not in ("Audio Desktop", "Microfono")],
+        # No AuxAudioDevice1 — mic is a scene source on Live only (not Start/BRB/Ending/Lobby)
+        "sources": [s for s in sources if s["name"] != "Audio Desktop"],
         "groups": [],
         "scene_order": scene_order,
         "current_scene": "Starting Soon",
@@ -2764,6 +2779,136 @@ def install_rec_2k_profile() -> Path:
     return dest
 
 
+def obs_scenes_dir() -> Path:
+    return Path.home() / "AppData/Roaming/obs-studio/basic/scenes"
+
+
+def obs_process_running() -> bool:
+    try:
+        proc = subprocess.run(
+            ["tasklist", "/FI", "IMAGENAME eq obs64.exe", "/FO", "CSV", "/NH"],
+            capture_output=True,
+            text=True,
+            timeout=8,
+            check=False,
+        )
+        return "obs64.exe" in (proc.stdout or "").lower()
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+
+
+def stop_obs(*, wait_s: float = 4.0) -> bool:
+    """Stop OBS if running. Returns True if it was running."""
+    if not obs_process_running():
+        return False
+    log.info("Stopping OBS so scene collections can be installed…")
+    subprocess.run(
+        ["taskkill", "/IM", "obs64.exe", "/F"],
+        capture_output=True,
+        check=False,
+    )
+    # Also 32-bit name just in case
+    subprocess.run(
+        ["taskkill", "/IM", "obs32.exe", "/F"],
+        capture_output=True,
+        check=False,
+    )
+    deadline = time.time() + wait_s
+    while time.time() < deadline and obs_process_running():
+        time.sleep(0.25)
+    if obs_process_running():
+        log.warning("OBS still running after taskkill — install may be overwritten on exit")
+        return True
+    log.info("OBS stopped")
+    return True
+
+
+def start_obs() -> None:
+    candidates = [
+        Path(os.environ.get("ProgramFiles", r"C:\Program Files"))
+        / "obs-studio"
+        / "bin"
+        / "64bit"
+        / "obs64.exe",
+        Path(os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"))
+        / "obs-studio"
+        / "bin"
+        / "64bit"
+        / "obs64.exe",
+    ]
+    for exe in candidates:
+        if exe.is_file():
+            log.info("Starting OBS: %s", exe)
+            subprocess.Popen([str(exe)], cwd=str(exe.parent))
+            return
+    log.warning("obs64.exe not found — start OBS manually")
+
+
+def install_obs_scene_collection(
+    src: Path,
+    *,
+    activate: bool = False,
+) -> Path:
+    """Copy a generated collection JSON into OBS AppData scenes/."""
+    if not src.is_file():
+        raise FileNotFoundError(src)
+    dest_dir = obs_scenes_dir()
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / src.name
+    # Backup existing once per install
+    if dest.is_file():
+        bak = dest.with_suffix(dest.suffix + ".bak")
+        bak.write_bytes(dest.read_bytes())
+    dest.write_bytes(src.read_bytes())
+    log.info("OBS scene collection installed: %s", dest)
+
+    if activate:
+        user_ini = Path.home() / "AppData/Roaming/obs-studio/user.ini"
+        if user_ini.is_file():
+            text = user_ini.read_text(encoding="utf-8")
+            # Collection display name from JSON
+            try:
+                name = json.loads(src.read_text(encoding="utf-8")).get("name") or src.stem
+            except json.JSONDecodeError:
+                name = src.stem
+            import re as _re
+
+            text2, n1 = _re.subn(
+                r"(?m)^SceneCollection=.*$",
+                f"SceneCollection={name}",
+                text,
+            )
+            text2, n2 = _re.subn(
+                r"(?m)^SceneCollectionFile=.*$",
+                f"SceneCollectionFile={src.name}",
+                text2,
+            )
+            if n1 or n2:
+                user_ini.write_text(text2, encoding="utf-8")
+                log.info("OBS user.ini active collection → %s (%s)", name, src.name)
+    return dest
+
+
+def install_marcato_collections_to_obs(
+    paths: list[Path],
+    *,
+    activate: str = "S_Marcato_42.json",
+    restart_obs: bool = True,
+) -> None:
+    """Stop OBS if needed, install Marcato JSONs, optionally restart."""
+    t0 = time.perf_counter()
+    was_running = stop_obs()
+    for p in paths:
+        install_obs_scene_collection(p, activate=(p.name == activate))
+    if restart_obs and was_running:
+        start_obs()
+    log.info(
+        "Marcato collections installed to OBS in %.0f ms (restarted=%s)",
+        (time.perf_counter() - t0) * 1000,
+        bool(was_running and restart_obs),
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate OBS scene collection and optional logo PNG.")
     parser.add_argument(
@@ -2792,6 +2937,11 @@ def main() -> None:
         rec2k = build_rec_2k_collection(overlays=ROOT / "overlays-marcato")
         outputs.append(rec2k.name)
         install_rec_2k_profile()
+        install_marcato_collections_to_obs(
+            [scene, replay, rec2k],
+            activate="S_Marcato_42.json",
+            restart_obs=True,
+        )
     else:
         log.info("start generating PiGreco OBS pack")
         ASSETS.mkdir(parents=True, exist_ok=True)

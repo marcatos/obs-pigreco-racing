@@ -64,7 +64,9 @@ Generata insieme al pack Marcato: `obs/S_Marcato_Replay.json`. Solo scene **Repl
 
 Guida breve: [`replays/LEGGIMI.txt`](../replays/LEGGIMI.txt). Replay di stasera tipicamente in `%USERPROFILE%\Documents\iRacing\replay\` (es. `subses87837780.rpy`).
 
-**Audio:** sulle scene interstiziali (Starting Soon / **Lobby** / BRB / Ending) usa loop **Pixabay** royalty-free in `audio/interstitials/` (vedi `README.md` + `Open-Pixabay-Music.bat`). Su **Live** non c’è bed musicale (resta Desktop + mic Focusrite). Volume: Mixer → `Music …`.
+**Audio:** sulle scene interstiziali (Starting Soon / **Lobby** / BRB / Ending) usa loop **Pixabay** royalty-free in `audio/interstitials/` (vedi `README.md` + `Open-Pixabay-Music.bat`). Il **microfono** è attivo solo sulla scena **Live** (non su Start / Lobby / BRB / Ending). Su Live non c’è bed musicale (Desktop + mic). Volume: Mixer → `Music …` / `Microfono`.
+
+`python tools/generate_pack.py --profile marcato` **installa automaticamente** le collezioni in `%APPDATA%\obs-studio\basic\scenes\` (chiude/riapre OBS se era aperto).
 
 **Mic:** il generator prova a risolvere Focusrite / 2i2; override con env `MARCATO_MIC_ID` o file gitignored `obs/mic.device.json`.
 
