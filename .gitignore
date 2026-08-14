@@ -33,3 +33,8 @@ adapters/telemetry/telemetry.json.tmp
 .env.*
 **/service.json
 **/*credentials*
+adapters/obs_flag_director/config.local.json
+
+# Track map self-learn (P3-03)
+adapters/telemetry/tracks_learned/
+overlays/assets/tracks/learned/
