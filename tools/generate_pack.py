@@ -742,11 +742,8 @@ def build_transitions(*, overlays_dir: Path, profile: str) -> tuple[list[dict], 
         {"color": 0x08080A if profile == "marcato" else 0x080A0C},
     )
 
-    # Move first + default; stinger kept as branded alternative
+    # Move first; stinger kept as branded alternative
     transitions = [move, cut, fade, swipe, slide, flash]
-    current = move_name
-    duration = _MOVE_DURATION_MS
-    log.info("move transition default: %s (%d ms)", move_name, duration)
 
     if stinger_path.is_file():
         # tp_type 0 = milliseconds; ~50% of ~850ms stinger
@@ -763,7 +760,7 @@ def build_transitions(*, overlays_dir: Path, profile: str) -> tuple[list[dict], 
                 "track_matte_enabled": False,
                 "preload": True,
             },
-            volume=1.0,
+            volume=0.45,
         )
         transitions.insert(1, stinger)
         log.info("stinger transition ready (alternate): %s", stinger_path.name)
@@ -773,6 +770,15 @@ def build_transitions(*, overlays_dir: Path, profile: str) -> tuple[list[dict], 
             stinger_path,
             profile,
         )
+
+    if profile == "marcato":
+        current = "Dissolvenza"
+        duration = 900
+        log.info("marcato default transition: Dissolvenza (%d ms)", duration)
+    else:
+        current = move_name
+        duration = _MOVE_DURATION_MS
+        log.info("move transition default: %s (%d ms)", move_name, duration)
 
     return transitions, current, duration
 
@@ -811,6 +817,18 @@ def make_scene(name: str, items: list[dict]) -> dict:
         "canvas_uuid": CANVAS_UUID,
         "private_settings": {},
     }
+
+
+def apply_scene_transition_override(
+    scene: dict,
+    *,
+    transition_name: str,
+    duration_ms: int,
+) -> None:
+    """OBS stores per-scene overrides in private_settings (websocket SetSceneSceneTransitionOverride)."""
+    ps = scene.setdefault("private_settings", {})
+    ps["transition"] = transition_name
+    ps["transition_duration"] = int(duration_ms)
 
 
 def build_collection(
