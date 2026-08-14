@@ -1,4 +1,6 @@
 {
   "email": "you@example.com",
-  "password": "your-password"
+  "password": "your-password",
+  "client_id": "",
+  "client_secret": ""
 }

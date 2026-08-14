@@ -1,37 +1,42 @@
 # Track map minimap (P3-07)
 
-Peripheral race minimap using **official iRacing SVG** layers cached on your PC. Dots follow `LapDistPct` on the track path. Drawn inside Broadcast Chrome (mid-right, above Cam 2).
+Peripheral race minimap using **official iRacing track outlines** cached on your PC. Dots follow `LapDistPct` on the track path. Drawn inside Broadcast Chrome (mid-right, above Cam 2).
 
 ## Enable
 
-1. Sync maps once (needs iRacing members credentials — local only):
+1. Sync maps once:
 
 ```bat
-copy adapters\telemetry\iracing_api.example.json adapters\telemetry\iracing_api.local.json
-REM edit email/password, then:
 Start-SyncTrackMaps.bat
-REM or only one track:
-Start-SyncTrackMaps.bat --track-id 449
 ```
 
-Env alternative: `IRACING_EMAIL` + `IRACING_PASSWORD`.
+Default source is **`paths-dump`**: downloads official `activePath` geometry (no login).  
+iRacing retired legacy email/password API auth (Dec 2025) and paused new OAuth client IDs — so this is the reliable path today.
 
-2. Config: `trackMapEnabled: true` (+ telemetry running + config server `:8766`).
+Optional API mode (when you already have OAuth `client_id` / `client_secret`):
+
+```bat
+REM adapters\telemetry\iracing_api.local.json:
+REM   email, password, client_id, client_secret
+Start-SyncTrackMaps.bat --source api
+```
+
+2. Config: `trackMapEnabled: true` (+ telemetry + config server `:8766`).
 3. OBS: eye **ON** on **Overlay Broadcast Chrome** → Refresh cache.
-4. Cache files land in `overlays/assets/tracks/iracing/{TrackID}.svg` (gitignored except mock `900001`).
+4. Cache: `overlays/assets/tracks/iracing/{TrackID}.svg` (gitignored except mock `900001`).
 
 ## Lookup
 
 - Tick `trackId` = numeric iRacing `TrackID` (e.g. `"449"`).
 - Overlay fetches `assets/tracks/iracing/{trackId}.svg`.
-- Optional `{trackId}.meta.json`: `{ "offset": 0.0, "direction": 1 }` for S/F alignment.
-- Missing SVG → label `TRACK MAP — run Start-SyncTrackMaps` (no oval fallback).
+- Optional `{trackId}.meta.json`: `{ "offset": 0.0, "direction": 1 }`.
+- Missing SVG → `TRACK MAP — run Start-SyncTrackMaps`.
 
 ## CONTRACT
 
-`trackId`, optional `trackConfig`, `mapCars[]` (`carIdx`, `carNumber`, `distPct`, `isFocus`). See `adapters/telemetry/CONTRACT.md`.
+`trackId`, optional `trackConfig`, `mapCars[]`. See `adapters/telemetry/CONTRACT.md`.
 
 ## Notes
 
 - Do **not** commit downloaded SVGs or `iracing_api.local.json`.
-- Self-learn / open outlines are no longer the happy path (P3-07).
+- Self-learn / oval are not the happy path.
