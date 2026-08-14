@@ -64,7 +64,7 @@ Generata insieme al pack Marcato: `obs/S_Marcato_Replay.json`. Solo scene **Repl
 
 Guida breve: [`replays/LEGGIMI.txt`](../replays/LEGGIMI.txt). Replay di stasera tipicamente in `%USERPROFILE%\Documents\iRacing\replay\` (es. `subses87837780.rpy`).
 
-**Audio:** sulle scene interstiziali (Starting Soon / **Lobby** / BRB / Ending) parte un loop **sintetizzato in locale** (`audio/interstitials/`, generato con `tools/generate_interstitial_music.py`) — niente librerie tipo Pixabay/SoundHelix che Twitch spesso muta. Su **Live** non c’è bed musicale (resta Desktop + mic Focusrite). Volume regolabile in Mixer OBS sulle fonti `Music …`.
+**Audio:** sulle scene interstiziali (Starting Soon / **Lobby** / BRB / Ending) usa loop **Pixabay** royalty-free in `audio/interstitials/` (vedi `README.md` + `Open-Pixabay-Music.bat`). Su **Live** non c’è bed musicale (resta Desktop + mic Focusrite). Volume: Mixer → `Music …`.
 
 **Mic:** il generator prova a risolvere Focusrite / 2i2; override con env `MARCATO_MIC_ID` o file gitignored `obs/mic.device.json`.
 

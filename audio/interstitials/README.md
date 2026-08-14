@@ -1,19 +1,26 @@
-# Interstitial background music (OBS)
+# Interstitial music (OBS) — Pixabay loops
 
-Original melodic loops for **Starting Soon**, **Lobby**, **BRB**, **Ending**.
+Replace the four MP3s below with **Pixabay** royalty-free loops (Content License).
+Automated download is blocked by Pixabay Cloudflare — drop files here manually.
 
-| File | Mood | Motif |
-|------|------|--------|
-| `starting-soon.mp3` | **Upbeat** | *Lights Out* — four-on-the-floor pre-show |
-| `lobby.mp3` | **Upbeat** | *Formation Lap* — paddock / pre-race energy |
-| `brb.mp3` | **Calm** | *Pit Lane Quiet* — soft hold |
-| `ending.mp3` | **Calm** | *Cool Down Lap* — gentle resolve |
+| OBS file | Mood | Suggested Pixabay search / track |
+|----------|------|----------------------------------|
+| `starting-soon.mp3` | **Upbeat** pre-show | [upbeat loop](https://pixabay.com/music/search/upbeat%20loop/) → e.g. *Good Vibes - Upbeat Loop* (Sonican) or *Loop Seamless Groove Bed* |
+| `lobby.mp3` | **Upbeat** pre-race | same search → e.g. *Upbeat Loop - Motivational Joy* or *Positive Loop* (The_Mountain) |
+| `brb.mp3` | **Calm** hold | [calm loop](https://pixabay.com/music/search/calm%20loop/) → e.g. *Soft Loop* (The_Mountain) |
+| `ending.mp3` | **Calm** close | [ambient calm](https://pixabay.com/music/search/ambient%20calm/) → soft ambient / chill loop |
 
-Composed by `tools/generate_interstitial_music.py` (original algorithmic music —
-not stock libraries, so Twitch Content ID is unlikely to mute them).
+Note: the link you sent ([videos looping](https://pixabay.com/videos/search/looping/)) is **video**. For stream beds we need **Music** MP3s (links above).
 
-```powershell
-python tools\generate_interstitial_music.py
-```
+## Install steps
 
-OBS: Mixer → `Music …` volumes. Refresh media sources after regenerating.
+1. Open `Open-Pixabay-Music.bat` (same folder) — opens the four searches in your browser.
+2. On each track page click **Free download** → save as MP3.
+3. Rename / overwrite into this folder with the exact names above.
+4. In OBS: refresh Media Sources `Music Starting Soon` / `Lobby` / `BRB` / `Ending` (or re-run `python tools/generate_pack.py --profile marcato` after files exist).
+
+## License
+
+[Pixabay Content License](https://pixabay.com/service/license-summary/) — free for streams; **Twitch Content ID** may still mute some Pixabay tracks. If muted, pick a less popular loop from the same searches.
+
+Fill `ATTRIBUTION.txt` with the four track titles + author + Pixabay URL after download.
