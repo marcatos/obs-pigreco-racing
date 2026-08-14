@@ -33,8 +33,7 @@ if str(HERE) not in sys.path:
 from domain_enrich import apply_pos_change, delta_best_ms  # noqa: E402
 from domain_events import EventDetector  # noqa: E402
 from domain_standings import build_relatives, standings_from_cars  # noqa: E402
-from domain_track_map import build_map_cars, normalize_track_id  # noqa: E402
-from track_learn import TrackLearner  # noqa: E402
+from domain_track_map import build_map_cars, format_track_id  # noqa: E402
 
 SCHEMA_VERSION = 1
 DEFAULT_HOST = "127.0.0.1"
@@ -48,7 +47,6 @@ _prev_pos_by_car: dict = {}
 _last_focus_car_idx: Any = None
 _last_session_time_ms: int | None = None
 detector = EventDetector(sensitivity="normal")
-track_learner = TrackLearner()
 SESSION_BACKJUMP_MS = 1000
 
 
@@ -84,7 +82,6 @@ def reset_continuity() -> None:
     _prev_pos_by_car = {}
     _last_focus_car_idx = None
     _last_session_time_ms = None
-    track_learner.reset()
     if had_state:
         log.info("continuity reset detector and pos-change map")
 
@@ -408,11 +405,13 @@ def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
 
         track_name = None
         track_id_raw = None
+        track_config = None
         session_type = None
         try:
             weekend = ir["WeekendInfo"]
             track_name = weekend.get("TrackDisplayName") or weekend.get("TrackName")
-            track_id_raw = weekend.get("TrackID") or weekend.get("TrackName")
+            track_id_raw = weekend.get("TrackID")
+            track_config = weekend.get("TrackConfigName") or weekend.get("TrackConfig")
         except Exception:  # noqa: BLE001
             pass
         try:
@@ -519,7 +518,8 @@ def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
             sessionTimeRemainMs=session_remain_ms,
             standings=standings,
             relatives=relatives,
-            trackId=normalize_track_id(str(track_id_raw) if track_id_raw is not None else track_name),
+            trackId=format_track_id(track_id_raw, track_name),
+            trackConfig=track_config,
             mapCars=build_map_cars(standings, focus_car_idx=focus_idx),
             yawRad=_num_or_none(yaw),
         )
@@ -751,23 +751,6 @@ async def async_main(args: argparse.Namespace) -> int:
                 except asyncio.TimeoutError:
                     pass
                 continue
-
-            track_learner.set_track(tick.get("trackId"), tick.get("trackName"))
-            focus_dist = None
-            for mc in tick.get("mapCars") or []:
-                if mc.get("isFocus"):
-                    focus_dist = mc.get("distPct")
-                    break
-            speed_kph = tick.get("speedKph")
-            speed_mps = None
-            if isinstance(speed_kph, (int, float)):
-                speed_mps = float(speed_kph) / 3.6
-            track_learner.sample(
-                dist_pct=focus_dist,
-                speed_mps=speed_mps,
-                yaw_rad=tick.get("yawRad"),
-                dt_s=interval,
-            )
 
             events = detector.feed(tick)
             payload = json.dumps(tick, separators=(",", ":"))

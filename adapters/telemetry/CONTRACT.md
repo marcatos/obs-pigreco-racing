@@ -107,13 +107,14 @@ Additive director fields. Consumers must ignore unknown keys.
 | `airTempC` | number \| null | Air temperature (°C) if the SDK is reliable |
 | `trackTempC` | number \| null | Track temperature (°C) if the SDK is reliable |
 | `sof` | number \| null | Strength of field when available |
-| `yawRad` | number \| null | Vehicle yaw (radians) when available — used by track self-learn |
+| `yawRad` | number \| null | Vehicle yaw (radians) when available |
 
-#### Optional P3-03 track map (ignore if absent)
+#### Optional P3-03 / P3-07 track map (ignore if absent)
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `trackId` | string \| null | Slug id for asset lookup (e.g. `monza-gp`) |
+| `trackId` | string \| null | Prefer stringified iRacing `TrackID` (e.g. `"449"`). Slug fallback only if SDK has no id. |
+| `trackConfig` | string \| null | Layout/config name when available |
 | `mapCars` | array | Cars for minimap dots (see below) |
 
 **`mapCars[]`**

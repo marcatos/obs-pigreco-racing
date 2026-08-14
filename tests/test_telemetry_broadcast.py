@@ -35,7 +35,7 @@ def test_build_tick_has_broadcast_fields():
     assert len(tick["standings"]) >= 5
     assert isinstance(tick["relatives"], list)
     assert tick["focusDriverName"]
-    assert tick.get("trackId") == "monza-gp"
+    assert tick.get("trackId") == "900001"
     assert isinstance(tick.get("mapCars"), list)
     assert len(tick["mapCars"]) >= 5
 
