@@ -1,4 +1,7 @@
-"""Pure OBS flag → scene mapping (no IO)."""
+"""Pure OBS session + flag → scene mapping (no IO).
+
+Extends P3-04 flag cuts with Live ↔ Lobby based on telemetry connectivity.
+"""
 
 from __future__ import annotations
 
@@ -7,6 +10,7 @@ from dataclasses import dataclass, field
 
 FLAG_SCENES = frozenset({"yellow", "red", "checkered"})
 HOME_FLAGS = frozenset({"green", "none"})
+DEFAULT_MANUAL_SCENES = frozenset({"Starting Soon", "BRB", "Ending"})
 
 
 @dataclass
@@ -14,6 +18,26 @@ class FlagDirectorConfig:
     scenes: dict[str, str]
     home_scene: str
     debounce_ms: int = 1500
+
+
+@dataclass
+class SessionDirectorConfig:
+    """Flag scenes + live/lobby session automation."""
+
+    scenes: dict[str, str]
+    live_scene: str = "Live"
+    lobby_scene: str = "Lobby"
+    home_scene: str = "Live"
+    flag_debounce_ms: int = 1500
+    session_debounce_ms: int = 4000
+    manual_scenes: frozenset[str] = field(default_factory=lambda: DEFAULT_MANUAL_SCENES)
+
+    def as_flag_config(self) -> FlagDirectorConfig:
+        return FlagDirectorConfig(
+            scenes=dict(self.scenes),
+            home_scene=self.home_scene,
+            debounce_ms=self.flag_debounce_ms,
+        )
 
 
 @dataclass
@@ -38,7 +62,6 @@ class FlagDirector:
             if not target:
                 return None
             if self._active_scene not in self.config.scenes.values():
-                # Leaving a non-flag (or unknown) scene — remember home.
                 if self._active_scene:
                     self._stacked_home = self._active_scene
                 elif not self._stacked_home:
@@ -54,7 +77,6 @@ class FlagDirector:
                 self._last_change_ms = now_ms
                 return None
         else:
-            # blue/white/etc. — no scene change in v1
             self._current_flag = f
             self._last_change_ms = now_ms
             return None
@@ -70,3 +92,91 @@ class FlagDirector:
             self._active_scene = scene_name
             if scene_name not in self.config.scenes.values():
                 self._stacked_home = scene_name
+
+    @property
+    def active_scene(self) -> str | None:
+        return self._active_scene
+
+    @property
+    def stacked_home(self) -> str | None:
+        return self._stacked_home
+
+    def set_stacked_home(self, scene: str) -> None:
+        self._stacked_home = scene
+
+
+@dataclass
+class SessionDirector:
+    """Flag cuts + Live/Lobby from telemetry connected state."""
+
+    config: SessionDirectorConfig
+    flags: FlagDirector = field(init=False)
+    _last_session_change_ms: int = field(default=-10**12, repr=False)
+    _telem_connected: bool | None = field(default=None, repr=False)
+    _iracing_up: bool = field(default=False, repr=False)
+
+    def __post_init__(self) -> None:
+        self.flags = FlagDirector(self.config.as_flag_config())
+
+    def note_obs_scene(self, scene_name: str | None) -> None:
+        self.flags.note_obs_scene(scene_name)
+
+    def on_flag(self, flag: str, *, now_ms: int) -> str | None:
+        scene = self.flags.on_flag(flag, now_ms=now_ms)
+        if scene and scene in self.config.scenes.values():
+            # Leaving Live/Lobby for a flag — keep preferred home by telem state
+            preferred = self._preferred_home()
+            self.flags.set_stacked_home(preferred)
+        return scene
+
+    def _preferred_home(self) -> str:
+        if self._telem_connected:
+            return self.config.live_scene
+        if self._iracing_up:
+            return self.config.lobby_scene
+        return self.config.home_scene
+
+    def _on_manual_scene(self) -> bool:
+        cur = self.flags.active_scene
+        return bool(cur and cur in self.config.manual_scenes)
+
+    def _on_flag_scene(self) -> bool:
+        cur = self.flags.active_scene
+        return bool(cur and cur in self.config.scenes.values())
+
+    def on_session_state(
+        self,
+        *,
+        iracing_up: bool,
+        telemetry_connected: bool,
+        now_ms: int,
+    ) -> str | None:
+        """Return Live/Lobby scene to switch to, or None.
+
+        Does not leave Starting Soon / BRB / Ending or Flag scenes.
+        """
+        self._iracing_up = iracing_up
+        self._telem_connected = telemetry_connected
+
+        preferred = self._preferred_home()
+        self.flags.set_stacked_home(preferred)
+
+        if self._on_manual_scene() or self._on_flag_scene():
+            return None
+
+        if telemetry_connected:
+            target = self.config.live_scene
+        elif iracing_up:
+            target = self.config.lobby_scene
+        else:
+            return None
+
+        if target == self.flags.active_scene:
+            return None
+
+        if (now_ms - self._last_session_change_ms) < self.config.session_debounce_ms:
+            return None
+
+        self._last_session_change_ms = now_ms
+        self.flags.note_obs_scene(target)
+        return target

@@ -1,12 +1,13 @@
 @echo off
 cd /d "%~dp0"
 echo.
-echo PiGreco / S.Marcato - Flag Director (OBS scenes)
-echo ================================================
+echo PiGreco / S.Marcato - Session Director (OBS scenes)
+echo ==================================================
 echo.
-echo Requires: telemetry on ws://127.0.0.1:8765
+echo Flags + Live/Lobby automation via telemetry + iRacing process watch.
+echo Requires: OBS WebSocket :4455 (see docs\OBS_VIRTUALDECK.md)
 echo Config:   adapters\obs_flag_director\config.local.json
-echo Docs:     docs\FLAG_DIRECTOR.md
+echo Docs:     docs\SESSION_DIRECTOR.md  docs\FLAG_DIRECTOR.md
 echo.
 echo Default is dry-run until you set dryRun=false and OBS password.
 echo.

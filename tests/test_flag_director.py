@@ -1,4 +1,4 @@
-"""Unit tests for flag director domain (no OBS)."""
+"""Unit tests for flag + session director domain (no OBS)."""
 
 from __future__ import annotations
 
@@ -8,7 +8,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "adapters" / "obs_flag_director"))
 
-from domain_flag_director import FlagDirector, FlagDirectorConfig  # noqa: E402
+from domain_flag_director import (  # noqa: E402
+    FlagDirector,
+    FlagDirectorConfig,
+    SessionDirector,
+    SessionDirectorConfig,
+)
 
 
 def _dir(**kw) -> FlagDirector:
@@ -22,6 +27,23 @@ def _dir(**kw) -> FlagDirector:
         debounce_ms=1500,
     )
     return FlagDirector(cfg)
+
+
+def _session(**kw) -> SessionDirector:
+    return SessionDirector(
+        SessionDirectorConfig(
+            scenes={
+                "yellow": "Flag Yellow",
+                "red": "Flag Red",
+                "checkered": "Flag Checkered",
+            },
+            live_scene="Live",
+            lobby_scene="Lobby",
+            home_scene="Live",
+            flag_debounce_ms=1500,
+            session_debounce_ms=4000,
+        )
+    )
 
 
 def test_yellow_then_green_returns_home():
@@ -55,3 +77,59 @@ def test_missing_scene_mapping_noop():
         FlagDirectorConfig(scenes={"yellow": "Flag Yellow"}, home_scene="Home", debounce_ms=0)
     )
     assert d.on_flag("red", now_ms=1) is None
+
+
+def test_session_telem_up_goes_live():
+    s = _session()
+    s.note_obs_scene("Lobby")
+    assert (
+        s.on_session_state(iracing_up=True, telemetry_connected=True, now_ms=5000) == "Live"
+    )
+
+
+def test_session_iracing_no_telem_goes_lobby():
+    s = _session()
+    s.note_obs_scene("Live")
+    assert (
+        s.on_session_state(iracing_up=True, telemetry_connected=False, now_ms=5000)
+        == "Lobby"
+    )
+
+
+def test_session_debounce():
+    s = _session()
+    s.note_obs_scene("Lobby")
+    assert (
+        s.on_session_state(iracing_up=True, telemetry_connected=True, now_ms=1000) == "Live"
+    )
+    assert (
+        s.on_session_state(iracing_up=True, telemetry_connected=False, now_ms=2000) is None
+    )
+    assert (
+        s.on_session_state(iracing_up=True, telemetry_connected=False, now_ms=6000)
+        == "Lobby"
+    )
+
+
+def test_session_ignores_starting_soon():
+    s = _session()
+    s.note_obs_scene("Starting Soon")
+    assert (
+        s.on_session_state(iracing_up=True, telemetry_connected=True, now_ms=5000) is None
+    )
+
+
+def test_session_ignores_flag_scene():
+    s = _session()
+    s.note_obs_scene("Flag Yellow")
+    assert (
+        s.on_session_state(iracing_up=True, telemetry_connected=True, now_ms=5000) is None
+    )
+
+
+def test_session_flag_then_green_returns_live():
+    s = _session()
+    s.note_obs_scene("Live")
+    s.on_session_state(iracing_up=True, telemetry_connected=True, now_ms=1000)
+    assert s.on_flag("yellow", now_ms=2000) == "Flag Yellow"
+    assert s.on_flag("green", now_ms=4000) == "Live"
