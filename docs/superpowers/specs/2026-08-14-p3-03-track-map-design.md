@@ -1,7 +1,7 @@
 # Design: P3-03 Minimap / track map (hybrid catalog)
 
 **Date:** 2026-08-14  
-**Status:** approved (conversation); pending file review  
+**Status:** approved
 **Roadmap:** P3-03  
 **Related:** ADR-005, `adapters/telemetry/CONTRACT.md`, broadcast chrome layout rules
 

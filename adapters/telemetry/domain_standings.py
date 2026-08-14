@@ -92,6 +92,7 @@ def mock_standings(elapsed_s: float, *, focus_pos: int, field: int = 12) -> list
             car_idx, is_focus = pos + 10, False
         gap_to_leader = 0 if pos == 1 else int(1200 + (pos - 1) * (850 + wave * 40))
         interval = 0 if pos == 1 else int(800 + wave * 50 + (pos % 3) * 30)
+        dist_pct = ((elapsed_s * 0.011) + (1.0 - (pos - 1) / field) * 0.08) % 1.0
         rows.append(
             {
                 "pos": pos,
@@ -106,6 +107,7 @@ def mock_standings(elapsed_s: float, *, focus_pos: int, field: int = 12) -> list
                 "isFocus": is_focus,
                 "inPit": False,
                 "iRating": 1700 + pos * 10,
+                "distPct": dist_pct,
             }
         )
     return rows
@@ -170,6 +172,7 @@ def standings_from_cars(
                 "class": c.get("class"),
                 "carIdx": c.get("carIdx"),
                 "isFocus": focus_car_idx is not None and c.get("carIdx") == focus_car_idx,
+                "distPct": float(c.get("distPct") or 0.0) % 1.0,
             }
         )
         prev_progress = progress

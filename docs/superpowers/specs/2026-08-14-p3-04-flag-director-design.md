@@ -1,7 +1,7 @@
 # Design: P3-04 Auto scene on flags (OBS + overlay)
 
 **Date:** 2026-08-14  
-**Status:** approved (conversation); pending file review  
+**Status:** approved
 **Roadmap:** P3-04  
 **Related:** ADR-005, P3-06 `telemetry.event` / `flag`, `docs/TELEMETRY_BROADCAST.md`
 

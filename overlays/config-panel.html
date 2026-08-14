@@ -209,6 +209,8 @@
           </select>
         </label>
       </div>
+      <label class="check"><input type="checkbox" name="trackMapEnabled" /> Track map (minimap)</label>
+      <label>Track map WS URL<input name="trackMapWsUrl" placeholder="ws://127.0.0.1:8765" /></label>
     </fieldset>
   </form>
   </div>
@@ -268,7 +270,8 @@
     const BOOLS = [
       "sessionBadgeEnabled", "countdownEnabled", "brbShowCountdown",
       "endingCtaEnabled", "sponsorsEnabled", "telemetryEnabled",
-      "broadcastLeaderboard", "broadcastRelative", "broadcastFocus", "broadcastSession"
+      "broadcastLeaderboard", "broadcastRelative", "broadcastFocus", "broadcastSession",
+      "trackMapEnabled"
     ];
     const SELECTS = [
       "sessionType", "broadcastDirector", "broadcastDirectorSensitivity"

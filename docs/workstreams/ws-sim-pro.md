@@ -11,7 +11,7 @@ Land **ADR-005** contract + mock telemetry producer before any HTML binds to a s
 
 - P3-01 Contract + mock server/file — **done**
 - P3-02 Position/gap / telecronaca widget + iRacing bridge — **done** (`docs/TELEMETRY_BROADCAST.md`)
-- P3-03 Minimap (ready — spec 2026-08-14)
+- P3-03 Minimap — **done** (`docs/TRACK_MAP.md`)
 - P3-04 Auto scene on flags via obs-websocket — **done** (`docs/FLAG_DIRECTOR.md`)
 - P3-05 Audio bus / VOD documentation for OBS profile
 
