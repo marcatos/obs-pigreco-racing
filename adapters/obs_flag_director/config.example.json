@@ -6,7 +6,7 @@
   "enabled": true,
   "dryRun": true,
   "debounceMs": 1500,
-  "homeScene": "Rec * Live",
+  "homeScene": "Rec Singolo Live",
   "scenes": {
     "yellow": "Flag Yellow",
     "red": "Flag Red",

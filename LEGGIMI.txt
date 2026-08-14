@@ -74,6 +74,28 @@ Guida completa con immagini:
 
 
 
+TELECRONACA (replay / live):
+
+  Doppio clic su  Start-Telecronaca.bat mock
+
+  (oppure iracing). Apre config :8766,
+
+  telemetry :8765 e Flag Director.
+
+  In OBS: occhio su Overlay Broadcast Chrome
+
+  (+ Track Map). Dock marcato:
+
+  http://127.0.0.1:8766/?profile=marcato
+
+  Guide: docs\TELEMETRY_BROADCAST.md
+
+           docs\FLAG_DIRECTOR.md
+
+           docs\TRACK_MAP.md
+
+
+
 Anteprime grafiche: cartella  showcase\
 
 (apri index.html con il browser)

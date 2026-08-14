@@ -4,8 +4,8 @@ Peripheral Browser Source showing the field as dots on a track outline.
 
 ## Enable
 
-1. Config panel / `config.values.json`: `trackMapEnabled: true` (and telemetry bridge running).
-2. OBS Browser Source URL (config server must be up):
+1. Config panel / `config.values.json`: `trackMapEnabled: true` (telemetry bridge running + config server).
+2. OBS: eye on **Overlay Track Map** (already in Replay / Rec 2K after regenerating the pack), or add Browser Source:
 
 ```text
 http://127.0.0.1:8766/o/marcato/track-map.html
