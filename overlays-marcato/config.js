@@ -44,8 +44,8 @@ window.PIGRECO_CONFIG = {
   "broadcastDirectorSensitivity": "normal",
   "trackMapEnabled": true,
   "trackMapWsUrl": "ws://127.0.0.1:8765",
-  "trackMapLeadPct": 0.028,
-  "trackMapPredictSec": 0.12
+  "trackMapLeadPct": 0.016,
+  "trackMapPredictSec": 0.05
 };
 
 (function applyConfig() {
