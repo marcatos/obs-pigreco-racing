@@ -35,6 +35,7 @@ adapters/telemetry/telemetry.json.tmp
 **/*credentials*
 adapters/obs_flag_director/config.local.json
 adapters/telemetry/iracing_api.local.json
+obs/mic.device.json
 
 # Track map self-learn (P3-03) + official SVG cache (P3-07)
 adapters/telemetry/tracks_learned/

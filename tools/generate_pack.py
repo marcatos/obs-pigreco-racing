@@ -6,6 +6,9 @@ import contextlib
 import ctypes
 import json
 import logging
+import os
+import re
+import subprocess
 import time
 import uuid
 from ctypes import wintypes
@@ -41,6 +44,9 @@ USBCAM_ID = (
 MIC_ID = "{0.0.1.00000000}.{0679eb69-e8f9-4599-80e1-eef13c5d18e6}"
 # OBS window capture id: title:class:exe
 IRACING_WINDOW = "iRacing.com Simulator:SimWinClass:iRacingSim64DX11.exe"
+# Lobby / menus — re-pick in OBS if Qt class string drifts after an iRacing update
+IRACING_UI_WINDOW = "iRacing.com:Qt5152QWindowIcon:iRacingUI.exe"
+MIC_PREFER_SUBSTR = ("focusrite", "2i2", "scarlett")
 PREV_VER = 536936450
 CANVAS_UUID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
 # Recording-only 2K canvas (ADR-007)
@@ -263,6 +269,83 @@ def iracing_capture_settings() -> dict:
         "capture_audio": True,
         "priority": 2,
     }
+
+
+def iracing_ui_capture_settings() -> dict:
+    """Window capture for iRacing UI (garage / menus) — Lobby scene."""
+    return {
+        "capture_mode": "window",
+        "window": IRACING_UI_WINDOW,
+        "capture_cursor": False,
+        "capture_audio": False,
+        "priority": 2,
+    }
+
+
+def resolve_mic_device_id(*, fallback: str = MIC_ID) -> str:
+    """Prefer Focusrite / 2i2 WASAPI id when discoverable; else env / fallback.
+
+    Override: env ``MARCATO_MIC_ID`` / ``PIGRECO_MIC_ID``, or gitignored
+    ``obs/mic.device.json`` with ``{"device_id": "..."}``.
+    """
+    for key in ("MARCATO_MIC_ID", "PIGRECO_MIC_ID"):
+        env = (os.environ.get(key) or "").strip()
+        if env:
+            log.info("mic device_id from env %s", key)
+            return env
+
+    mic_file = OBS_DIR / "mic.device.json"
+    if mic_file.is_file():
+        try:
+            data = json.loads(mic_file.read_text(encoding="utf-8"))
+            did = str((data or {}).get("device_id") or "").strip()
+            if did:
+                log.info("mic device_id from %s", mic_file.name)
+                return did
+        except (OSError, json.JSONDecodeError) as exc:
+            log.warning("mic.device.json unreadable: %s", exc)
+
+    # Best-effort: registry FriendlyName → OBS-style WASAPI id (HKLM + HKCU)
+    try:
+        ps = r"""
+$ErrorActionPreference='SilentlyContinue'
+$roots = @(
+  'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\MMDevices\Audio\Capture',
+  'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\MMDevices\Audio\Capture'
+)
+foreach ($root in $roots) {
+  if (-not (Test-Path $root)) { continue }
+  Get-ChildItem $root | ForEach-Object {
+    $p = $_.PSChildName
+    $n = (Get-ItemProperty $_.PSPath -Name FriendlyName -EA SilentlyContinue).FriendlyName
+    if ($n) { Write-Output ($p + '|' + $n) }
+  }
+}
+"""
+        proc = subprocess.run(
+            ["powershell", "-NoProfile", "-Command", ps],
+            capture_output=True,
+            text=True,
+            timeout=12,
+            check=False,
+        )
+        if proc.returncode == 0 and proc.stdout:
+            for line in proc.stdout.splitlines():
+                if "|" not in line:
+                    continue
+                guid, name = line.split("|", 1)
+                name_l = name.lower()
+                if any(s in name_l for s in MIC_PREFER_SUBSTR):
+                    g = guid.strip().strip("{}")
+                    if re.fullmatch(r"[0-9a-fA-F-]{36}", g):
+                        device_id = "{0.0.1.00000000}.{" + g.lower() + "}"
+                        log.info("mic matched '%s' → %s", name.strip(), device_id)
+                        return device_id
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        log.debug("mic discovery skipped: %s", exc)
+
+    log.info("mic device_id fallback=%s (set MARCATO_MIC_ID if wrong)", fallback)
+    return fallback
 
 
 # Middle band reserved for game (matches .triple-safe in theme.css).
@@ -1161,6 +1244,451 @@ def build_collection(
     out.write_text(json.dumps(collection, indent=4), encoding="utf-8")
     log.info(
         "scene collection written to %s (%d sources) in %.0f ms",
+        out,
+        len(collection["sources"]),
+        (time.perf_counter() - t0) * 1000,
+    )
+    return out
+
+
+def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
+    """Slim S.Marcato 42 live pack: Starting Soon / Live / Lobby / BRB / Ending / Flags."""
+    t0 = time.perf_counter()
+    overlays_dir = overlays or (ROOT / "overlays-marcato")
+    OBS_DIR.mkdir(parents=True, exist_ok=True)
+    mic_id = resolve_mic_device_id()
+
+    desktop = source_base(
+        "Audio Desktop",
+        "wasapi_output_capture",
+        {"device_id": "default"},
+        mixers=255,
+        volume=0.50,
+    )
+    mic = source_base(
+        "Microfono",
+        "wasapi_input_capture",
+        {"device_id": mic_id},
+        mixers=255,
+        volume=0.90,
+    )
+    cam = dshow_cam("StreamCam", STREAMCAM_ID)
+    cam2 = dshow_cam("Cam 2", USBCAM_ID)
+    cam_bd_face = cam_carbon_backdrop(
+        "Cam Backdrop Face", width=360, height=202, marcato=True
+    )
+    cam_bd_2 = cam_carbon_backdrop(
+        "Cam Backdrop 2", width=320, height=180, marcato=True
+    )
+
+    roles = monitor_roles()
+    for role, mon in roles.items():
+        if mon:
+            log.info(
+                "monitor %s: %s %dx%d @%d,%d",
+                role,
+                mon.get("device"),
+                mon["w"],
+                mon["h"],
+                mon["x"],
+                mon["y"],
+            )
+        else:
+            log.warning("monitor %s not detected — pick display in OBS", role)
+
+    mon_center = source_base(
+        "Monitor Centro",
+        "monitor_capture",
+        monitor_capture_settings(roles["center"]),
+    )
+    ui_capture = source_base(
+        "iRacing UI Capture",
+        "game_capture",
+        iracing_ui_capture_settings(),
+        mixers=0,
+    )
+
+    def browser(name: str, html: str, *, query: str = "") -> dict:
+        url = file_url(overlays_dir / html)
+        if query:
+            url = f"{url}?{query.lstrip('?')}"
+        return source_base(
+            name,
+            "browser_source",
+            {
+                "url": url,
+                "width": CANVAS_W,
+                "height": CANVAS_H,
+                "fps": 30,
+                "shutdown": True,
+                "restart_when_active": True,
+                "webpage_control_level": 1,
+            },
+        )
+
+    ov_soon = browser("Overlay Starting Soon", "starting-soon.html")
+    ov_brb = browser("Overlay BRB", "brb.html")
+    ov_end = browser("Overlay Ending", "ending.html")
+    # cam=0: CAM frame lives in nested Cam PIP (same as Replay)
+    ov_live = browser("Overlay Live Chrome", "live-chrome.html", query="cam=0")
+    ov_broadcast = http_browser_source(
+        "Overlay Broadcast Chrome", overlays_dir, "broadcast-chrome.html"
+    )
+    ov_track_map = http_browser_source(
+        "Overlay Track Map", overlays_dir, "track-map.html"
+    )
+    ov_flag_yellow = http_browser_source(
+        "Overlay Flag Yellow", overlays_dir, "flag-scene.html", query="flag=yellow"
+    )
+    ov_flag_red = http_browser_source(
+        "Overlay Flag Red", overlays_dir, "flag-scene.html", query="flag=red"
+    )
+    ov_flag_checkered = http_browser_source(
+        "Overlay Flag Checkered",
+        overlays_dir,
+        "flag-scene.html",
+        query="flag=checkered",
+    )
+    ov_cam_frame = browser("Overlay Cam Frame", "cam-frame.html")
+    ov_cam_frame_2 = browser("Overlay Cam 2 Frame", "cam-frame-2.html")
+
+    def music(name: str, filename: str, *, volume: float = 0.28) -> dict | None:
+        path = AUDIO_DIR / filename
+        if not path.is_file():
+            log.warning("music missing, skip %s (%s)", name, path)
+            return None
+        return source_base(
+            name,
+            "ffmpeg_source",
+            {
+                "local_file": str(path.resolve()),
+                "looping": True,
+                "restart_on_activate": True,
+                "close_when_inactive": True,
+                "clear_on_media_end": False,
+                "hw_decode": False,
+                "speed_percent": 100,
+                "is_local_file": True,
+            },
+            mixers=255,
+            volume=volume,
+        )
+
+    mus_soon = music("Music Starting Soon", "starting-soon.mp3", volume=0.30)
+    mus_lobby = music("Music Lobby", "lobby.mp3", volume=0.24)
+    mus_brb = music("Music BRB", "brb.mp3", volume=0.26)
+    mus_end = music("Music Ending", "ending.mp3", volume=0.28)
+
+    def audio_bed_item(src: dict | None, item_id: int) -> list[dict]:
+        if src is None:
+            return []
+        return [
+            scene_item(
+                src["name"],
+                src["uuid"],
+                item_id,
+                pos=(-40.0, -40.0),
+                scale=(0.001, 0.001),
+                visible=True,
+                locked=True,
+                scale_ref=(1920.0, 1080.0),
+            )
+        ]
+
+    cam_w, cam_h = 360.0, 202.0
+    cam_scale = cam_w / 1920.0
+    cam_x, cam_y = 36.0, CANVAS_H - 36.0 - cam_h
+    cam_ref = (1920.0, 1080.0)
+    cam2_w, cam2_h = 320.0, 180.0
+    cam2_scale = cam2_w / 1920.0
+    cam2_x, cam2_y = CANVAS_W - 36.0 - cam2_w, CANVAS_H - 36.0 - cam2_h
+    cam_sm_w = 280.0
+    cam_sm_scale = cam_sm_w / 1920.0
+    cam_sm_h = 1080.0 * cam_sm_scale
+    cam_sm_x = (CANVAS_W - cam_sm_w) / 2.0
+    cam_sm_y = CANVAS_H - 56.0 - cam_sm_h
+
+    def fullscreen(
+        name: str,
+        source_uuid: str,
+        item_id: int,
+        *,
+        visible: bool = True,
+        locked: bool = False,
+    ) -> dict:
+        return scene_item(
+            name,
+            source_uuid,
+            item_id,
+            pos=(0.0, 0.0),
+            scale=(1.0, 1.0),
+            visible=visible,
+            locked=locked,
+            scale_ref=(float(CANVAS_W), float(CANVAS_H)),
+        )
+
+    scene_cam_pip = make_scene(
+        "Cam PIP",
+        [
+            scene_item(
+                cam_bd_face["name"],
+                cam_bd_face["uuid"],
+                1,
+                pos=(cam_x, cam_y),
+                scale=(1.0, 1.0),
+                scale_ref=(cam_w, cam_h),
+                locked=True,
+            ),
+            scene_item(
+                cam["name"],
+                cam["uuid"],
+                2,
+                pos=(cam_x, cam_y),
+                scale=(cam_scale, cam_scale),
+                scale_ref=cam_ref,
+            ),
+            fullscreen(ov_cam_frame["name"], ov_cam_frame["uuid"], 3, locked=True),
+        ],
+    )
+    scene_cam2_pip = make_scene(
+        "Cam 2 PIP",
+        [
+            scene_item(
+                cam_bd_2["name"],
+                cam_bd_2["uuid"],
+                1,
+                pos=(cam2_x, cam2_y),
+                scale=(1.0, 1.0),
+                scale_ref=(cam2_w, cam2_h),
+                locked=True,
+            ),
+            scene_item(
+                cam2["name"],
+                cam2["uuid"],
+                2,
+                pos=(cam2_x, cam2_y),
+                scale=(cam2_scale, cam2_scale),
+                scale_ref=cam_ref,
+            ),
+            fullscreen(ov_cam_frame_2["name"], ov_cam_frame_2["uuid"], 3, locked=True),
+        ],
+    )
+
+    def cam_pip_item(item_id: int, *, visible: bool = True) -> dict:
+        return scene_item(
+            scene_cam_pip["name"],
+            scene_cam_pip["uuid"],
+            item_id,
+            pos=(0.0, 0.0),
+            scale=(1.0, 1.0),
+            visible=visible,
+            scale_ref=(float(CANVAS_W), float(CANVAS_H)),
+        )
+
+    def cam2_pip_item(item_id: int, *, visible: bool = True) -> dict:
+        return scene_item(
+            scene_cam2_pip["name"],
+            scene_cam2_pip["uuid"],
+            item_id,
+            pos=(0.0, 0.0),
+            scale=(1.0, 1.0),
+            visible=visible,
+            scale_ref=(float(CANVAS_W), float(CANVAS_H)),
+        )
+
+    def telecronaca_items(start_id: int) -> list[dict]:
+        """Broadcast chrome ON; track map eye-off (often embedded in chrome)."""
+        return [
+            fullscreen(
+                ov_broadcast["name"], ov_broadcast["uuid"], start_id, visible=True
+            ),
+            fullscreen(
+                ov_track_map["name"],
+                ov_track_map["uuid"],
+                start_id + 1,
+                visible=False,
+            ),
+        ]
+
+    scene_soon = make_scene(
+        "Starting Soon",
+        [
+            fullscreen(ov_soon["name"], ov_soon["uuid"], 1, locked=True),
+            scene_item(
+                cam["name"],
+                cam["uuid"],
+                2,
+                pos=(cam_sm_x, cam_sm_y),
+                scale=(cam_sm_scale, cam_sm_scale),
+                scale_ref=cam_ref,
+            ),
+            *audio_bed_item(mus_soon, 3),
+        ],
+    )
+    scene_live = make_scene(
+        "Live",
+        [
+            layout_single_monitor(
+                mon_center["name"],
+                mon_center["uuid"],
+                1,
+                roles["center"],
+            ),
+            fullscreen(ov_live["name"], ov_live["uuid"], 2, locked=True),
+            *telecronaca_items(3),
+            cam_pip_item(5),
+            cam2_pip_item(6, visible=False),
+        ],
+    )
+    scene_lobby = make_scene(
+        "Lobby",
+        [
+            fullscreen(ui_capture["name"], ui_capture["uuid"], 1),
+            fullscreen(ov_live["name"], ov_live["uuid"], 2, locked=True),
+            cam_pip_item(3),
+            *audio_bed_item(mus_lobby, 4),
+        ],
+    )
+    scene_brb = make_scene(
+        "BRB",
+        [
+            fullscreen(ov_brb["name"], ov_brb["uuid"], 1, locked=True),
+            scene_item(
+                cam["name"],
+                cam["uuid"],
+                2,
+                pos=(cam_sm_x, cam_sm_y),
+                scale=(cam_sm_scale, cam_sm_scale),
+                scale_ref=cam_ref,
+            ),
+            *audio_bed_item(mus_brb, 3),
+        ],
+    )
+    scene_end = make_scene(
+        "Ending",
+        [
+            fullscreen(ov_end["name"], ov_end["uuid"], 1, locked=True),
+            *audio_bed_item(mus_end, 2),
+        ],
+    )
+    scene_flag_yellow = make_scene(
+        "Flag Yellow",
+        [fullscreen(ov_flag_yellow["name"], ov_flag_yellow["uuid"], 1, locked=True)],
+    )
+    scene_flag_red = make_scene(
+        "Flag Red",
+        [fullscreen(ov_flag_red["name"], ov_flag_red["uuid"], 1, locked=True)],
+    )
+    scene_flag_checkered = make_scene(
+        "Flag Checkered",
+        [
+            fullscreen(
+                ov_flag_checkered["name"], ov_flag_checkered["uuid"], 1, locked=True
+            )
+        ],
+    )
+
+    music_sources = [s for s in (mus_soon, mus_lobby, mus_brb, mus_end) if s is not None]
+    if music_sources:
+        log.info("live music beds: %s", ", ".join(s["name"] for s in music_sources))
+
+    sources = [
+        desktop,
+        mic,
+        cam,
+        cam2,
+        cam_bd_face,
+        cam_bd_2,
+        mon_center,
+        ui_capture,
+        ov_soon,
+        ov_brb,
+        ov_end,
+        ov_live,
+        ov_broadcast,
+        ov_track_map,
+        ov_flag_yellow,
+        ov_flag_red,
+        ov_flag_checkered,
+        ov_cam_frame,
+        ov_cam_frame_2,
+        *music_sources,
+        scene_cam_pip,
+        scene_cam2_pip,
+        scene_soon,
+        scene_live,
+        scene_lobby,
+        scene_brb,
+        scene_end,
+        scene_flag_yellow,
+        scene_flag_red,
+        scene_flag_checkered,
+    ]
+
+    scene_order = [
+        {"name": "Starting Soon"},
+        {"name": "Live"},
+        {"name": "Lobby"},
+        {"name": "BRB"},
+        {"name": "Ending"},
+        {"name": "Flag Yellow"},
+        {"name": "Flag Red"},
+        {"name": "Flag Checkered"},
+    ]
+
+    collection = {
+        "name": "S.Marcato 42",
+        "DesktopAudioDevice1": desktop,
+        "AuxAudioDevice1": mic,
+        "sources": [s for s in sources if s["name"] not in ("Audio Desktop", "Microfono")],
+        "groups": [],
+        "scene_order": scene_order,
+        "current_scene": "Starting Soon",
+        "current_program_scene": "Starting Soon",
+        "canvases": [],
+        "current_transition": "Dissolvenza",
+        "transition_duration": 300,
+        "transitions": [],
+        "quick_transitions": [],
+        "saved_projectors": [],
+        "preview_locked": False,
+        "scaling_enabled": False,
+        "scaling_level": 0,
+        "scaling_off_x": 0.0,
+        "scaling_off_y": 0.0,
+        "modules": {
+            "scripts-tool": config_autostart_scripts(),
+            "auto-scene-switcher": {
+                "interval": 300,
+                "non_matching_scene": "",
+                "switch_if_not_matching": False,
+                "active": False,
+                "switches": [],
+            },
+        },
+        "resolution": {"x": CANVAS_W, "y": CANVAS_H},
+        "version": 2,
+    }
+
+    transitions, current_tr, tr_dur = build_transitions(
+        overlays_dir=overlays_dir, profile="marcato"
+    )
+    collection["transitions"] = transitions
+    collection["current_transition"] = current_tr
+    collection["transition_duration"] = tr_dur
+    collection["quick_transitions"] = [
+        {"name": "Taglio", "duration": 0, "hotkeys": [], "id": 1, "fade_to_black": False},
+        {"name": current_tr, "duration": tr_dur, "hotkeys": [], "id": 2, "fade_to_black": False},
+        {"name": "Swipe Racing", "duration": 420, "hotkeys": [], "id": 3, "fade_to_black": False},
+        {"name": "Flash Carbon", "duration": 280, "hotkeys": [], "id": 4, "fade_to_black": False},
+        {"name": "Dissolvenza", "duration": 350, "hotkeys": [], "id": 5, "fade_to_black": False},
+    ]
+    log.info("default transition=%s (%d ms), %d transitions", current_tr, tr_dur, len(transitions))
+
+    out = OBS_DIR / "S_Marcato_42.json"
+    out.write_text(json.dumps(collection, indent=4), encoding="utf-8")
+    log.info(
+        "slim live collection written to %s (%d sources) in %.0f ms",
         out,
         len(collection["sources"]),
         (time.perf_counter() - t0) * 1000,
@@ -2256,13 +2784,8 @@ def main() -> None:
     outputs: list[str] = []
 
     if args.profile == "marcato":
-        log.info("start generating S.Marcato 42 OBS collection (marcato profile)")
-        scene = build_collection(
-            overlays=ROOT / "overlays-marcato",
-            collection_name="S.Marcato 42",
-            output_filename="S_Marcato_42.json",
-            profile="marcato",
-        )
+        log.info("start generating S.Marcato 42 slim live + Replay + Rec 2K")
+        scene = build_marcato_live_collection(overlays=ROOT / "overlays-marcato")
         outputs.append(scene.name)
         replay = build_replay_collection(overlays=ROOT / "overlays-marcato")
         outputs.append(replay.name)
