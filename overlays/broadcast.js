@@ -73,6 +73,20 @@
     else lastFlag = "";
   }
 
+  function clearMomentLayer() {
+    if (heroExitTimer != null) {
+      window.clearTimeout(heroExitTimer);
+      heroExitTimer = null;
+    }
+    heroGen += 1;
+    directorState = { hero: null, queue: [] };
+    if (!elMoment) return;
+    elMoment.hidden = true;
+    elMoment.innerHTML = "";
+    elMoment.classList.remove("is-enter", "is-exit");
+    elMoment.dataset.kind = "";
+  }
+
   function showHero(item) {
     if (!item) return;
     if (heroExitTimer != null) {
@@ -91,7 +105,9 @@
     var label = Director
       ? Director.formatMomentLabel(item)
       : String(item.kind).replace("_", " ").toUpperCase();
-    elMoment.innerHTML = '<div class="bc-moment-chip">' + label + "</div>";
+    elMoment.innerHTML = '<div class="bc-moment-chip"></div>';
+    var chip = elMoment.querySelector(".bc-moment-chip");
+    if (chip) chip.textContent = label;
   }
 
   function enqueueEvent(ev) {
@@ -202,10 +218,15 @@
         (flagLabel ? "<span>" + flagLabel + "</span>" : "");
     }
 
-    // Auto + Director: banner comes from flag_change events. If Director is
-    // missing, fall back to tick-driven banner (same as manual/off).
-    if (elBanner && (director !== "auto" || !Director)) {
-      applyFlagBanner(flag);
+    // Auto + Director: latch banner from tick unless a flag/session_end hero
+    // owns the event-driven banner (Browser Source refresh mid-yellow).
+    if (elBanner) {
+      var hero = directorState.hero;
+      var flagHero =
+        hero && (hero.kind === "flag_change" || hero.kind === "session_end");
+      if (director !== "auto" || !Director || !flagHero) {
+        applyFlagBanner(flag);
+      }
     }
 
     const standings = Array.isArray(tick.standings) ? tick.standings : [];
@@ -370,6 +391,7 @@
       } else if (msg.type === "telemetry.status" && msg.connected === false) {
         root.dataset.state = "idle";
         setStatus("SIM DISCONNECTED");
+        clearMomentLayer();
       }
     });
 

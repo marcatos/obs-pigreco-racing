@@ -105,7 +105,7 @@ function createClassList() {
 }
 
 function createEl() {
-  return {
+  var el = {
     hidden: false,
     innerHTML: "",
     textContent: "",
@@ -115,7 +115,19 @@ function createEl() {
       return "";
     },
     setAttribute: function () {},
+    querySelector: function (sel) {
+      if (sel !== ".bc-moment-chip") return null;
+      return {
+        set textContent(v) {
+          el.innerHTML = '<div class="bc-moment-chip">' + v + "</div>";
+        },
+        get textContent() {
+          return el.innerHTML;
+        },
+      };
+    },
   };
+  return el;
 }
 
 function loadOverlay(opts) {
@@ -263,10 +275,15 @@ function testMissingDirectorAppliesTickBanner() {
   assertEq(ctx.els.banner.dataset.flag, "yellow", "missing Director enqueueEvent is a no-op");
 }
 
-function testAutoUsesEventPathForBannerWhenDirectorPresent() {
+function testAutoLatchesFlagBannerFromFirstYellowTick() {
   var ctx = loadOverlay({ withDirector: true, director: "auto" });
   ctx.send({ type: "telemetry.tick", flag: "yellow", standings: [], relatives: [] });
-  assert(!ctx.els.banner.classList.contains("is-on"), "auto+Director does not apply tick-driven banner");
+  assert(ctx.els.banner.classList.contains("is-on"), "auto+Director latches banner from first yellow tick");
+  assertEq(ctx.els.banner.dataset.flag, "yellow", "banner dataset.flag from tick when no flag hero");
+}
+
+function testFlagHeroKeepsEventDrivenBanner() {
+  var ctx = loadOverlay({ withDirector: true, director: "auto" });
   ctx.send({
     type: "telemetry.event",
     kind: "flag_change",
@@ -274,8 +291,39 @@ function testAutoUsesEventPathForBannerWhenDirectorPresent() {
     ttlMs: 4000,
     payload: { flag: "yellow" },
   });
-  assert(ctx.els.banner.classList.contains("is-on"), "auto+Director applies banner from flag_change event");
+  assert(ctx.els.banner.classList.contains("is-on"), "flag_change event still drives banner");
   assertEq(ctx.els.banner.dataset.flag, "yellow");
+  ctx.send({ type: "telemetry.tick", flag: "green", standings: [], relatives: [] });
+  assertEq(ctx.els.banner.dataset.flag, "yellow", "flag hero keeps event-driven banner");
+}
+
+function testBattleHeroStillLatchesTickBanner() {
+  var ctx = loadOverlay({ withDirector: true, director: "auto" });
+  ctx.send({
+    type: "telemetry.event",
+    kind: "battle",
+    priority: 60,
+    ttlMs: 4000,
+    payload: {},
+  });
+  ctx.send({ type: "telemetry.tick", flag: "yellow", standings: [], relatives: [] });
+  assert(ctx.els.banner.classList.contains("is-on"), "non-flag hero still latches tick banner");
+  assertEq(ctx.els.banner.dataset.flag, "yellow");
+}
+
+function testDisconnectClearsMomentLayer() {
+  var ctx = loadOverlay({ withDirector: true, director: "auto" });
+  ctx.send({
+    type: "telemetry.event",
+    kind: "battle",
+    priority: 60,
+    ttlMs: 4000,
+    payload: {},
+  });
+  assertEq(ctx.els.moment.hidden, false, "battle chip visible");
+  ctx.send({ type: "telemetry.status", connected: false });
+  assertEq(ctx.els.moment.hidden, true, "disconnect hides moment");
+  assertEq(ctx.els.moment.innerHTML, "", "disconnect clears moment DOM");
 }
 
 function testHeroExitRaceKeepsNewChip() {
@@ -311,6 +359,9 @@ function testHeroExitRaceKeepsNewChip() {
 
 testAutoDoesNotHideWidgetsViaDirector();
 testMissingDirectorAppliesTickBanner();
-testAutoUsesEventPathForBannerWhenDirectorPresent();
+testAutoLatchesFlagBannerFromFirstYellowTick();
+testFlagHeroKeepsEventDrivenBanner();
+testBattleHeroStillLatchesTickBanner();
+testDisconnectClearsMomentLayer();
 testHeroExitRaceKeepsNewChip();
 console.log("ok");

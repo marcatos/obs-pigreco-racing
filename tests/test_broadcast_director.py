@@ -54,7 +54,9 @@ def test_moment_css_is_peripheral_not_center_fov():
     assert ".bc-moment {" in css
     assert "top: 120px" in css
     assert "left: 50%" in css
-    assert "border: 2px solid #00c400" in css.lower() or "border: 2px solid #00C400" in css
+    css_l = css.lower()
+    assert "border: 2px solid var(--accent, #00c400)" in css_l
+    assert 'data-kind="overtake"] .bc-moment-chip { border-color: var(--accent, #00c400); }' in css_l
     assert "bcMomentIn" in css
     assert "bcMomentOut" in css
     assert "top: 50%" not in css.split(".bc-moment {")[1].split("}")[0]

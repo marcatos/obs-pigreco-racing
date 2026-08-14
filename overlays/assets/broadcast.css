@@ -429,11 +429,11 @@
   font-size: 28px;
   padding: 10px 22px;
   background: rgba(8, 10, 12, 0.88);
-  border: 2px solid #00c400;
+  border: 2px solid var(--accent, #00c400);
   color: #fff;
 }
 .bc-moment[data-kind="flag_change"] .bc-moment-chip { border-color: #f5d90a; }
-.bc-moment[data-kind="overtake"] .bc-moment-chip { border-color: #00c400; }
+.bc-moment[data-kind="overtake"] .bc-moment-chip { border-color: var(--accent, #00c400); }
 .bc-moment[data-kind="fast_lap"] .bc-moment-chip { border-color: #c084fc; }
 .bc-moment[data-kind="pit"] .bc-moment-chip { border-color: #009fe5; }
 .bc-moment[data-kind="session_end"] .bc-moment-chip {
