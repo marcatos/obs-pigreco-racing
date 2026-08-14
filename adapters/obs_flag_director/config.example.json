@@ -1,0 +1,15 @@
+{
+  "telemetryWsUrl": "ws://127.0.0.1:8765",
+  "obsHost": "127.0.0.1",
+  "obsPort": 4455,
+  "obsPassword": "",
+  "enabled": true,
+  "dryRun": true,
+  "debounceMs": 1500,
+  "homeScene": "Rec * Live",
+  "scenes": {
+    "yellow": "Flag Yellow",
+    "red": "Flag Red",
+    "checkered": "Flag Checkered"
+  }
+}

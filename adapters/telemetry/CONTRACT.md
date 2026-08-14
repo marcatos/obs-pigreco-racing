@@ -107,6 +107,23 @@ Additive director fields. Consumers must ignore unknown keys.
 | `airTempC` | number \| null | Air temperature (°C) if the SDK is reliable |
 | `trackTempC` | number \| null | Track temperature (°C) if the SDK is reliable |
 | `sof` | number \| null | Strength of field when available |
+| `yawRad` | number \| null | Vehicle yaw (radians) when available — used by track self-learn |
+
+#### Optional P3-03 track map (ignore if absent)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `trackId` | string \| null | Slug id for asset lookup (e.g. `monza-gp`) |
+| `mapCars` | array | Cars for minimap dots (see below) |
+
+**`mapCars[]`**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `carIdx` | number \| null | SDK index |
+| `carNumber` | string | Race number |
+| `distPct` | number | Lap distance 0–1 |
+| `isFocus` | boolean | Camera focus |
 
 **`standings[]` extras (P3-06)**
 

@@ -29,6 +29,7 @@ if str(HERE) not in sys.path:
 from domain_enrich import apply_pos_change, delta_best_ms  # noqa: E402
 from domain_events import EventDetector  # noqa: E402
 from domain_standings import build_relatives, mock_standings  # noqa: E402
+from domain_track_map import build_map_cars, normalize_track_id  # noqa: E402
 
 SCHEMA_VERSION = 1
 DEFAULT_HOST = "127.0.0.1"
@@ -137,6 +138,8 @@ def build_tick(elapsed_s: float) -> dict[str, Any]:
         sessionTimeRemainMs=None,
         standings=standings,
         relatives=relatives,
+        trackId=normalize_track_id("Monza GP"),
+        mapCars=build_map_cars(standings, focus_car_idx=focus.get("carIdx")),
     )
 
 

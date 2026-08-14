@@ -1,0 +1,2 @@
+websockets>=12.0
+obsws-python>=1.7.0

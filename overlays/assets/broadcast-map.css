@@ -1,0 +1,51 @@
+.stage {
+  width: 1920px;
+  height: 1080px;
+  position: relative;
+  overflow: hidden;
+  background: transparent;
+}
+
+.track-map-root {
+  position: absolute;
+  right: 36px;
+  bottom: 120px;
+  width: 320px;
+  height: 220px;
+  pointer-events: none;
+  background: rgba(8, 10, 12, 0.72);
+  border: 1px solid color-mix(in srgb, var(--accent, #00c400) 55%, transparent);
+  box-sizing: border-box;
+  padding: 10px 12px 8px;
+}
+
+.tm-label {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #c5ccd3;
+  margin-bottom: 6px;
+  font-family: inherit;
+}
+
+.tm-svg {
+  width: 100%;
+  height: calc(100% - 22px);
+  display: block;
+}
+
+.tm-path {
+  fill: none;
+  stroke: #6a737c;
+  stroke-width: 1.8;
+}
+
+.tm-car {
+  fill: #9aa3ad;
+}
+
+.tm-car.is-focus {
+  fill: var(--accent, #00c400);
+  stroke: #fff;
+  stroke-width: 0.6;
+}

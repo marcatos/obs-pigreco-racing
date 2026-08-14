@@ -42,8 +42,8 @@ Update this file when claiming or finishing an ID.
 |----|------|--------|-------|
 | P3-01 | Telemetry bridge design (SimHub/iRacing) | done | ADR-005 + mock `adapters/telemetry/` |
 | P3-02 | Live relative / position widget | done | broadcast-chrome + mock + iracing_bridge; docs/TELEMETRY_BROADCAST.md |
-| P3-03 | Minimap / track map | later | |
-| P3-04 | Auto scene on flags | later | obs-websocket |
+| P3-03 | Minimap / track map | done | `track-map.html`; open+self-learn; `docs/TRACK_MAP.md` |
+| P3-04 | Auto scene on flags | done | `adapters/obs_flag_director/`, `docs/FLAG_DIRECTOR.md` |
 | P3-05 | Audio buses + VOD track guide | ready | docs + OBS profile notes |
 | P3-06 | Broadcast director + tick enrichment | done | spec 2026-08-14; hybrid auto/manual moments |
 
