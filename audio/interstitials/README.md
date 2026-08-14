@@ -17,7 +17,17 @@ Note: the link you sent ([videos looping](https://pixabay.com/videos/search/loop
 1. Open `Open-Pixabay-Music.bat` (same folder) — opens the four searches in your browser.
 2. On each track page click **Free download** → save as MP3.
 3. Rename / overwrite into this folder with the exact names above.
-4. In OBS: refresh Media Sources `Music Starting Soon` / `Lobby` / `BRB` / `Ending` (or re-run `python tools/generate_pack.py --profile marcato` after files exist).
+4. **Normalize beds** (Pixabay masters often peak at 0 dBFS):
+
+```powershell
+# from repo root — drop ~14 dB so beds sit under voice/game
+foreach ($f in 'starting-soon','lobby','brb','ending') {
+  ffmpeg -y -i "audio/interstitials/$f.mp3" -af "volume=-14dB" -codec:a libmp3lame -b:a 256k "audio/interstitials/$f.norm.mp3"
+  Move-Item -Force "audio/interstitials/$f.norm.mp3" "audio/interstitials/$f.mp3"
+}
+```
+
+5. In OBS: refresh Media Sources `Music …` (or re-run `python tools/generate_pack.py --profile marcato`). Pack mixer defaults are ~0.15–0.18 (beds, not foreground).
 
 ## License
 
