@@ -6,17 +6,23 @@
   background: transparent;
 }
 
+/* Middle-right: clear of Cam 2 (bottom-right) and standings (top-right) */
 .track-map-root {
   position: absolute;
-  right: 36px;
-  bottom: 120px;
-  width: 320px;
-  height: 220px;
+  right: 28px;
+  top: 520px;
+  width: 300px;
+  height: 200px;
+  z-index: 30;
   pointer-events: none;
-  background: rgba(8, 10, 12, 0.72);
-  border: 1px solid color-mix(in srgb, var(--accent, #00c400) 55%, transparent);
+  background: rgba(8, 10, 12, 0.82);
+  border: 2px solid var(--accent, #00c400);
   box-sizing: border-box;
   padding: 10px 12px 8px;
+}
+
+.track-map-root[hidden] {
+  display: none !important;
 }
 
 .tm-label {
@@ -34,10 +40,13 @@
   display: block;
 }
 
+.tm-track path,
 .tm-path {
-  fill: none;
-  stroke: #6a737c;
-  stroke-width: 1.8;
+  fill: none !important;
+  stroke: var(--accent, #00c400) !important;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .tm-car {

@@ -14,6 +14,32 @@ def normalize_track_id(name: str | None) -> str:
     return slug.strip("-") or "unknown"
 
 
+def format_track_id(raw: object | None, fallback_name: str | None = None) -> str:
+    """Prefer numeric WeekendInfo.TrackID; else slug from name."""
+    if raw is not None:
+        s = str(raw).strip()
+        if s.isdigit():
+            return str(int(s))
+    if raw not in (None, ""):
+        return normalize_track_id(str(raw))
+    return normalize_track_id(fallback_name)
+
+
+def apply_dist_offset(
+    dist_pct: float, *, offset: float = 0.0, direction: int = 1
+) -> float:
+    """Map LapDistPct onto an SVG path with optional S/F offset and reverse."""
+    t = float(dist_pct) % 1.0
+    if t < 0:
+        t += 1.0
+    if int(direction) < 0:
+        t = (1.0 - t) % 1.0
+    t = (t + float(offset)) % 1.0
+    if t < 0:
+        t += 1.0
+    return t
+
+
 def generic_oval_points(n: int = 64) -> list[tuple[float, float]]:
     """Unit-ish oval in viewBox 0..1 (padding 0.08)."""
     pts: list[tuple[float, float]] = []

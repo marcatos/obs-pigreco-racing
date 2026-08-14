@@ -17,6 +17,7 @@ echo   - Import/reimport S.Marcato Replay or Rec 2K after generate_pack
 echo   - Eye ON: Overlay Broadcast Chrome (+ Track Map if wanted)
 echo   - Dock: http://127.0.0.1:8766/?profile=marcato
 echo   - Enable telemetryEnabled (+ trackMapEnabled)
+echo   - Sync track SVGs once: Start-SyncTrackMaps.bat
 echo.
 echo Docs: docs\TELEMETRY_BROADCAST.md  docs\FLAG_DIRECTOR.md  docs\TRACK_MAP.md
 echo.

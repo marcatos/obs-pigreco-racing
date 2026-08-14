@@ -11,7 +11,9 @@ TEL = ROOT / "adapters" / "telemetry"
 sys.path.insert(0, str(TEL))
 
 from domain_track_map import (  # noqa: E402
+    apply_dist_offset,
     build_map_cars,
+    format_track_id,
     generic_oval_points,
     normalize_track_id,
     point_on_polyline,
@@ -22,6 +24,20 @@ from track_learn import TrackLearner  # noqa: E402
 def test_normalize_track_id():
     assert normalize_track_id("Monza GP") == "monza-gp"
     assert normalize_track_id(None) == "unknown"
+
+
+def test_format_track_id_prefers_numeric():
+    assert format_track_id(449, "Monza GP") == "449"
+    assert format_track_id("449", None) == "449"
+
+
+def test_format_track_id_falls_back_to_slug():
+    assert format_track_id(None, "Monza GP") == "monza-gp"
+
+
+def test_apply_dist_offset_wraps():
+    assert abs(apply_dist_offset(0.9, offset=0.2, direction=1) - 0.1) < 1e-9
+    assert abs(apply_dist_offset(0.1, offset=0.0, direction=-1) - 0.9) < 1e-9
 
 
 def test_point_on_polyline_midpoint():
@@ -59,3 +75,11 @@ def test_track_learner_flush(tmp_path: Path):
     assert path.is_file()
     data = path.read_text(encoding="utf-8")
     assert "test-track" in data
+
+
+def test_mask_password_stable():
+    from iracing_members_auth import mask_password
+
+    a = mask_password("secret", "User@Example.com")
+    b = mask_password("secret", "user@example.com")
+    assert a == b and len(a) > 20

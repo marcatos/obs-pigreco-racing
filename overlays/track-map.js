@@ -1,5 +1,5 @@
 /**
- * Track minimap (P3-03). Consumes telemetry.tick mapCars + trackId.
+ * Track minimap (P3-07): official iRacing SVG cache by TrackID.
  * Mount: [data-track-map-root]
  */
 (function initTrackMap() {
@@ -7,127 +7,191 @@
   const root = document.querySelector("[data-track-map-root]");
   if (!root) return;
 
-  if (cfg.trackMapEnabled !== true && cfg.telemetryEnabled !== true) {
-    // Prefer explicit trackMapEnabled; allow telemetryEnabled as soft enable
-  }
-  if (cfg.trackMapEnabled !== true) {
+  const enabled =
+    cfg.trackMapEnabled === true ||
+    cfg.trackMapEnabled === "true" ||
+    cfg.trackMapEnabled === 1;
+  if (!enabled) {
     root.hidden = true;
     root.setAttribute("aria-hidden", "true");
     return;
   }
 
   root.hidden = false;
+  root.removeAttribute("hidden");
   root.setAttribute("aria-hidden", "false");
 
   const url = cfg.trackMapWsUrl || cfg.telemetryWsUrl || "ws://127.0.0.1:8765";
-  const pathEl = root.querySelector("[data-tm-path]");
-  const carsEl = root.querySelector("[data-tm-cars]");
   const labelEl = root.querySelector("[data-tm-label]");
-  const scale = 100;
+  const hostEl = root.querySelector("[data-tm-track]");
+  const carsEl = root.querySelector("[data-tm-cars]");
+  const svgEl = root.querySelector(".tm-svg");
 
   let socket = null;
   let retryMs = 1000;
-  let pathPoints = null;
   let loadedTrackId = null;
+  let pathEl = null;
+  let meta = { offset: 0, direction: 1 };
+  let loadGen = 0;
 
-  function genericOval(n) {
-    const pts = [];
-    for (let i = 0; i < n; i++) {
-      const a = (Math.PI * 2 * i) / n;
-      pts.push([0.5 + 0.42 * Math.cos(a), 0.5 + 0.28 * Math.sin(a)]);
-    }
-    return pts;
+  function setHint(text) {
+    if (labelEl) labelEl.textContent = text;
   }
 
-  function toPath(pts) {
-    if (!pts || !pts.length) return "";
-    let d = "M " + (pts[0][0] * scale).toFixed(2) + " " + (pts[0][1] * scale).toFixed(2);
-    for (let i = 1; i < pts.length; i++) {
-      d += " L " + (pts[i][0] * scale).toFixed(2) + " " + (pts[i][1] * scale).toFixed(2);
-    }
-    return d + " Z";
+  function applyDistOffset(distPct, offset, direction) {
+    let t = Number(distPct) % 1;
+    if (t < 0) t += 1;
+    if (Number(direction) < 0) t = (1 - t) % 1;
+    t = (t + Number(offset || 0)) % 1;
+    if (t < 0) t += 1;
+    return t;
   }
 
-  function pointOn(pts, distPct) {
-    if (!pts || !pts.length) return [50, 50];
-    const closed = pts.concat([pts[0]]);
-    let total = 0;
-    const lens = [];
-    for (let i = 0; i < closed.length - 1; i++) {
-      const dx = closed[i + 1][0] - closed[i][0];
-      const dy = closed[i + 1][1] - closed[i][1];
-      const len = Math.hypot(dx, dy);
-      lens.push(len);
-      total += len;
-    }
-    let t = ((Number(distPct) % 1) + 1) % 1;
-    let target = t * (total || 1);
-    let acc = 0;
-    for (let i = 0; i < lens.length; i++) {
-      if (acc + lens[i] >= target) {
-        const u = lens[i] < 1e-9 ? 0 : (target - acc) / lens[i];
-        const x = closed[i][0] + u * (closed[i + 1][0] - closed[i][0]);
-        const y = closed[i][1] + u * (closed[i + 1][1] - closed[i][1]);
-        return [x * scale, y * scale];
+  function candidateUrls(trackId) {
+    const id = encodeURIComponent(trackId);
+    return [
+      "assets/tracks/iracing/" + id + ".svg",
+      "../overlays/assets/tracks/iracing/" + id + ".svg",
+    ];
+  }
+
+  function metaUrls(trackId) {
+    const id = encodeURIComponent(trackId);
+    return [
+      "assets/tracks/iracing/" + id + ".meta.json",
+      "../overlays/assets/tracks/iracing/" + id + ".meta.json",
+    ];
+  }
+
+  async function fetchFirstOk(urls) {
+    for (let i = 0; i < urls.length; i++) {
+      try {
+        const res = await fetch(urls[i], { cache: "no-store" });
+        if (res.ok) return { res, url: urls[i] };
+      } catch (_) {
+        /* next */
       }
-      acc += lens[i];
     }
-    return [closed[0][0] * scale, closed[0][1] * scale];
+    return null;
+  }
+
+  function pickPath(svgRoot) {
+    const paths = svgRoot.querySelectorAll("path");
+    let best = null;
+    let bestLen = 0;
+    paths.forEach(function (p) {
+      try {
+        const len = p.getTotalLength();
+        if (len > bestLen) {
+          bestLen = len;
+          best = p;
+        }
+      } catch (_) {
+        /* ignore */
+      }
+    });
+    return best;
   }
 
   async function loadTrack(trackId) {
-    const id = trackId || "unknown";
-    if (id === loadedTrackId && pathPoints) return;
+    const id = String(trackId || "").trim() || "unknown";
+    if (id === loadedTrackId && pathEl) return true;
+    const gen = ++loadGen;
     loadedTrackId = id;
-    const candidates = [
-      "assets/tracks/open/" + id + ".json",
-      "assets/tracks/learned/" + id + ".json",
-    ];
-    for (let i = 0; i < candidates.length; i++) {
+    pathEl = null;
+    meta = { offset: 0, direction: 1 };
+    if (hostEl) hostEl.innerHTML = "";
+    if (carsEl) carsEl.innerHTML = "";
+
+    const metaHit = await fetchFirstOk(metaUrls(id));
+    if (gen !== loadGen) return false;
+    if (metaHit) {
       try {
-        const res = await fetch(candidates[i], { cache: "no-store" });
-        if (!res.ok) continue;
-        const data = await res.json();
-        const pts = (data.points || []).map(function (p) {
-          return [Number(p.x), Number(p.y)];
-        });
-        if (pts.length >= 8) {
-          pathPoints = pts;
-          if (pathEl) pathEl.setAttribute("d", toPath(pts));
-          if (labelEl) labelEl.textContent = id;
-          return;
-        }
+        const m = await metaHit.res.json();
+        meta = {
+          offset: Number(m.offset) || 0,
+          direction: Number(m.direction) === -1 ? -1 : 1,
+        };
       } catch (_) {
-        /* try next */
+        /* defaults */
       }
     }
-    pathPoints = genericOval(48);
-    if (pathEl) pathEl.setAttribute("d", toPath(pathPoints));
-    if (labelEl) labelEl.textContent = id + " (generic)";
+
+    const hit = await fetchFirstOk(candidateUrls(id));
+    if (gen !== loadGen) return false;
+    if (!hit) {
+      setHint("TRACK MAP — run Start-SyncTrackMaps");
+      root.dataset.state = "missing";
+      return false;
+    }
+    const text = await hit.res.text();
+    if (gen !== loadGen) return false;
+    const parsed = new DOMParser().parseFromString(text, "image/svg+xml");
+    const srcSvg = parsed.documentElement;
+    if (!srcSvg || srcSvg.nodeName.toLowerCase() !== "svg") {
+      setHint("TRACK MAP — invalid SVG");
+      root.dataset.state = "error";
+      return false;
+    }
+
+    const vb = srcSvg.getAttribute("viewBox");
+    if (vb && svgEl) svgEl.setAttribute("viewBox", vb);
+    else if (svgEl) {
+      const w = parseFloat(srcSvg.getAttribute("width")) || 100;
+      const h = parseFloat(srcSvg.getAttribute("height")) || 100;
+      svgEl.setAttribute("viewBox", "0 0 " + w + " " + h);
+    }
+
+    // Import children into host (paths/groups)
+    const frag = document.createDocumentFragment();
+    Array.from(srcSvg.childNodes).forEach(function (n) {
+      frag.appendChild(document.importNode(n, true));
+    });
+    if (hostEl) {
+      hostEl.innerHTML = "";
+      hostEl.appendChild(frag);
+      hostEl.querySelectorAll("path").forEach(function (p) {
+        p.classList.add("tm-path");
+      });
+      pathEl = pickPath(hostEl);
+    }
+    setHint("TRACK " + id);
+    root.dataset.state = "ready";
+    return !!pathEl;
   }
 
   function render(tick) {
     if (!tick) return;
-    loadTrack(tick.trackId || tick.trackName);
-    const cars = Array.isArray(tick.mapCars) ? tick.mapCars : [];
-    if (!carsEl || !pathPoints) return;
-    carsEl.innerHTML = cars
-      .map(function (c) {
-        const xy = pointOn(pathPoints, c.distPct);
-        const cls = c.isFocus ? "tm-car is-focus" : "tm-car";
-        return (
-          '<circle class="' +
-          cls +
-          '" cx="' +
-          xy[0].toFixed(2) +
-          '" cy="' +
-          xy[1].toFixed(2) +
-          '" r="' +
-          (c.isFocus ? 2.4 : 1.6) +
-          '"></circle>'
-        );
-      })
-      .join("");
+    const tid = tick.trackId || tick.trackName || "unknown";
+    loadTrack(tid).then(function (ok) {
+      if (!ok || !pathEl || !carsEl) return;
+      const cars = Array.isArray(tick.mapCars) ? tick.mapCars : [];
+      let total = 0;
+      try {
+        total = pathEl.getTotalLength();
+      } catch (_) {
+        return;
+      }
+      if (!(total > 0)) return;
+      carsEl.innerHTML = cars
+        .map(function (c) {
+          const t = applyDistOffset(c.distPct, meta.offset, meta.direction);
+          const pt = pathEl.getPointAtLength(t * total);
+          const cls = c.isFocus ? "tm-car is-focus" : "tm-car";
+          return (
+            '<circle class="' +
+            cls +
+            '" cx="' +
+            pt.x.toFixed(2) +
+            '" cy="' +
+            pt.y.toFixed(2) +
+            '" r="' +
+            (c.isFocus ? 2.4 : 1.6) +
+            '"></circle>'
+          );
+        })
+        .join("");
+    });
   }
 
   function connect() {
@@ -139,7 +203,7 @@
     }
     socket.addEventListener("open", function () {
       retryMs = 1000;
-      root.dataset.state = "live";
+      if (!loadedTrackId) setHint("TRACK MAP");
     });
     socket.addEventListener("message", function (ev) {
       let msg;
@@ -157,7 +221,6 @@
     });
   }
 
-  pathPoints = genericOval(48);
-  if (pathEl) pathEl.setAttribute("d", toPath(pathPoints));
+  setHint("TRACK MAP");
   connect();
 })();

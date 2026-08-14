@@ -46,6 +46,7 @@ Update this file when claiming or finishing an ID.
 | P3-04 | Auto scene on flags | done | `adapters/obs_flag_director/`, `docs/FLAG_DIRECTOR.md` |
 | P3-05 | Audio buses + VOD track guide | ready | docs + OBS profile notes |
 | P3-06 | Broadcast director + tick enrichment | done | spec 2026-08-14; hybrid auto/manual moments |
+| P3-07 | Official iRacing SVG track maps | done | sync CLI + local cache; overlay SVG; `docs/TRACK_MAP.md` |
 
 ## Phase 4 — Team distribution
 
