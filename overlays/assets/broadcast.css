@@ -1,0 +1,265 @@
+/* Broadcast telecronaca chrome — uses theme tokens (--accent, --panel, --text, …) */
+
+.broadcast-root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+  font-family: var(--font-body);
+  color: var(--text);
+}
+
+.broadcast-root[hidden] {
+  display: none !important;
+}
+
+.broadcast-root[data-state="connecting"] .bc-leaderboard,
+.broadcast-root[data-state="reconnecting"] .bc-leaderboard,
+.broadcast-root[data-state="idle"] .bc-focus {
+  opacity: 0.45;
+}
+
+/* Session strip — top center, under typical session badge */
+.bc-session {
+  position: absolute;
+  top: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.35rem 0.9rem;
+  background: color-mix(in srgb, var(--panel, #111) 88%, transparent);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  border-top: 2px solid var(--accent, #00c400);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.bc-session .bc-flag-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent, #00c400);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent, #00c400) 60%, transparent);
+}
+
+.bc-session[data-flag="yellow"] .bc-flag-dot {
+  background: #f5d000;
+  box-shadow: 0 0 8px rgba(245, 208, 0, 0.55);
+}
+.bc-session[data-flag="red"] .bc-flag-dot,
+.bc-session[data-flag="checkered"] .bc-flag-dot {
+  background: #e10600;
+}
+.bc-session[data-flag="white"] .bc-flag-dot {
+  background: #f7fafc;
+}
+.bc-session[data-flag="blue"] .bc-flag-dot {
+  background: #009fe5;
+}
+
+.bc-session .bc-replay-tag {
+  color: var(--accent, #00c400);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+}
+
+/* Leaderboard — top right, clear of watermark */
+.bc-leaderboard {
+  position: absolute;
+  top: 88px;
+  right: 28px;
+  width: min(340px, 28vw);
+  background: color-mix(in srgb, var(--panel, #111) 90%, transparent);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  border-left: 3px solid var(--accent, #00c400);
+  overflow: hidden;
+}
+
+.bc-leaderboard-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.45rem 0.65rem;
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted, #a7b1ba);
+  border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.1));
+}
+
+.bc-leaderboard-head strong {
+  color: var(--text);
+  font-weight: 400;
+}
+
+.bc-lb-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 420px;
+  overflow: hidden;
+}
+
+.bc-lb-row {
+  display: grid;
+  grid-template-columns: 28px 36px 1fr auto;
+  gap: 0.35rem;
+  align-items: center;
+  padding: 0.28rem 0.55rem;
+  font-size: 0.82rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--line, #fff) 40%, transparent);
+}
+
+.bc-lb-row.is-focus {
+  background: color-mix(in srgb, var(--accent, #00c400) 18%, transparent);
+}
+
+.bc-lb-pos {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--accent, #00c400);
+  font-size: 0.75rem;
+}
+
+.bc-lb-num {
+  font-variant-numeric: tabular-nums;
+  color: var(--muted, #a7b1ba);
+  font-size: 0.75rem;
+}
+
+.bc-lb-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.bc-lb-gap {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.72rem;
+  color: var(--muted, #a7b1ba);
+}
+
+/* Relative — bottom area, left of lower-third when cam present */
+.bc-relative {
+  position: absolute;
+  left: 36px;
+  bottom: 260px;
+  width: min(280px, 24vw);
+  background: color-mix(in srgb, var(--panel, #111) 88%, transparent);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  padding: 0.35rem 0.5rem;
+}
+
+.bc-relative-head {
+  font-family: var(--font-display);
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  color: var(--muted, #a7b1ba);
+  margin-bottom: 0.25rem;
+}
+
+.bc-rel-row {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  padding: 0.15rem 0;
+}
+
+.bc-rel-row.is-focus {
+  color: var(--accent, #00c400);
+  font-weight: 700;
+}
+
+/* Focus card — bottom right margin */
+.bc-focus {
+  position: absolute;
+  right: 28px;
+  bottom: 40px;
+  min-width: 260px;
+  max-width: 360px;
+  padding: 0.7rem 0.9rem 0.85rem;
+  background: color-mix(in srgb, var(--panel, #111) 92%, transparent);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  border-top: 2px solid var(--accent, #00c400);
+}
+
+.bc-focus-pos {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  letter-spacing: 0.04em;
+  color: var(--accent, #00c400);
+  line-height: 1;
+}
+
+.bc-focus-name {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  margin-top: 0.25rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.bc-focus-meta {
+  margin-top: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--muted, #a7b1ba);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 1rem;
+}
+
+.bc-focus-meta span strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Flag banner — full width, only when not green/none */
+.bc-flag-banner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  opacity: 0;
+  transition: opacity 200ms ease;
+  background: transparent;
+  z-index: 8;
+}
+
+.bc-flag-banner.is-on {
+  opacity: 1;
+}
+
+.bc-flag-banner[data-flag="yellow"] {
+  background: repeating-linear-gradient(
+    90deg,
+    #f5d000 0 24px,
+    #111 24px 48px
+  );
+}
+.bc-flag-banner[data-flag="red"] {
+  background: #e10600;
+}
+.bc-flag-banner[data-flag="white"] {
+  background: #f7fafc;
+}
+.bc-flag-banner[data-flag="blue"] {
+  background: #009fe5;
+}
+.bc-flag-banner[data-flag="checkered"] {
+  background: repeating-conic-gradient(#111 0% 25%, #f7fafc 0% 50%) 0 0 / 16px 16px;
+}
+
+.broadcast-root.no-leaderboard .bc-leaderboard,
+.broadcast-root.no-relative .bc-relative,
+.broadcast-root.no-focus .bc-focus,
+.broadcast-root.no-session .bc-session {
+  display: none;
+}

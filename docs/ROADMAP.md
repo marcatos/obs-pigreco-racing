@@ -41,7 +41,7 @@ Update this file when claiming or finishing an ID.
 | ID | Item | Status | Notes |
 |----|------|--------|-------|
 | P3-01 | Telemetry bridge design (SimHub/iRacing) | done | ADR-005 + mock `adapters/telemetry/` |
-| P3-02 | Live relative / position widget | ready | consume CONTRACT.md tick fields |
+| P3-02 | Live relative / position widget | done | broadcast-chrome + mock + iracing_bridge; docs/TELEMETRY_BROADCAST.md |
 | P3-03 | Minimap / track map | later | |
 | P3-04 | Auto scene on flags | later | obs-websocket |
 | P3-05 | Audio buses + VOD track guide | ready | docs + OBS profile notes |
@@ -59,8 +59,8 @@ Update this file when claiming or finishing an ID.
 
 1. `P1-04` Dual cam layout (second dshow + hotkey)  
 2. `P2-03` hotkey map + Stream Deck  
-3. `P3-02` live position/gap widget (consumes telemetry CONTRACT)  
-4. `P3-05` audio buses + VOD track guide  
+3. `P3-03` minimap (later) / `P3-05` audio buses + VOD track guide  
+4. Showcase PNG for broadcast chrome when widgets are stable on stream  
 
 ## Definition of done (any ID)
 

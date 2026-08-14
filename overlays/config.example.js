@@ -12,6 +12,7 @@
 window.PIGRECO_CONFIG = {
   username: "tuo_nick",
   pilotName: "Nome Cognome",
+  raceNumber: "42", // numero gara sulla barra cam
   twitchHandle: "@tuo_nick",
 
   teamName: "PiGreco Racing",
@@ -47,14 +48,14 @@ window.PIGRECO_CONFIG = {
   endingCtaText: "Entra nel Discord del team",
   endingFollowText: "",
 
-  // --- Sponsor rotator (Live Race / Live Singolo) ---
-  // Appare in alto a sinistra, un logo alla volta, poi scompare per non appesantire lo stream.
+  // --- Sponsor rotator (barra sotto la cam su Live Race / Live Singolo) ---
+  // Un logo alla volta nella barra inferiore del riquadro cam; cicla ogni sponsorDisplayMs.
   sponsorsEnabled: true,
   sponsorLabel: "PARTNER",
-  sponsorDisplayMs: 8000,       // quanto resta a schermo
-  sponsorGapMs: 18000,          // pausa prima del prossimo
-  sponsorInitialDelayMs: 12000, // attesa dopo ingresso in scena Live
-  sponsorFadeMs: 700,
+  sponsorDisplayMs: 5000,       // rotazione loghi (ms)
+  sponsorGapMs: 0,              // 0 = continuo sulla barra cam
+  sponsorInitialDelayMs: 0,     // attesa prima del primo cambio
+  sponsorFadeMs: 400,
   // Aggiungi/rimuovi voci; metti i file PNG/SVG in overlays/assets/official/
   sponsors: [
     { name: "SimGrid", src: "assets/official/simgrid-white.png" },
@@ -62,7 +63,13 @@ window.PIGRECO_CONFIG = {
     { name: "GoSetups", src: "assets/official/gosetups.png" }
   ],
 
-  // --- Telemetry bridge (P3 — disabled by default; needs mock/real adapter) ---
+  // --- Telemetry / telecronaca (P3-02) ---
+  // Avvia: python adapters/telemetry/mock_server.py  OPPURE  iracing_bridge.py
   telemetryEnabled: false,
-  telemetryWsUrl: "ws://127.0.0.1:8765"
+  telemetryWsUrl: "ws://127.0.0.1:8765",
+  broadcastLeaderboard: true,
+  broadcastRelative: true,
+  broadcastFocus: true,
+  broadcastSession: true,
+  broadcastLeaderboardRows: 10
 };

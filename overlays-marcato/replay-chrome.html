@@ -46,6 +46,17 @@
       const value = el.querySelector("[data-session-value]") || el;
       value.textContent = "REPLAY";
     })();
+
+    (function optionalCamFrame() {
+      const params = new URLSearchParams(window.location.search);
+      const cam = (params.get("cam") || "").trim().toLowerCase();
+      const root = document.querySelector(".live-root");
+      if (!root) return;
+      const camOff = cam === "0" || cam === "false" || cam === "off" || cam === "no";
+      // cam=0: niente riquadro + lower-third in basso a sinistra (no has-cam)
+      root.classList.toggle("has-cam", !camOff);
+      root.classList.toggle("no-cam-frame", camOff);
+    })();
   </script>
 </body>
 </html>

@@ -1,0 +1,29 @@
+S.Marcato — Registrazione 2K (2560×1440)
+
+1. Profilo OBS → Rec 2K
+2. Collezione → S.Marcato Rec 2K
+
+Scene
+- Rec Singolo / Rec Triplo     clean (niente grafiche)
+- Rec Singolo Live             monitor + chrome S.Marcato + cam
+- Rec Triplo Live              iRacing + bande brand + cam
+
+Cam PIP (opzionale)
+- Nella lista Sources, occhio su **StreamCam** per mostrare/nascondere la webcam.
+- Con cam OFF: sparisce anche il riquadro CAM e il lower-third torna
+  in basso a sinistra (niente buco vuoto).
+- Serve lo script Lua `pigreco_config_autostart.lua` (già in Scripts).
+
+Le grafiche sono le stesse del pack 1080, scalate sul canvas 2K.
+
+Encoder: NVENC HEVC VBR 25 Mbps (max 40). Su iRacing 1440p60
+aspettati ~3–5 GB / 17 min, non decine di GB (H.264 CQP non ha tetto).
+Split automatico ogni 15 minuti.
+
+Per lo stream: torna al profilo 1080 + collezione S.Marcato 42 / Replay.
+
+Telecronaca (opzionale)
+- Source **Overlay Broadcast Chrome** sulle scene Rec * Live (occhio off di default).
+- Bridge esterno: python adapters/telemetry/iracing_bridge.py
+- Attiva telemetryEnabled nel pannello config.
+- Guida: docs/TELEMETRY_BROADCAST.md

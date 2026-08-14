@@ -22,13 +22,18 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+HERE = Path(__file__).resolve().parent
+if str(HERE) not in sys.path:
+    sys.path.insert(0, str(HERE))
+
+from domain_standings import build_relatives, mock_standings  # noqa: E402
+
 SCHEMA_VERSION = 1
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8765
 DEFAULT_HZ = 10.0
 SERVER_NAME = "pigreco-telemetry-mock"
 
-HERE = Path(__file__).resolve().parent
 DEFAULT_JSON_PATH = HERE / "telemetry.json"
 
 log = logging.getLogger("pigreco.telemetry.mock")
@@ -64,29 +69,42 @@ def build_tick(elapsed_s: float) -> dict[str, Any]:
     wave = math.sin(elapsed_s * 0.35)
     lap_progress = (elapsed_s % 95.0) / 95.0
     position = 3 if wave > -0.6 else 4
-    gap_ahead = max(0.0, 180.0 + wave * 120.0) if position > 1 else 0.0
-    gap_behind = max(50.0, 480.0 - wave * 90.0)
-    last_lap = 91234 + int(wave * 220)
-    best_lap = 90801
+    field = 12
+    standings = mock_standings(elapsed_s, focus_pos=position, field=field)
+    focus = next((r for r in standings if r.get("isFocus")), standings[0])
+    focus_i = next(i for i, r in enumerate(standings) if r.get("isFocus"))
+    gap_ahead = 0 if focus_i == 0 else int(standings[focus_i].get("intervalMs") or 0)
+    gap_behind = (
+        0
+        if focus_i >= len(standings) - 1
+        else int(standings[focus_i + 1].get("intervalMs") or 0)
+    )
+    last_lap = int(focus.get("lastLapMs") or 91234)
+    best_lap = int(focus.get("bestLapMs") or 90801)
     flag = "green"
     if int(elapsed_s) % 47 in (12, 13, 14):
         flag = "yellow"
     elif int(elapsed_s) % 91 == 0:
         flag = "blue"
+    elif int(elapsed_s) % 113 == 0:
+        flag = "white"
+    relatives = build_relatives(standings, focus_car_idx=focus.get("carIdx"), window=2)
+    lap = 12 + int(elapsed_s // 95)
+    laps_total = 25
 
     return _envelope(
         "telemetry.tick",
         session="race",
         sessionTimeMs=int(elapsed_s * 1000),
         position=position,
-        positionOf=20,
-        gapAheadMs=int(gap_ahead),
-        gapBehindMs=int(gap_behind),
+        positionOf=field,
+        gapAheadMs=gap_ahead,
+        gapBehindMs=gap_behind,
         lastLapMs=last_lap,
         bestLapMs=best_lap,
         currentLapMs=int(lap_progress * last_lap),
-        lap=12 + int(elapsed_s // 95),
-        lapsTotal=25,
+        lap=lap,
+        lapsTotal=laps_total,
         flag=flag,
         trackName="Monza GP",
         carName="Ferrari 296 GT3",
@@ -95,6 +113,16 @@ def build_tick(elapsed_s: float) -> dict[str, Any]:
         rpm=int(4500 + abs(wave) * 3500),
         fuelPct=round(max(5.0, 62.0 - elapsed_s * 0.04), 1),
         connected=True,
+        # P3-02 broadcast fields
+        isReplay=True,
+        focusCarIdx=focus.get("carIdx"),
+        focusDriverName=focus.get("name"),
+        focusCarNumber=focus.get("carNumber"),
+        focusClassPosition=position,
+        sessionLapsRemain=max(0, laps_total - lap),
+        sessionTimeRemainMs=None,
+        standings=standings,
+        relatives=relatives,
     )
 
 

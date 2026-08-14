@@ -31,5 +31,12 @@
   "endingFollowText": "",
   "sponsorsEnabled": false,
   "sponsorLabel": "",
-  "sponsors": []
+  "sponsors": [],
+  "telemetryEnabled": false,
+  "telemetryWsUrl": "ws://127.0.0.1:8765",
+  "broadcastLeaderboard": true,
+  "broadcastRelative": true,
+  "broadcastFocus": true,
+  "broadcastSession": true,
+  "broadcastLeaderboardRows": 10
 }

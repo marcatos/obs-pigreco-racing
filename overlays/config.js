@@ -2,6 +2,7 @@
 window.PIGRECO_CONFIG = {
   "username": "senormarcato",
   "pilotName": "Simone Marcato",
+  "raceNumber": "42",
   "twitchHandle": "@senormarcato",
   "teamName": "PiGreco Racing",
   "eventTitle": "Sim Racing Session",
@@ -30,10 +31,10 @@ window.PIGRECO_CONFIG = {
   "endingFollowText": "",
   "sponsorsEnabled": true,
   "sponsorLabel": "PARTNER",
-  "sponsorDisplayMs": 8000,
-  "sponsorGapMs": 18000,
-  "sponsorInitialDelayMs": 12000,
-  "sponsorFadeMs": 700,
+  "sponsorDisplayMs": 5000,
+  "sponsorGapMs": 0,
+  "sponsorInitialDelayMs": 0,
+  "sponsorFadeMs": 400,
   "sponsors": [
     {
       "name": "SimGrid",
@@ -47,7 +48,14 @@ window.PIGRECO_CONFIG = {
       "name": "GoSetups",
       "src": "assets/official/gosetups.png"
     }
-  ]
+  ],
+  "telemetryEnabled": false,
+  "telemetryWsUrl": "ws://127.0.0.1:8765",
+  "broadcastLeaderboard": true,
+  "broadcastRelative": true,
+  "broadcastFocus": true,
+  "broadcastSession": true,
+  "broadcastLeaderboardRows": 10
 };
 
 (function applyConfig() {

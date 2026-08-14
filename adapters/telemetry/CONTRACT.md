@@ -1,6 +1,6 @@
 # Telemetry adapter contract
 
-Local bridge between a sim (or mock) and PiGreco Browser Source overlays.
+Local bridge between a sim (or mock) and PiGreco / S.Marcato Browser Source overlays.
 
 Canonical decision: [`docs/adr/005-telemetry-adapter-port.md`](../../docs/adr/005-telemetry-adapter-port.md).
 
@@ -11,11 +11,11 @@ Canonical decision: [`docs/adr/005-telemetry-adapter-port.md`](../../docs/adr/00
 | **WebSocket (preferred)** | `ws://127.0.0.1:8765` | JSON text frames, one object per message |
 | **File fallback** | `adapters/telemetry/telemetry.json` | Latest `telemetry.tick` overwritten each tick |
 
-Default bind: `127.0.0.1` only (not LAN). Change host/port via mock CLI flags when needed.
+Default bind: `127.0.0.1` only (not LAN). Change host/port via CLI flags when needed.
 
 ## Schema version
 
-`schemaVersion: 1` on every message. Consumers must ignore unknown fields and reject unsupported major versions only when they cannot parse required fields.
+`schemaVersion: 1` on every message. Consumers must ignore **unknown / optional** fields and keep working. Optional broadcast fields below are additive (P3-02 telecronaca).
 
 ## Envelope
 
@@ -48,33 +48,72 @@ Sent once after WebSocket accept.
 
 ### `telemetry.tick` (server → client)
 
-Periodic snapshot. Fields:
+Periodic snapshot.
+
+#### Core fields (P3-01)
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `session` | string | `practice` \| `quali` \| `race` \| `cooldown` \| `unknown` |
 | `sessionTimeMs` | number \| null | Elapsed session time (ms) |
-| `position` | number \| null | 1-based place |
+| `position` | number \| null | Focus car 1-based place |
 | `positionOf` | number \| null | Field size |
 | `gapAheadMs` | number \| null | Gap to car ahead (ms); `0` if leading |
 | `gapBehindMs` | number \| null | Gap to car behind (ms) |
 | `lastLapMs` | number \| null | Last completed lap |
 | `bestLapMs` | number \| null | Best lap this session |
 | `currentLapMs` | number \| null | Ongoing lap time |
-| `lap` | number \| null | Current lap |
+| `lap` | number \| null | Current lap (focus) |
 | `lapsTotal` | number \| null | Scheduled laps; null if timed |
 | `flag` | string | `none` \| `green` \| `yellow` \| `blue` \| `white` \| `checkered` \| `red` \| `black` \| `meatball` |
 | `trackName` | string \| null | Track name |
-| `carName` | string \| null | Car name |
+| `carName` | string \| null | Focus car name |
 | `speedKph` | number \| null | Speed km/h |
 | `gear` | number \| null | Gear (`-1` R, `0` N) |
 | `rpm` | number \| null | RPM |
 | `fuelPct` | number \| null | Fuel 0–100 |
-| `connected` | boolean | Bridge sees a live session |
+| `connected` | boolean | Bridge sees a session |
+
+#### Optional broadcast fields (P3-02 — ignore if absent)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `isReplay` | boolean | True when source is an iRacing replay (or mock replay mode) |
+| `focusCarIdx` | number \| null | SDK car index in camera / focus |
+| `focusDriverName` | string \| null | Driver display name |
+| `focusCarNumber` | string \| null | Car number string |
+| `focusClassPosition` | number \| null | Class position when available |
+| `sessionLapsRemain` | number \| null | Laps remaining |
+| `sessionTimeRemainMs` | number \| null | Session time remaining |
+| `standings` | array | Leaderboard rows (see below) |
+| `relatives` | array | Short ahead/behind list around focus |
+
+**`standings[]` row**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `pos` | number | 1-based overall (or class) position |
+| `carNumber` | string | Race number |
+| `name` | string | Driver / short name |
+| `gapMs` | number \| null | Gap to leader (ms); `0` for P1 |
+| `intervalMs` | number \| null | Gap to car ahead (ms) |
+| `lastLapMs` | number \| null | Last lap |
+| `bestLapMs` | number \| null | Best lap |
+| `class` | string \| null | Class name |
+| `carIdx` | number \| null | SDK index |
+| `isFocus` | boolean | Row is camera focus |
+
+**`relatives[]` row**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `rel` | number | Negative = ahead, `0` = focus, positive = behind |
+| `carNumber` | string | |
+| `name` | string | |
+| `gapMs` | number \| null | Interval to focus (ms), signed by `rel` |
+| `carIdx` | number \| null | |
 
 ### `telemetry.status` (server → client)
-
-Bridge / sim health (e.g. disconnect).
 
 ```json
 {
@@ -88,41 +127,34 @@ Bridge / sim health (e.g. disconnect).
 
 ### `client.ping` / `server.pong`
 
-Optional keepalive. Client may send `{"type":"client.ping","schemaVersion":1,"ts":…}`; server replies `server.pong` with same `ts` echoed in `pingTs` when present.
+Optional keepalive.
 
 ## Overlay rules
 
 1. Read only this contract — never call a sim SDK from Browser Source JS.
-2. Gate UI with `telemetryEnabled` (default `false`) in `overlays/config.js`.
+2. Gate UI with `telemetryEnabled` (default `false`) in config.
 3. Optional URL override: `telemetryWsUrl` (default `ws://127.0.0.1:8765`).
 4. Stay off the center gameplay zone (design system / live chrome margins).
+5. Prefer a single `broadcast-chrome.html` Browser Source over many small ones.
 
-## Run the mock
-
-From repo root:
+## Run producers
 
 ```powershell
-# Preferred: WebSocket producer (requires: pip install websockets)
+# Mock (UI development)
 python adapters/telemetry/mock_server.py
 
-# File-only fallback (stdlib only — writes telemetry.json)
-python adapters/telemetry/mock_server.py --mode file
-
-# Both WebSocket + file mirror
-python adapters/telemetry/mock_server.py --mode both
-
-# Debug logging
-python adapters/telemetry/mock_server.py --log-level DEBUG
+# iRacing bridge (replay or live — iRacing must be open)
+python adapters/telemetry/iracing_bridge.py
 ```
 
-Dependency: **`websockets`** for `--mode ws` / `both`. Install with:
+Dependency: **`websockets`**. iRacing bridge also needs **`pyirsdk`** when talking to the sim.
 
 ```powershell
-pip install websockets
+pip install websockets pyirsdk
 ```
 
-`--mode file` needs no extra packages.
+`--mode file` on the mock needs no extra packages.
 
 ## Future adapters
 
-Real bridges (SimHub plugin, iRacing SDK, …) must emit the same message types and field names. Do not extend overlays until the adapter speaks this contract.
+Real bridges must emit the same message types and field names. Optional fields may be omitted.
