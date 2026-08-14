@@ -33,7 +33,7 @@ Update this file when claiming or finishing an ID.
 |----|------|--------|-------|
 | P2-01 | Chat overlay theme PiGreco | done | `adapters/streamelements/chat.css` |
 | P2-02 | Alert box theme (follow/sub/raid) | done | `adapters/streamelements/alerts/` |
-| P2-03 | Hotkey map + Stream Deck profile export | ready | JSON/docs |
+| P2-03 | Hotkey map + Stream Deck / VirtualDeck profile | done | `adapters/streamdeck/marcato-live-deck.json`, `docs/OBS_VIRTUALDECK.md` |
 | P2-04 | Instant Replay / Highlight scene | ready | replay buffer media source |
 | P2-05 | YouTube like/subscribe/bell promo | done | `youtube-promo.js` in live-chrome; config `youtubePromo*` |
 
@@ -44,8 +44,8 @@ Update this file when claiming or finishing an ID.
 | P3-01 | Telemetry bridge design (SimHub/iRacing) | done | ADR-005 + mock `adapters/telemetry/` |
 | P3-02 | Live relative / position widget | done | broadcast-chrome + mock + iracing_bridge; docs/TELEMETRY_BROADCAST.md |
 | P3-03 | Minimap / track map | done | `track-map.html`; open+self-learn; `docs/TRACK_MAP.md` |
-| P3-04 | Auto scene on flags | done | `adapters/obs_flag_director/`, `docs/FLAG_DIRECTOR.md` |
-| P3-05 | Audio buses + VOD track guide | ready | docs + OBS profile notes |
+| P3-04 | Auto scene on flags | done | `adapters/obs_flag_director/`, `docs/FLAG_DIRECTOR.md` — extended by Session Director (Live↔Lobby) |
+| P3-05 | Audio buses + VOD track guide | done | interstitial + lobby beds; mixer notes in `SESSION_DIRECTOR.md` / `S_MARCATO_42.md` |
 | P3-06 | Broadcast director + tick enrichment | done | spec 2026-08-14; hybrid auto/manual moments |
 | P3-07 | Official iRacing SVG track maps | done | sync CLI + local cache; overlay SVG; `docs/TRACK_MAP.md` |
 | P3-08 | Sector timing on broadcast chrome | done | SplitTimeInfo + live Δ; focus S1–Sn; map ticks |
@@ -64,9 +64,9 @@ Update this file when claiming or finishing an ID.
 
 ## Suggested next agent claims
 
-1. `P2-03` hotkey map + Stream Deck  
-2. `P3-03` minimap (later) / `P3-05` audio buses + VOD track guide  
-3. Showcase PNG for broadcast chrome when widgets are stable on stream  
+1. Showcase PNG for broadcast chrome when widgets are stable on stream
+2. `P2-04` Instant Replay / Highlight scene
+3. `P4-02` Game presets  
 
 ## Definition of done (any ID)
 

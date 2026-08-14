@@ -16,6 +16,7 @@ Get on stream fast — setup, **config dock**, personal pack.
 | [`../LEGGIMI.txt`](../LEGGIMI.txt) | Italian double-click path (`Setup.bat`) |
 | [`OBS_CONFIG_PANEL.md`](OBS_CONFIG_PANEL.md) | In-OBS dock at `:8766` — identity, session, countdown, BRB, ending, sponsors, telecronaca toggles; writes `config.values.json` |
 | [`S_MARCATO_42.md`](S_MARCATO_42.md) | Personal carbon / Rosso Corsa pack |
+| [`OBS_VIRTUALDECK.md`](OBS_VIRTUALDECK.md) | iPhone OBS VirtualDeck via WebSocket |
 | [`../Guida_PiGreco_OBS.pdf`](../Guida_PiGreco_OBS.pdf) | Illustrated team guide (Italian) |
 
 ---
@@ -42,6 +43,7 @@ Optional **local** telemetry stack — no cloud required. Mock or iRacing bridge
 | [`TELEMETRY_BROADCAST.md`](TELEMETRY_BROADCAST.md) | Bridge, standings / relative / focus / director moments, OBS HTTP sources |
 | [`TRACK_MAP.md`](TRACK_MAP.md) | Peripheral minimap + self-learn outlines |
 | [`FLAG_DIRECTOR.md`](FLAG_DIRECTOR.md) | Auto OBS scenes on yellow / red / checkered |
+| [`SESSION_DIRECTOR.md`](SESSION_DIRECTOR.md) | Live ↔ Lobby + flags + telemetry autostart |
 | [`../adapters/telemetry/CONTRACT.md`](../adapters/telemetry/CONTRACT.md) | WebSocket tick contract |
 
 ---
