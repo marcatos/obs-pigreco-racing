@@ -30,7 +30,7 @@ Start-SyncTrackMaps.bat --source api
 - Tick `trackId` = numeric iRacing `TrackID` (e.g. `"449"`).
 - Overlay fetches `assets/tracks/iracing/{trackId}.svg`.
 - Calibration `{trackId}.meta.json` from sync (`offset` / `direction` — aligns LapDistPct to SVG).
-- Optional config `trackMapLeadPct` (default `0.012`) advances dots slightly for replay/WS lag.
+- Optional config `trackMapLeadPct` (default `0.028`) + `trackMapPredictSec` (default `0.12`) advance dots for replay/WS lag.
 - Missing SVG → `TRACK MAP — run Start-SyncTrackMaps`.
 
 ## CONTRACT

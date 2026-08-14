@@ -23,9 +23,11 @@
   root.setAttribute("aria-hidden", "false");
 
   const url = cfg.trackMapWsUrl || cfg.telemetryWsUrl || "ws://127.0.0.1:8765";
-  // Small lead to counter WS/replay display lag (fraction of lap).
+  // Advance dots along the lap (0–1). Replay/WS often trail the live camera.
   const leadPct = Number(cfg.trackMapLeadPct);
-  const lead = Number.isFinite(leadPct) ? leadPct : 0.012;
+  const lead = Number.isFinite(leadPct) ? leadPct : 0.028;
+  const predictSec = Number(cfg.trackMapPredictSec);
+  const predict = Number.isFinite(predictSec) ? predictSec : 0.12;
   const labelEl = root.querySelector("[data-tm-label]");
   const hostEl = root.querySelector("[data-tm-track]");
   const carsEl = root.querySelector("[data-tm-cars]");
@@ -38,6 +40,8 @@
   let meta = { offset: 0, direction: 1 };
   let loadGen = 0;
   let markerR = 18;
+  let prevTs = 0;
+  const prevDist = Object.create(null);
 
   function setHint(text, state) {
     if (labelEl) labelEl.textContent = text || "";
@@ -194,9 +198,19 @@
     return !!pathEl;
   }
 
+  function wrapDelta(a, b) {
+    let d = a - b;
+    if (d < -0.5) d += 1;
+    if (d > 0.5) d -= 1;
+    return d;
+  }
+
   function render(tick) {
     if (!tick) return;
     const tid = tick.trackId || tick.trackName || "unknown";
+    const ts = typeof tick.ts === "number" ? tick.ts : Date.now();
+    const dtSec =
+      prevTs > 0 ? Math.max(0.02, Math.min(0.5, (ts - prevTs) / 1000)) : 0;
     loadTrack(tid).then(function (ok) {
       if (!ok || !pathEl || !carsEl) return;
       const cars = Array.isArray(tick.mapCars) ? tick.mapCars : [];
@@ -208,17 +222,21 @@
       }
       if (!(total > 0)) return;
       updateMarkerScale();
-      // Focus on top of stack
       const ordered = cars.slice().sort(function (a, b) {
         return (a.isFocus ? 1 : 0) - (b.isFocus ? 1 : 0);
       });
+      const nextPrev = Object.create(null);
       carsEl.innerHTML = ordered
         .map(function (c) {
-          const t = applyDistOffset(
-            Number(c.distPct) + lead,
-            meta.offset,
-            meta.direction
-          );
+          let dist = Number(c.distPct);
+          if (!Number.isFinite(dist)) dist = 0;
+          const idx = c.carIdx != null ? String(c.carIdx) : "";
+          if (idx && prevDist[idx] != null && dtSec > 0 && predict > 0) {
+            const rate = wrapDelta(dist, prevDist[idx]) / dtSec; // laps/sec
+            dist += rate * predict;
+          }
+          if (idx) nextPrev[idx] = Number(c.distPct);
+          const t = applyDistOffset(dist + lead, meta.offset, meta.direction);
           const pt = pathEl.getPointAtLength(t * total);
           const r = c.isFocus ? markerR * 1.15 : markerR;
           const num = escapeXml(c.carNumber != null && c.carNumber !== "" ? c.carNumber : "?");
@@ -244,6 +262,13 @@
           );
         })
         .join("");
+      Object.keys(prevDist).forEach(function (k) {
+        delete prevDist[k];
+      });
+      Object.keys(nextPrev).forEach(function (k) {
+        prevDist[k] = nextPrev[k];
+      });
+      prevTs = ts;
     });
   }
 
