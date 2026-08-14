@@ -359,17 +359,22 @@ body {
   display: none;
 }
 
+/* Top-left header band — above focus rail (broadcast .bc-left-rail top: 88px) */
 .watermark {
   position: absolute;
-  right: 28px;
-  top: 28px;
-  opacity: 0.72;
+  left: 28px;
+  top: 10px;
+  z-index: 5;
+  opacity: 0.78;
+  line-height: 0;
 }
 
 .watermark img {
-  width: 56px;
+  width: 34px;
+  max-height: 34px;
   height: auto;
   display: block;
+  object-fit: contain;
 }
 
 .partner-row,

@@ -29,9 +29,10 @@ Serve OBS con `nv-filters` e **NVIDIA Video Effects / Broadcast** installati.
 
 1. Chiudi OBS → reimporta `S.Marcato Replay` / `S.Marcato Rec 2K`.
 2. Nella scena, occhio indipendente su **Cam PIP** e **Cam 2 PIP**.
-3. Nascondi **Cam PIP** → il lower-third torna a sinistra (script Lua).
-4. Nascondi **Cam 2 PIP** → sparisce solo la cam destra (nessun effetto sul lower-third).
-5. Se una cam è nera: apri la nested scene → Properties sul device corretto.
+3. Nascondi **Cam PIP** → sparisce il riquadro CAM (script Lua `?cam=0`).
+4. Nascondi **Cam 2 PIP** → sparisce solo la cam destra.
+5. Live/Replay chrome: solo watermark monogramma (niente lower-third); brand in classifica via `broadcastPilotMarkUrl` (match su `pilotName`, non sul numero gara).
+6. Se una cam è nera: apri la nested scene → Properties sul device corretto.
 
 ## Non usare
 

@@ -28,6 +28,11 @@ if str(HERE) not in sys.path:
 
 from domain_enrich import apply_pos_change, delta_best_ms  # noqa: E402
 from domain_events import EventDetector  # noqa: E402
+from domain_grid import apply_start_positions  # noqa: E402
+from domain_sectors import (  # noqa: E402
+    current_sector,
+    sectors_payload,
+)
 from domain_standings import build_relatives, mock_standings  # noqa: E402
 from domain_track_map import build_map_cars, format_track_id  # noqa: E402
 
@@ -42,6 +47,32 @@ DEFAULT_JSON_PATH = HERE / "telemetry.json"
 log = logging.getLogger("pigreco.telemetry.mock")
 _prev_pos_by_car: dict = {}
 detector = EventDetector(sensitivity="normal")
+_MOCK_SECTOR_STARTS = [0.0, 0.33, 0.66]
+
+
+def _mock_sector_fields(lap_progress: float, last_lap: int, best_lap: int) -> dict[str, Any]:
+    """Synthetic S1–S3 + live delta for overlay smoke tests."""
+    sector = current_sector(lap_progress, _MOCK_SECTOR_STARTS)
+    # Split last/best into three parts with a small purple/green swing.
+    last_s = [
+        int(last_lap * 0.34),
+        int(last_lap * 0.33),
+        last_lap - int(last_lap * 0.34) - int(last_lap * 0.33),
+    ]
+    best_s = [
+        int(best_lap * 0.335),
+        int(best_lap * 0.335),
+        best_lap - int(best_lap * 0.335) - int(best_lap * 0.335),
+    ]
+    live = int((lap_progress - 0.5) * 800)  # swings ±0.4s around mid-lap
+    return {
+        "sectors": sectors_payload(_MOCK_SECTOR_STARTS),
+        "sector": sector,
+        "deltaLiveMs": live,
+        "lastSectorsMs": last_s,
+        "bestSectorsMs": best_s,
+        "sectorDeltaMs": [a - b for a, b in zip(last_s, best_s)],
+    }
 
 
 @dataclass(frozen=True)
@@ -78,7 +109,13 @@ def build_tick(elapsed_s: float) -> dict[str, Any]:
     position = 3 if wave > -0.6 else 4
     field = 12
     standings = mock_standings(elapsed_s, focus_pos=position, field=field)
+    base_grid = mock_standings(0.0, focus_pos=3, field=field)
+    start_by_car: dict = {}
+    for r in base_grid:
+        start_by_car[int(r["carIdx"])] = int(r["pos"])
+        start_by_car[str(r["carNumber"])] = int(r["pos"])
     standings, _prev_pos_by_car = apply_pos_change(standings, _prev_pos_by_car)
+    standings = apply_start_positions(standings, start_by_car, show_delta=True)
     focus = next((r for r in standings if r.get("isFocus")), standings[0])
     focus_i = next(i for i, r in enumerate(standings) if r.get("isFocus"))
     gap_ahead = 0 if focus_i == 0 else int(standings[focus_i].get("intervalMs") or 0)
@@ -99,6 +136,7 @@ def build_tick(elapsed_s: float) -> dict[str, Any]:
     relatives = build_relatives(standings, focus_car_idx=focus.get("carIdx"), window=2)
     lap = 12 + int(elapsed_s // 95)
     laps_total = 25
+    sector_fields = _mock_sector_fields(lap_progress, last_lap, best_lap)
 
     return _envelope(
         "telemetry.tick",
@@ -141,6 +179,7 @@ def build_tick(elapsed_s: float) -> dict[str, Any]:
         trackId="900001",
         trackConfig="GP",
         mapCars=build_map_cars(standings, focus_car_idx=focus.get("carIdx")),
+        **sector_fields,
     )
 
 

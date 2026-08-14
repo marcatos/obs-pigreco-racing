@@ -2068,7 +2068,7 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
         scene_rec_triple["settings"]["items"][0]["bounds_crop"] = True
 
         # With brand graphics + optional StreamCam (eye).
-        # Lua sync: StreamCam hidden → overlay ?cam=0 → lower-third bottom-left.
+        # Lua sync: StreamCam hidden → overlay ?cam=0 → hide CAM frame.
         # Game Capture primary; Monitor Centrale as eye-toggle fallback.
         scene_rec_single_live = make_scene(
             "Rec Singolo Live",

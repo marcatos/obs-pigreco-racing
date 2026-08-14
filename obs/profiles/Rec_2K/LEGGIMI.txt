@@ -16,7 +16,7 @@ Cam (opzionale, indipendenti)
 - Occhio su **Cam 2 PIP** = solo sedile (destra).
 - Puoi: entrambe ON, una sola, o entrambe OFF.
 - Sfondo carbon + NVIDIA Quality+Chair su entrambe.
-- Cam PIP OFF → lower-third a sinistra (Lua). Cam 2 non sposta il lower-third.
+- Cam PIP OFF → riquadro CAM nascosto (Lua `?cam=0`). Cam 2 indipendente.
 - Guida: docs/CAMERAS.md
 
 Le grafiche sono le stesse del pack 1080, scalate sul canvas 2K.

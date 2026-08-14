@@ -72,6 +72,13 @@ window.PIGRECO_CONFIG = {
   broadcastFocus: true,
   broadcastSession: true,
   broadcastLeaderboardRows: 10,
+  // TV-style: refresh standings/relative gaps every N ms (not every telemetry tick)
+  broadcastBoardRefreshMs: 4000,
+  // NASCAR-style field ticker: slide in → crawl once → slide out → pause
+  broadcastTicker: true,
+  broadcastTickerSpeed: 85, // px/sec while visible
+  broadcastTickerIdleMs: 60000, // after one P1→last pass, hide this long before next
+  broadcastTickerFirstDelayMs: 4000,
   broadcastDirector: "auto",
   broadcastDirectorSensitivity: "normal",
   // P3-03 track minimap Browser Source (track-map.html)
@@ -81,4 +88,15 @@ window.PIGRECO_CONFIG = {
   trackMapLeadPct: 0.004,
   // Extrapolate along-track using recent speed (seconds ahead); 0 = off
   trackMapPredictSec: 0,
+  // Optional mark next to pilot row in standings (matched by pilotName, not raceNumber)
+  broadcastPilotMarkUrl: "",
+  // YouTube like/subscribe/bell promo (live-chrome)
+  youtubePromoEnabled: true,
+  youtubeHandle: "", // falls back to socialHandle / twitchHandle
+  youtubePromoTitle: "LIKE & SUBSCRIBE",
+  youtubePromoFirstDelayMs: 90000,
+  youtubePromoIdleMs: 180000, // pause between scheduled appearances
+  youtubePromoHoldMs: 2200, // hold after bell before exit
+  youtubePromoLapTriggers: true, // force on end of lap 1 + last lap / checkered
+  youtubePromoForceCooldownMs: 20000,
 };

@@ -4,10 +4,11 @@
   <meta charset="UTF-8" />
   <title>S.Marcato 42 — Live Chrome</title>
   <link rel="stylesheet" href="assets/theme.css" />
+  <link rel="stylesheet" href="../overlays/assets/youtube-promo.css" />
 </head>
 <body>
   <div class="stage">
-    <div class="live-root has-cam" data-live-root>
+    <div class="live-root has-cam no-lower" data-live-root>
       <div class="session-badge" data-session-badge>
         <span data-session-value>RACE</span>
       </div>
@@ -20,32 +21,19 @@
         <span class="cam-badge">CAM</span>
       </div>
 
-      <div class="lower-third">
-        <img
-          class="lower-mark"
-          src="assets/brand/mark42_rosso_corsa_transparent.png"
-          alt=""
-        />
-        <div class="lower-body">
-          <div class="lower-name" data-cfg="pilotName">S.Marcato</div>
-          <div class="lower-meta">
-            <span class="lower-race" data-cfg="raceNumber">42</span>
-            <span class="lower-sep"> · </span>
-            <span data-cfg="eventTitle">Sim Racing Session</span>
-          </div>
-        </div>
-      </div>
+      <div class="yt-promo" data-yt-promo hidden aria-hidden="true"></div>
     </div>
   </div>
   <script src="config.js"></script>
   <script src="../overlays/session-badge.js"></script>
+  <script src="../overlays/youtube-promo.js"></script>
   <script>
     (function applyCamLayout() {
       const root = document.querySelector("[data-live-root]") || document.querySelector(".live-root");
       if (!root) return;
       const params = new URLSearchParams(window.location.search);
       const raw = (params.get("cam") || "").trim().toLowerCase();
-      // Default ON (has-cam). cam=0|false|off → PIP off, lower-third in basso a sinistra.
+      // Default ON (has-cam). cam=0|false|off → PIP frame off.
       const camOff = raw === "0" || raw === "false" || raw === "off" || raw === "no";
       root.classList.toggle("has-cam", !camOff);
       root.classList.toggle("no-cam-frame", camOff);

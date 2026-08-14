@@ -40,12 +40,26 @@ window.PIGRECO_CONFIG = {
   "broadcastFocus": true,
   "broadcastSession": true,
   "broadcastLeaderboardRows": 10,
+  "broadcastBoardRefreshMs": 4000,
+  "broadcastTicker": true,
+  "broadcastTickerSpeed": 85,
+  "broadcastTickerIdleMs": 60000,
+  "broadcastTickerFirstDelayMs": 4000,
+  "broadcastPilotMarkUrl": "assets/brand/monogram_sm42_transparent.png",
   "broadcastDirector": "auto",
   "broadcastDirectorSensitivity": "normal",
   "trackMapEnabled": true,
   "trackMapWsUrl": "ws://127.0.0.1:8765",
   "trackMapLeadPct": 0.004,
-  "trackMapPredictSec": 0
+  "trackMapPredictSec": 0,
+  "youtubePromoEnabled": true,
+  "youtubeHandle": "SenorMarcato",
+  "youtubePromoTitle": "LIKE & SUBSCRIBE",
+  "youtubePromoFirstDelayMs": 90000,
+  "youtubePromoIdleMs": 180000,
+  "youtubePromoHoldMs": 2200,
+  "youtubePromoLapTriggers": true,
+  "youtubePromoForceCooldownMs": 20000
 };
 
 (function applyConfig() {
