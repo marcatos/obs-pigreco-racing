@@ -133,21 +133,31 @@
     if (elRel) {
       elRel.innerHTML = relatives
         .map(function (r) {
-          const label =
-            r.rel === 0 ? "YOU" : r.rel < 0 ? "P" + (r.rel) : "+" + r.rel;
-          return (
-            '<div class="bc-rel-row' +
-            (r.rel === 0 ? " is-focus" : "") +
-            '">' +
-            "<span>" +
-            label +
-            "</span>" +
-            "<span>#" +
+          var tag = "CAM";
+          var kind = "is-focus";
+          if (r.rel < 0) {
+            tag = "AHD";
+            kind = "is-ahead";
+          } else if (r.rel > 0) {
+            tag = "BHD";
+            kind = "is-behind";
+          }
+          var driver =
+            "#" +
             (r.carNumber || "") +
             " " +
-            (r.name || "") +
+            (r.name || "");
+          return (
+            '<div class="bc-rel-row ' +
+            kind +
+            '">' +
+            '<span class="bc-rel-tag">' +
+            tag +
             "</span>" +
-            "<span>" +
+            '<span class="bc-rel-driver">' +
+            driver.trim() +
+            "</span>" +
+            '<span class="bc-rel-gap">' +
             (r.rel === 0 ? "—" : fmtMs(r.gapMs)) +
             "</span>" +
             "</div>"
@@ -162,6 +172,8 @@
       const name = tick.focusDriverName || cfg.pilotName || "—";
       const num = tick.focusCarNumber || cfg.raceNumber || "";
       elFocus.innerHTML =
+        '<div class="bc-panel-head"><strong>FOCUS</strong><span>CAMERA</span></div>' +
+        '<div class="bc-focus-body">' +
         '<div class="bc-focus-pos">' +
         pos +
         of +
@@ -181,6 +193,7 @@
         "<span>GAP <strong>" +
         fmtMs(tick.gapAheadMs) +
         "</strong></span>" +
+        "</div>" +
         "</div>";
     }
   }

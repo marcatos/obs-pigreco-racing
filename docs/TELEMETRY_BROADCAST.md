@@ -55,6 +55,14 @@ http://127.0.0.1:8766/o/marcato/broadcast-chrome.html
 Serve il **config server** acceso (`Start-ConfigPanel.bat` o script Lua in OBS).  
 One full-frame Browser Source — not five separate widgets.
 
+Layout (periferico, niente centro FOV):
+
+| Zona | Widget |
+|------|--------|
+| Top center | Session / flag strip |
+| Left rail | Focus (camera) + Battle relative (`AHD` / `CAM` / `BHD`) |
+| Top right | Standings |
+
 ## Config keys
 
 See `overlays/config.example.js`:

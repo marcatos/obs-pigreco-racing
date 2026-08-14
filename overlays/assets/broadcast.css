@@ -13,7 +13,7 @@
   display: none !important;
 }
 
-/* Always-visible status chip so file:// / WS failures are obvious in OBS */
+/* Status chip — visible only while connecting / errors */
 .bc-status {
   position: absolute;
   top: 12px;
@@ -51,7 +51,7 @@
   opacity: 0.45;
 }
 
-/* Session strip — top center, under typical session badge */
+/* Session strip — top center */
 .bc-session {
   position: absolute;
   top: 56px;
@@ -99,7 +99,156 @@
   letter-spacing: 0.2em;
 }
 
-/* Leaderboard — top right, clear of watermark */
+/* —— Left rail: focus + relative stacked (clears cam / lower-third) —— */
+.bc-left-rail {
+  position: absolute;
+  top: 88px;
+  left: 28px;
+  width: min(300px, 22vw);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: calc(100% - 88px - 250px); /* leave room for bottom-left cam */
+  overflow: hidden;
+}
+
+.bc-panel {
+  background: color-mix(in srgb, var(--panel, #111) 90%, transparent);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  border-left: 3px solid var(--accent, #00c400);
+  overflow: hidden;
+}
+
+.bc-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.4rem 0.65rem;
+  font-family: var(--font-display);
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted, #a7b1ba);
+  border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.1));
+}
+
+.bc-panel-head strong {
+  color: var(--text);
+  font-weight: 400;
+}
+
+/* Focus card inside left rail */
+.bc-focus {
+  padding: 0;
+}
+
+.bc-focus-body {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.55rem 0.75rem;
+  align-items: center;
+  padding: 0.65rem 0.75rem 0.75rem;
+}
+
+.bc-focus-pos {
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  letter-spacing: 0.04em;
+  color: var(--accent, #00c400);
+  line-height: 1;
+  grid-row: span 2;
+}
+
+.bc-focus-name {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bc-focus-meta {
+  font-size: 0.72rem;
+  color: var(--muted, #a7b1ba);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+}
+
+.bc-focus-meta span strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Relative / battle under focus */
+.bc-relative {
+  padding: 0;
+  flex: 0 1 auto;
+  min-height: 0;
+}
+
+.bc-rel-rows {
+  padding: 0.2rem 0;
+}
+
+.bc-rel-row {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: 0.4rem;
+  align-items: center;
+  padding: 0.32rem 0.65rem;
+  font-size: 0.8rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--line, #fff) 35%, transparent);
+}
+
+.bc-rel-row:last-child {
+  border-bottom: 0;
+}
+
+.bc-rel-tag {
+  font-family: var(--font-display);
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  color: var(--muted, #a7b1ba);
+}
+
+.bc-rel-row.is-ahead .bc-rel-tag {
+  color: var(--muted, #a7b1ba);
+}
+
+.bc-rel-row.is-focus {
+  background: color-mix(in srgb, var(--accent, #00c400) 16%, transparent);
+}
+
+.bc-rel-row.is-focus .bc-rel-tag {
+  color: var(--accent, #00c400);
+  font-weight: 700;
+}
+
+.bc-rel-row.is-behind .bc-rel-tag {
+  color: var(--muted, #a7b1ba);
+}
+
+.bc-rel-driver {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.bc-rel-gap {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.72rem;
+  color: var(--muted, #a7b1ba);
+}
+
+.bc-rel-row.is-focus .bc-rel-gap {
+  color: var(--accent, #00c400);
+}
+
+/* Leaderboard — top right */
 .bc-leaderboard {
   position: absolute;
   top: 88px;
@@ -177,82 +326,7 @@
   color: var(--muted, #a7b1ba);
 }
 
-/* Relative — bottom area, left of lower-third when cam present */
-.bc-relative {
-  position: absolute;
-  left: 36px;
-  bottom: 260px;
-  width: min(280px, 24vw);
-  background: color-mix(in srgb, var(--panel, #111) 88%, transparent);
-  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
-  padding: 0.35rem 0.5rem;
-}
-
-.bc-relative-head {
-  font-family: var(--font-display);
-  font-size: 0.55rem;
-  letter-spacing: 0.2em;
-  color: var(--muted, #a7b1ba);
-  margin-bottom: 0.25rem;
-}
-
-.bc-rel-row {
-  display: grid;
-  grid-template-columns: 28px 1fr auto;
-  gap: 0.35rem;
-  font-size: 0.78rem;
-  padding: 0.15rem 0;
-}
-
-.bc-rel-row.is-focus {
-  color: var(--accent, #00c400);
-  font-weight: 700;
-}
-
-/* Focus card — bottom right margin */
-.bc-focus {
-  position: absolute;
-  right: 28px;
-  bottom: 40px;
-  min-width: 260px;
-  max-width: 360px;
-  padding: 0.7rem 0.9rem 0.85rem;
-  background: color-mix(in srgb, var(--panel, #111) 92%, transparent);
-  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
-  border-top: 2px solid var(--accent, #00c400);
-}
-
-.bc-focus-pos {
-  font-family: var(--font-display);
-  font-size: 1.6rem;
-  letter-spacing: 0.04em;
-  color: var(--accent, #00c400);
-  line-height: 1;
-}
-
-.bc-focus-name {
-  font-family: var(--font-display);
-  font-size: 1.05rem;
-  margin-top: 0.25rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.bc-focus-meta {
-  margin-top: 0.35rem;
-  font-size: 0.85rem;
-  color: var(--muted, #a7b1ba);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.55rem 1rem;
-}
-
-.bc-focus-meta span strong {
-  color: var(--text);
-  font-weight: 600;
-}
-
-/* Flag banner — full width, only when not green/none */
+/* Flag banner */
 .bc-flag-banner {
   position: absolute;
   top: 0;
@@ -293,5 +367,9 @@
 .broadcast-root.no-relative .bc-relative,
 .broadcast-root.no-focus .bc-focus,
 .broadcast-root.no-session .bc-session {
+  display: none;
+}
+
+.broadcast-root.no-relative.no-focus .bc-left-rail {
   display: none;
 }
