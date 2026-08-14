@@ -1,5 +1,7 @@
 # S.Marcato 42 — overlay pack personale
 
+> **EN:** Personal broadcast pack for pilot **S.Marcato** (car **42**) — carbon / ice / Rosso Corsa brand kit, no PiGreco logos or team sponsors. Same repo as the team pack; switch OBS scene collections. Collections: live, replay, and Rec 2K. Setup steps below are in Italian.
+
 Pacchetto broadcast **personale** per il pilota **S.Marcato** (auto **42**): grafica allineata alla **brand identity** (Audiowide + mark 42, carbon `#08080A`, ice, accent **Rosso Corsa** `#E10600`, abstract system weave/stripes −18°) in `overlays-marcato/`, asset in `overlays-marcato/assets/brand/` (+ `abstract/`), collezione OBS **S.Marcato 42**. Nessun branding PiGreco, nessuno sponsor rotator.
 
 Fonte brand kit: `Pictures\Wallpapers\SMarcato42\brand-identity\` (token in `assets/brand/brand-tokens.json`).

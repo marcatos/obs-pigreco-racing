@@ -4,7 +4,8 @@
 
 ========================================
 
-
+English overview / GitHub face: README.md
+Documentazione (EN index): docs\README.md
 
 INIZIA DA QUI (il modo piu' semplice):
 

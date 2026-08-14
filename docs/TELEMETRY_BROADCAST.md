@@ -1,7 +1,8 @@
 # Telecronaca broadcast (P3-02)
 
-Hybrid pack: **local iRacing bridge** → WebSocket CONTRACT → brand HTML overlay.
-Optional third-party tools (SimHub / Racing Overlay) can sit beside it as extra Browser Sources.
+Live standings, focus car, and flag context on stream — without leaving the local machine. A **local iRacing (or mock) bridge** pushes ticks over WebSocket into brand HTML (broadcast chrome); optional SimHub / Racing Overlay can sit beside it as extra Browser Sources.
+
+Pipeline: **local bridge** → WebSocket [`CONTRACT`](../adapters/telemetry/CONTRACT.md) → brand HTML overlay.
 
 ## Quick start (mock — no iRacing)
 
@@ -57,7 +58,7 @@ Do **not** autostart the bridge from OBS scripting (console flash / fragile Pyth
 
 | Collection | Scenes | Sources (eye off by default unless noted) |
 |------------|--------|-------------------------------------------|
-| S.Marcato Replay | Replay *, Rec * Live | Overlay Broadcast Chrome, Overlay Track Map |
+| S.Marcato Replay | Replay *, Rec * Live | Overlay Broadcast Chrome (includes minimap when `trackMapEnabled`) |
 | S.Marcato Rec 2K | Rec * Live | same (scaled ×4/3) |
 | Both packs | Flag Yellow / Red / Checkered | Full-screen flag HTML (for Flag Director) |
 
@@ -65,11 +66,10 @@ Do **not** autostart the bridge from OBS scripting (console flash / fragile Pyth
 
 ```
 http://127.0.0.1:8766/o/marcato/broadcast-chrome.html
-http://127.0.0.1:8766/o/marcato/track-map.html
 ```
 
 Serve il **config server** acceso (`Start-ConfigPanel.bat` o script Lua in OBS).  
-One full-frame Browser Source — not five separate widgets.
+One full-frame Browser Source — minimap is embedded when `trackMapEnabled` (optional standalone `track-map.html` remains).
 
 Layout (periferico, niente centro FOV):
 
@@ -78,6 +78,7 @@ Layout (periferico, niente centro FOV):
 | Top center | Session / flag strip |
 | Left rail | Focus (camera) + Battle relative (`AHD` / `CAM` / `BHD`) |
 | Top right | Standings |
+| Mid-right (above Cam 2) | Track minimap |
 
 ## Config keys
 
