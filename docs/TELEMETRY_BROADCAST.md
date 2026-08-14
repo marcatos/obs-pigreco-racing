@@ -55,15 +55,17 @@ Do **not** autostart the bridge from OBS scripting (console flash / fragile Pyth
 
 ## OBS sources
 
-| Collection | Scenes | Source |
-|------------|--------|--------|
-| S.Marcato Replay | Replay *, Rec * Live | Overlay Broadcast Chrome (eye **off** by default) |
+| Collection | Scenes | Sources (eye off by default unless noted) |
+|------------|--------|-------------------------------------------|
+| S.Marcato Replay | Replay *, Rec * Live | Overlay Broadcast Chrome, Overlay Track Map |
 | S.Marcato Rec 2K | Rec * Live | same (scaled ×4/3) |
+| Both packs | Flag Yellow / Red / Checkered | Full-screen flag HTML (for Flag Director) |
 
-**URL obbligatoria** (non `file://` — CEF/OBS spesso non apre il WebSocket da file locali):
+**URL obbligatorie** (non `file://` — CEF/OBS spesso non apre il WebSocket da file locali):
 
 ```
 http://127.0.0.1:8766/o/marcato/broadcast-chrome.html
+http://127.0.0.1:8766/o/marcato/track-map.html
 ```
 
 Serve il **config server** acceso (`Start-ConfigPanel.bat` o script Lua in OBS).  

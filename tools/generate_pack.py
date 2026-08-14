@@ -85,6 +85,31 @@ def overlay_http_url(overlays_dir: Path, html: str, *, query: str = "") -> str:
     return url
 
 
+def http_browser_source(
+    name: str,
+    overlays_dir: Path,
+    html: str,
+    *,
+    query: str = "",
+    width: int | None = None,
+    height: int | None = None,
+) -> dict:
+    """Browser Source served over HTTP (WebSocket-safe for telemetry overlays)."""
+    return source_base(
+        name,
+        "browser_source",
+        {
+            "url": overlay_http_url(overlays_dir, html, query=query),
+            "width": int(width if width is not None else CANVAS_W),
+            "height": int(height if height is not None else CANVAS_H),
+            "fps": 30,
+            "shutdown": True,
+            "restart_when_active": True,
+            "webpage_control_level": 1,
+        },
+    )
+
+
 def discover_monitors() -> list[dict]:
     """Return attached monitors sorted left→right with OBS monitor_id when available."""
 
@@ -1257,19 +1282,24 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
     ov_end = browser("Overlay Ending", "ending.html")
     # cam=0: riquadro CAM non duplicato (sta nella nested scene Cam PIP)
     ov_replay = browser("Overlay Replay Chrome", "replay-chrome.html", query="cam=0")
-    # Telecronaca (P3-02): HTTP URL so OBS CEF can open the telemetry WebSocket
-    ov_broadcast = source_base(
-        "Overlay Broadcast Chrome",
-        "browser_source",
-        {
-            "url": overlay_http_url(overlays_dir, "broadcast-chrome.html"),
-            "width": CANVAS_W,
-            "height": CANVAS_H,
-            "fps": 30,
-            "shutdown": True,
-            "restart_when_active": True,
-            "webpage_control_level": 1,
-        },
+    # Telecronaca (P3-02/P3-03): HTTP URL so OBS CEF can open the telemetry WebSocket
+    ov_broadcast = http_browser_source(
+        "Overlay Broadcast Chrome", overlays_dir, "broadcast-chrome.html"
+    )
+    ov_track_map = http_browser_source(
+        "Overlay Track Map", overlays_dir, "track-map.html"
+    )
+    ov_flag_yellow = http_browser_source(
+        "Overlay Flag Yellow", overlays_dir, "flag-scene.html", query="flag=yellow"
+    )
+    ov_flag_red = http_browser_source(
+        "Overlay Flag Red", overlays_dir, "flag-scene.html", query="flag=red"
+    )
+    ov_flag_checkered = http_browser_source(
+        "Overlay Flag Checkered",
+        overlays_dir,
+        "flag-scene.html",
+        query="flag=checkered",
     )
     ov_cam_frame = browser("Overlay Cam Frame", "cam-frame.html")
     ov_cam_frame_2 = browser("Overlay Cam 2 Frame", "cam-frame-2.html")
@@ -1446,6 +1476,25 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
             scale_ref=(float(CANVAS_W), float(CANVAS_H)),
         )
 
+    def telecronaca_overlay_items(start_id: int) -> list[dict]:
+        """Broadcast + track map (both eye-off by default)."""
+        return [
+            fullscreen(
+                ov_broadcast["name"],
+                ov_broadcast["uuid"],
+                start_id,
+                visible=False,
+                locked=True,
+            ),
+            fullscreen(
+                ov_track_map["name"],
+                ov_track_map["uuid"],
+                start_id + 1,
+                visible=False,
+                locked=True,
+            ),
+        ]
+
     scene_soon = make_scene(
         "Starting Soon",
         [
@@ -1460,11 +1509,9 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
             fullscreen(mon_center["name"], mon_center["uuid"], 1, visible=False),
             fullscreen(game["name"], game["uuid"], 2),
             fullscreen(ov_replay["name"], ov_replay["uuid"], 3, locked=True),
-            fullscreen(
-                ov_broadcast["name"], ov_broadcast["uuid"], 4, visible=False, locked=True
-            ),
-            cam_pip_optional(5, visible=True),
-            cam2_pip_optional(6, visible=True),
+            *telecronaca_overlay_items(4),
+            cam_pip_optional(6, visible=True),
+            cam2_pip_optional(7, visible=True),
         ],
     )
     scene_monitor = make_scene(
@@ -1475,11 +1522,9 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
             ),
             fullscreen(game["name"], game["uuid"], 2, visible=False),
             fullscreen(ov_replay["name"], ov_replay["uuid"], 3, locked=True),
-            fullscreen(
-                ov_broadcast["name"], ov_broadcast["uuid"], 4, visible=False, locked=True
-            ),
-            cam_pip_optional(5, visible=True),
-            cam2_pip_optional(6, visible=True),
+            *telecronaca_overlay_items(4),
+            cam_pip_optional(6, visible=True),
+            cam2_pip_optional(7, visible=True),
         ],
     )
     scene_video = None
@@ -1489,15 +1534,9 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
             [
                 fullscreen(race_video["name"], race_video["uuid"], 1),
                 fullscreen(ov_replay["name"], ov_replay["uuid"], 2, locked=True),
-                fullscreen(
-                    ov_broadcast["name"],
-                    ov_broadcast["uuid"],
-                    3,
-                    visible=False,
-                    locked=True,
-                ),
-                cam_pip_optional(4, visible=True),
-                cam2_pip_optional(5, visible=True),
+                *telecronaca_overlay_items(3),
+                cam_pip_optional(5, visible=True),
+                cam2_pip_optional(6, visible=True),
             ],
         )
 
@@ -1548,20 +1587,32 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
             ),
             fullscreen(game["name"], game["uuid"], 2),
             fullscreen(ov_replay["name"], ov_replay["uuid"], 3, locked=True),
-            fullscreen(
-                ov_broadcast["name"], ov_broadcast["uuid"], 4, visible=False, locked=True
-            ),
-            cam_pip_optional(5, visible=True),
-            cam2_pip_optional(6, visible=True),
+            *telecronaca_overlay_items(4),
+            cam_pip_optional(6, visible=True),
+            cam2_pip_optional(7, visible=True),
         ],
     )
     scene_rec_triple_live = make_scene(
         "Rec Triplo Live",
         [
             *items_replay_triple(),
+            *telecronaca_overlay_items(4),
+        ],
+    )
+    scene_flag_yellow = make_scene(
+        "Flag Yellow",
+        [fullscreen(ov_flag_yellow["name"], ov_flag_yellow["uuid"], 1, locked=True)],
+    )
+    scene_flag_red = make_scene(
+        "Flag Red",
+        [fullscreen(ov_flag_red["name"], ov_flag_red["uuid"], 1, locked=True)],
+    )
+    scene_flag_checkered = make_scene(
+        "Flag Checkered",
+        [
             fullscreen(
-                ov_broadcast["name"], ov_broadcast["uuid"], 4, visible=False, locked=True
-            ),
+                ov_flag_checkered["name"], ov_flag_checkered["uuid"], 1, locked=True
+            )
         ],
     )
     scene_brb = make_scene(
@@ -1596,6 +1647,10 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
         ov_end,
         ov_replay,
         ov_broadcast,
+        ov_track_map,
+        ov_flag_yellow,
+        ov_flag_red,
+        ov_flag_checkered,
         ov_cam_frame,
         ov_cam_frame_2,
         ov_triple,
@@ -1611,6 +1666,9 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
         scene_rec_triple,
         scene_rec_single_live,
         scene_rec_triple_live,
+        scene_flag_yellow,
+        scene_flag_red,
+        scene_flag_checkered,
         scene_brb,
         scene_end,
     ]
@@ -1628,6 +1686,9 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
             {"name": "Rec Triplo"},
             {"name": "Rec Singolo Live"},
             {"name": "Rec Triplo Live"},
+            {"name": "Flag Yellow"},
+            {"name": "Flag Red"},
+            {"name": "Flag Checkered"},
             {"name": "BRB"},
             {"name": "Ending"},
         ]
@@ -1765,18 +1826,43 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
             )
 
         ov_live = browser("Overlay Live Chrome", "live-chrome.html")
-        ov_broadcast = source_base(
+        ov_broadcast = http_browser_source(
             "Overlay Broadcast Chrome",
-            "browser_source",
-            {
-                "url": overlay_http_url(overlays_dir, "broadcast-chrome.html"),
-                "width": int(design_w),
-                "height": int(design_h),
-                "fps": 30,
-                "shutdown": True,
-                "restart_when_active": True,
-                "webpage_control_level": 1,
-            },
+            overlays_dir,
+            "broadcast-chrome.html",
+            width=int(design_w),
+            height=int(design_h),
+        )
+        ov_track_map = http_browser_source(
+            "Overlay Track Map",
+            overlays_dir,
+            "track-map.html",
+            width=int(design_w),
+            height=int(design_h),
+        )
+        ov_flag_yellow = http_browser_source(
+            "Overlay Flag Yellow",
+            overlays_dir,
+            "flag-scene.html",
+            query="flag=yellow",
+            width=int(design_w),
+            height=int(design_h),
+        )
+        ov_flag_red = http_browser_source(
+            "Overlay Flag Red",
+            overlays_dir,
+            "flag-scene.html",
+            query="flag=red",
+            width=int(design_w),
+            height=int(design_h),
+        )
+        ov_flag_checkered = http_browser_source(
+            "Overlay Flag Checkered",
+            overlays_dir,
+            "flag-scene.html",
+            query="flag=checkered",
+            width=int(design_w),
+            height=int(design_h),
         )
         ov_triple_live = browser(
             "Overlay Triple Frame Live",
@@ -1786,7 +1872,7 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
         ov_cam_frame = browser("Overlay Cam Frame", "cam-frame.html")
         ov_cam_frame_2 = browser("Overlay Cam 2 Frame", "cam-frame-2.html")
 
-        def overlay_fs(src: dict, item_id: int, *, locked: bool = True) -> dict:
+        def overlay_fs(src: dict, item_id: int, *, locked: bool = True, visible: bool = True) -> dict:
             """Place a 1920×1080 browser so it fills the 2K canvas."""
             return scene_item(
                 src["name"],
@@ -1795,8 +1881,15 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
                 pos=(0.0, 0.0),
                 scale=(scale_2k, scale_2k),
                 locked=locked,
+                visible=visible,
                 scale_ref=(design_w, design_h),
             )
+
+        def telecronaca_2k_items(start_id: int) -> list[dict]:
+            return [
+                overlay_fs(ov_broadcast, start_id, locked=True, visible=False),
+                overlay_fs(ov_track_map, start_id + 1, locked=True, visible=False),
+            ]
 
         # Build Cam PIP nests in 1080 design space, then scale onto 2K canvas
         cam_w1080, cam_h1080 = 360.0, 202.0
@@ -1998,18 +2091,9 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
                     bounds_type=_BOUNDS_SCALE_OUTER,
                 ),
                 overlay_fs(ov_live, 3),
-                scene_item(
-                    ov_broadcast["name"],
-                    ov_broadcast["uuid"],
-                    4,
-                    pos=(0.0, 0.0),
-                    scale=(scale_2k, scale_2k),
-                    locked=True,
-                    visible=False,
-                    scale_ref=(design_w, design_h),
-                ),
-                cam_pip_item(5, visible=True),
-                cam2_pip_item(6, visible=True),
+                *telecronaca_2k_items(4),
+                cam_pip_item(6, visible=True),
+                cam2_pip_item(7, visible=True),
             ],
         )
         scene_rec_single_live["settings"]["items"][1]["bounds_crop"] = True
@@ -2018,19 +2102,19 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
             [
                 game_triple_live_item(1),
                 overlay_fs(ov_triple_live, 2),
-                scene_item(
-                    ov_broadcast["name"],
-                    ov_broadcast["uuid"],
-                    3,
-                    pos=(0.0, 0.0),
-                    scale=(scale_2k, scale_2k),
-                    locked=True,
-                    visible=False,
-                    scale_ref=(design_w, design_h),
-                ),
-                cam_triple_item(4, visible=True),
-                cam2_pip_item(5, visible=True),
+                *telecronaca_2k_items(3),
+                cam_triple_item(5, visible=True),
+                cam2_pip_item(6, visible=True),
             ],
+        )
+        scene_flag_yellow = make_scene(
+            "Flag Yellow", [overlay_fs(ov_flag_yellow, 1, locked=True)]
+        )
+        scene_flag_red = make_scene(
+            "Flag Red", [overlay_fs(ov_flag_red, 1, locked=True)]
+        )
+        scene_flag_checkered = make_scene(
+            "Flag Checkered", [overlay_fs(ov_flag_checkered, 1, locked=True)]
         )
 
         sources = [
@@ -2042,6 +2126,10 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
             game,
             ov_live,
             ov_broadcast,
+            ov_track_map,
+            ov_flag_yellow,
+            ov_flag_red,
+            ov_flag_checkered,
             ov_triple_live,
             ov_cam_frame,
             ov_cam_frame_2,
@@ -2051,6 +2139,9 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
             scene_rec_triple,
             scene_rec_single_live,
             scene_rec_triple_live,
+            scene_flag_yellow,
+            scene_flag_red,
+            scene_flag_checkered,
         ]
         collection = {
             "name": "S.Marcato Rec 2K",
@@ -2063,6 +2154,9 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
                 {"name": "Rec Triplo"},
                 {"name": "Rec Singolo Live"},
                 {"name": "Rec Triplo Live"},
+                {"name": "Flag Yellow"},
+                {"name": "Flag Red"},
+                {"name": "Flag Checkered"},
             ],
             "current_scene": "Rec Singolo Live",
             "current_program_scene": "Rec Singolo Live",

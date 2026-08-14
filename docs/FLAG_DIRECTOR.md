@@ -2,17 +2,24 @@
 
 Switches OBS program scenes when iRacing / mock telemetry reports **yellow**, **red**, or **checkered**. Returns to the previous live scene on **green**. Broadcast overlay banners stay independent (P3-06).
 
+Pack scenes (after `python tools/generate_pack.py --profile marcato`):
+
+| Scene | Source |
+|-------|--------|
+| `Flag Yellow` | `flag-scene.html?flag=yellow` |
+| `Flag Red` | `flag-scene.html?flag=red` |
+| `Flag Checkered` | `flag-scene.html?flag=checkered` |
+
+Default home: **`Rec Singolo Live`** (matches Replay + Rec 2K packs).
+
 ## Prerequisites
 
-1. Telemetry running: `Start-Telemetry.bat mock` or `iracing`
-2. OBS Studio **28+** with **WebSocket server** enabled  
-   Tools → WebSocket Server Settings → Enable → note port (default `4455`) and password
-3. Create three scenes (names must match config), e.g.  
-   - `Flag Yellow`  
-   - `Flag Red`  
-   - `Flag Checkered`  
-   Put a full-frame graphic / color source on each if you want a full-screen flag look.
-4. Python deps:
+1. Telemetry running: `Start-Telemetry.bat mock` or `iracing` (or `Start-Telecronaca.bat`)
+2. Config server on `:8766` (flag HTML is served over HTTP)
+3. OBS Studio **28+** with **WebSocket server** enabled  
+   Tools → WebSocket Server Settings → Enable → port `4455` + password
+4. Reimport **S.Marcato Replay** / **Rec 2K** so Flag * scenes exist
+5. Python deps:
 
 ```powershell
 pip install -r adapters/obs_flag_director/requirements.txt
@@ -20,29 +27,23 @@ pip install -r adapters/obs_flag_director/requirements.txt
 
 ## Config
 
-```powershell
-copy adapters\obs_flag_director\config.example.json adapters\obs_flag_director\config.local.json
-```
+`Start-FlagDirector.bat` creates `config.local.json` from the example on first run.
 
-Edit `config.local.json`:
+Edit `adapters/obs_flag_director/config.local.json`:
 
-- `obsPassword` — OBS websocket password (never commit this file)
-- `dryRun`: `true` logs only; set `false` for real switches
-- `homeScene` — fallback if the director never saw a non-flag scene (e.g. `Rec * Live` or `Live Race`)
-- `scenes.yellow|red|checkered` — exact OBS scene names
-
-`config.local.json` is gitignored.
+- `obsPassword` — OBS websocket password (**never commit**)
+- `dryRun`: start `true` (logs only); set `false` for real switches
+- `homeScene`: `Rec Singolo Live` (or your preferred live scene)
+- `scenes.*` — must match OBS scene names exactly
 
 ## Run
 
 ```powershell
+.\Start-Telecronaca.bat mock
+# or separately:
 .\Start-FlagDirector.bat
-# or
 python adapters\obs_flag_director\director.py --dry-run
-python adapters\obs_flag_director\director.py
 ```
-
-Keep the window open while streaming. Restart after changing config.
 
 ## Behaviour
 

@@ -93,7 +93,10 @@ All’apertura di OBS lo script Lua `obs/scripts/pigreco_config_autostart.lua` a
    - PiGreco: `http://127.0.0.1:8766/`
    - Marcato: `http://127.0.0.1:8766/?profile=marcato`
 2. Emergenza / primo avvio: doppio clic su `Start-ConfigPanel.bat` (poi puoi chiudere la finestra)
-3. Telecronaca (opzionale): `Start-Telemetry.bat mock` oppure `iracing` — vedi [`docs/TELEMETRY_BROADCAST.md`](docs/TELEMETRY_BROADCAST.md)
+3. Telecronaca (opzionale):
+   - Tutto insieme: `Start-Telecronaca.bat mock` (o `iracing`)
+   - Oppure: `Start-Telemetry.bat` + `Start-FlagDirector.bat`
+   - Guide: [`docs/TELEMETRY_BROADCAST.md`](docs/TELEMETRY_BROADCAST.md) · [`docs/FLAG_DIRECTOR.md`](docs/FLAG_DIRECTOR.md) · [`docs/TRACK_MAP.md`](docs/TRACK_MAP.md)
 
 Dettagli: [`docs/OBS_CONFIG_PANEL.md`](docs/OBS_CONFIG_PANEL.md)
 
