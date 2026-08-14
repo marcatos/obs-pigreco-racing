@@ -82,6 +82,28 @@ def test_mock_tick_sequence_can_yield_flag_event():
     assert any(e["kind"] == "flag_change" for e in ev)
 
 
+def test_pit_enter_exit():
+    d = EventDetector()
+    d.feed(_tick(inPit=False, ts=50))
+    ev = d.feed(_tick(inPit=True, ts=51))
+    assert any(e["kind"] == "pit" and e["payload"]["state"] == "enter" for e in ev)
+    ev2 = d.feed(_tick(inPit=False, ts=60), now_ms=60_000)
+    assert any(e["kind"] == "pit" and e["payload"]["state"] == "exit" for e in ev2)
+
+
+def test_mock_pit_window_emits_enter():
+    from mock_server import build_tick
+
+    assert build_tick(39.0)["inPit"] is False
+    assert build_tick(40.0)["inPit"] is True
+    assert build_tick(44.0)["inPit"] is True
+    assert build_tick(45.0)["inPit"] is False
+    d = EventDetector()
+    d.feed(build_tick(39.0))
+    ev = d.feed(build_tick(40.0))
+    assert any(e["kind"] == "pit" and e["payload"]["state"] == "enter" for e in ev)
+
+
 def test_mock_and_bridge_accept_sensitivity_flag():
     from mock_server import parse_args as mock_parse
     from iracing_bridge import parse_args as bridge_parse

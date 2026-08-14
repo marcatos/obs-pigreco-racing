@@ -111,7 +111,7 @@ def build_tick(elapsed_s: float) -> dict[str, Any]:
         bestLapMs=best_lap,
         # P3-06 enrichment
         deltaBestMs=delta_best_ms(last_lap, best_lap),
-        inPit=False,
+        inPit=(int(elapsed_s) % 80) in range(40, 45),
         iRating=1850,
         airTempC=24.0,
         trackTempC=32.0,

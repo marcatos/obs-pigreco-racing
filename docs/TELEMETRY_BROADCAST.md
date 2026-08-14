@@ -37,6 +37,20 @@ Replay note: SDK `CarIdxPosition` is often wrong in replay. The bridge ranks car
 `CarIdxLap` + `CarIdxLapDistPct`. In live it prefers official positions when enough
 cars report `> 0`.
 
+### Optional IBT recording (native Motec / Mu)
+
+The bridge does **not** invent `.ibt` bytes — it asks the sim to start/stop disk
+telemetry via SDK `telem_command` (same as Alt+L):
+
+```powershell
+.\Start-Telemetry.bat iracing --ibt
+# oppure:
+python adapters/telemetry/iracing_bridge.py --ibt
+```
+
+Files appear under `Documents\iRacing\telemetry\` when the driver is **in-car**.
+In pure replay/spectator the sim often writes nothing — use live sessions for Motec.
+
 Do **not** autostart the bridge from OBS scripting (console flash / fragile Python).
 
 ## OBS sources
@@ -71,6 +85,44 @@ See `overlays/config.example.js`:
 - `telemetryWsUrl` (default `ws://127.0.0.1:8765`)
 - `broadcastLeaderboard` / `Relative` / `Focus` / `Session`
 - `broadcastLeaderboardRows` (5–20)
+- `broadcastDirector` (`auto` | `manual` | `off`, default `auto`)
+- `broadcastDirectorSensitivity` (`calm` | `normal` | `hype`, default `normal`)
+
+`broadcastDirectorSensitivity` is stored for future client-side filters. **Detection** lives on the producer (`python adapters/telemetry/mock_server.py --sensitivity hype` or the iRacing bridge). The overlay does not dual-detect.
+
+## Broadcast director (P3-06)
+
+Hybrid auto/manual moments on the same Browser Source. Base widgets (session, focus, standings, relative) follow existing toggles; a moment chip plays above the session strip (not center FOV).
+
+### Director modes
+
+| Mode | Behavior |
+|------|----------|
+| `auto` | Widget toggles = **allow-list**. Director shows/hides and plays moments from `telemetry.event`. Session + focus stay on if toggled. |
+| `manual` | Only toggles; ignore `telemetry.event` for hero UI (events may still arrive on the socket). |
+| `off` | No moment layer; base follows toggles only (same as today’s static layout). |
+
+`telemetryEnabled: false` still means no WebSocket (unchanged).
+
+### Events are WebSocket-only
+
+`telemetry.event` frames (`flag_change`, `battle`, `overtake`, `fast_lap`, `pit`, `session_end`) are emitted on the **WebSocket** after the tick that produced them. File mode (`--mode file`) stores the latest tick only — events are **not** persisted.
+
+Mock scripted windows (elapsed seconds):
+
+| Window | What you should see (`auto`) |
+|--------|------------------------------|
+| `int(t) % 47` in 12–14 | Yellow flag + `YELLOW` chip |
+| `int(t) % 80` in 40–44 | Focus `inPit`; `PIT ENTER` then `PIT EXIT` |
+| `int(t) % 113 == 0` | White flag + `session_end` chip (stronger finish treatment) |
+
+### Smoke checklist (auto vs manual)
+
+1. Config panel: `telemetryEnabled` on, `broadcastDirector: auto`. Start mock (`.\Start-Telemetry.bat mock`).
+2. OBS / browser: yellow around ~12s → moment chip + flag banner.
+3. Pit window around ~40s → `PIT ENTER` / `PIT EXIT` (blue chip accent).
+4. Switch `broadcastDirector` to `manual` or `off` → no hero chips; widget toggles still apply.
+5. `telemetryEnabled: false` → overlay does not open a WebSocket.
 
 ## Optional: SimHub / Racing Overlay (fase D)
 
@@ -98,15 +150,18 @@ the Browser Source like the other overlays, or native 2560×1440 if the tool all
 | Path | Role |
 |------|------|
 | `adapters/telemetry/CONTRACT.md` | Message schema |
-| `adapters/telemetry/mock_server.py` | Fake ticks |
+| `adapters/telemetry/mock_server.py` | Fake ticks + scripted events |
 | `adapters/telemetry/iracing_bridge.py` | iRacing → WS |
 | `adapters/telemetry/domain_standings.py` | Standings helpers |
+| `adapters/telemetry/domain_events.py` | `telemetry.event` detection (no IO) |
 | `overlays/broadcast-chrome.html` | PiGreco UI |
 | `overlays-marcato/broadcast-chrome.html` | S.Marcato UI |
+| `overlays/broadcast-director.js` | Overlay director queue / labels |
 | `docs/adr/005-telemetry-adapter-port.md` | Architecture ADR |
 
 ## Acceptance
 
 - Mock: leaderboard + focus animate in Browser Source
+- Mock `broadcastDirector: auto`: yellow / pit / session_end chips play; `manual`/`off` hide them
 - Replay: positions/gaps roughly match the sim
 - Pack works with bridge off and `telemetryEnabled: false`

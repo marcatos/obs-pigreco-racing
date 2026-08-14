@@ -435,6 +435,13 @@
 .bc-moment[data-kind="flag_change"] .bc-moment-chip { border-color: #f5d90a; }
 .bc-moment[data-kind="overtake"] .bc-moment-chip { border-color: #00c400; }
 .bc-moment[data-kind="fast_lap"] .bc-moment-chip { border-color: #c084fc; }
+.bc-moment[data-kind="pit"] .bc-moment-chip { border-color: #009fe5; }
+.bc-moment[data-kind="session_end"] .bc-moment-chip {
+  border-color: #f7fafc;
+  font-size: 32px;
+  letter-spacing: 0.18em;
+  box-shadow: 0 0 0 2px #080a0c, 0 0 0 4px #f7fafc;
+}
 @keyframes bcMomentIn {
   from { opacity: 0; transform: translate(-50%, -16px); }
   to { opacity: 1; transform: translate(-50%, 0); }

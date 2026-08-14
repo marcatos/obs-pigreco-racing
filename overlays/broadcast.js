@@ -101,7 +101,7 @@
     var prevHero = directorState.hero;
     directorState = Director.enqueueEvent(directorState, ev, director);
     directorLog("DEBUG", "event kind=" + ev.kind + " priority=" + (ev.priority || 0));
-    if (ev.kind === "flag_change") {
+    if (ev.kind === "flag_change" || ev.kind === "session_end") {
       applyFlagBanner(ev.payload && ev.payload.flag);
     }
     if (directorState.hero && directorState.hero !== prevHero) {

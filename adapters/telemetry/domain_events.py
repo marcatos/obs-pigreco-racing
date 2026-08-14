@@ -132,5 +132,15 @@ class EventDetector:
             if e:
                 found.append(e)
 
-        # pit enter/exit — implemented fully in Task 8; stub hook OK if tests don't cover yet
+        ppit = bool(prev.get("inPit"))
+        cpit = bool(tick.get("inPit"))
+        if cpit and not ppit:
+            e = self._emit("pit", ts, {"state": "enter"})
+            if e:
+                found.append(e)
+        elif ppit and not cpit:
+            e = self._emit("pit", ts, {"state": "exit"})
+            if e:
+                found.append(e)
+
         return found
