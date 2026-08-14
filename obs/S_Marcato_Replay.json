@@ -3,7 +3,7 @@
     "DesktopAudioDevice1": {
         "prev_ver": 536936450,
         "name": "Audio Desktop",
-        "uuid": "e2778454-ee04-4109-bb24-6f89decb72d6",
+        "uuid": "b18ba930-31f3-4cb5-867f-af160271d790",
         "id": "wasapi_output_capture",
         "versioned_id": "wasapi_output_capture",
         "settings": {
@@ -29,7 +29,7 @@
     "AuxAudioDevice1": {
         "prev_ver": 536936450,
         "name": "Microfono",
-        "uuid": "07a7a201-e434-4997-800f-bc01aea76741",
+        "uuid": "b4b586f2-4c10-49b3-a6d4-1e4160c956e1",
         "id": "wasapi_input_capture",
         "versioned_id": "wasapi_input_capture",
         "settings": {
@@ -56,7 +56,7 @@
         {
             "prev_ver": 536936450,
             "name": "StreamCam",
-            "uuid": "61e473a0-6d87-4965-a3c7-d320ff9617e4",
+            "uuid": "2a0e840c-2724-45d5-89f7-db6569383d03",
             "id": "dshow_input",
             "versioned_id": "dshow_input",
             "settings": {
@@ -85,7 +85,7 @@
                 {
                     "prev_ver": 536936450,
                     "name": "NVIDIA Background Removal",
-                    "uuid": "6d2f583b-11fc-4edf-a200-5b0fa1a50322",
+                    "uuid": "b5f21787-9869-496d-9bf8-829711a5f2aa",
                     "id": "nv_greenscreen_filter",
                     "versioned_id": "nv_greenscreen_filter",
                     "settings": {
@@ -100,7 +100,7 @@
         {
             "prev_ver": 536936450,
             "name": "Cam 2",
-            "uuid": "c02f0f1c-46b9-4ec2-8c83-3dec11c60257",
+            "uuid": "c0b144d5-2bac-4046-8f7f-e7e121efe855",
             "id": "dshow_input",
             "versioned_id": "dshow_input",
             "settings": {
@@ -129,7 +129,7 @@
                 {
                     "prev_ver": 536936450,
                     "name": "NVIDIA Background Removal",
-                    "uuid": "33a48262-0464-4731-85da-8845aa9b16b0",
+                    "uuid": "328d7f11-1fcc-499b-85c2-14874b62fdf3",
                     "id": "nv_greenscreen_filter",
                     "versioned_id": "nv_greenscreen_filter",
                     "settings": {
@@ -144,7 +144,7 @@
         {
             "prev_ver": 536936450,
             "name": "Cam Backdrop Face",
-            "uuid": "9cc3281a-51e3-4715-8318-11cc5908ebd9",
+            "uuid": "9fc25d0f-33f9-4d5e-9213-ae20afd4df40",
             "id": "color_source_v3",
             "versioned_id": "color_source_v3",
             "settings": {
@@ -172,7 +172,7 @@
         {
             "prev_ver": 536936450,
             "name": "Cam Backdrop 2",
-            "uuid": "fe50ef24-d3cd-4a05-aaa5-fce764fadce8",
+            "uuid": "a9b0ffab-b188-4e57-bb94-d450cc0c3d84",
             "id": "color_source_v3",
             "versioned_id": "color_source_v3",
             "settings": {
@@ -200,7 +200,7 @@
         {
             "prev_ver": 536936450,
             "name": "Monitor Sinistro",
-            "uuid": "bce2d694-801c-4710-ae1f-b055d47792dd",
+            "uuid": "31e59b2a-e2f9-41b5-8c8e-565f19617270",
             "id": "monitor_capture",
             "versioned_id": "monitor_capture",
             "settings": {
@@ -227,7 +227,7 @@
         {
             "prev_ver": 536936450,
             "name": "Monitor Centro",
-            "uuid": "808c137e-b226-40e8-b9d9-d48b28864130",
+            "uuid": "b0ab9482-82b5-48ce-b7a1-6f1161834502",
             "id": "monitor_capture",
             "versioned_id": "monitor_capture",
             "settings": {
@@ -255,7 +255,7 @@
         {
             "prev_ver": 536936450,
             "name": "Monitor Destro",
-            "uuid": "8d4270cd-faa1-49c9-825e-2226595120aa",
+            "uuid": "81a46031-c84f-4df0-afb8-86c90a2bd273",
             "id": "monitor_capture",
             "versioned_id": "monitor_capture",
             "settings": {
@@ -282,7 +282,7 @@
         {
             "prev_ver": 536936450,
             "name": "Game Capture",
-            "uuid": "f374d77f-ee04-4bb8-a656-5b176bb40444",
+            "uuid": "2deb4de4-3cfc-40f4-ad7d-e499c87f542b",
             "id": "game_capture",
             "versioned_id": "game_capture",
             "settings": {
@@ -312,7 +312,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Starting Soon",
-            "uuid": "9722b3f6-2f52-492e-a94e-6e331947c97e",
+            "uuid": "e6c4e9ef-ddf5-41c1-b6d2-61f613ffd804",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -344,7 +344,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay BRB",
-            "uuid": "4cad0508-b4f4-4b90-8c02-86cc7c4cc864",
+            "uuid": "a03e4464-52cc-4228-b460-9502a901c9eb",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -376,7 +376,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Ending",
-            "uuid": "2b1cf967-192b-4f00-8b8b-e7bb9748d2e4",
+            "uuid": "d5b65e74-d9fd-4dbc-8703-9516c66f0019",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -408,7 +408,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Replay Chrome",
-            "uuid": "61536c6c-a959-445a-a768-da21e9c34c56",
+            "uuid": "11a569da-6453-4778-a6cf-0280e9fc7f9d",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -440,7 +440,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Broadcast Chrome",
-            "uuid": "9e479b09-9b14-41fb-b422-cbfd770953f2",
+            "uuid": "d8e92141-b834-49bd-be8e-c37480d0ff46",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -472,7 +472,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Track Map",
-            "uuid": "9a367048-9ad9-4b99-8440-a2fc0e7f544c",
+            "uuid": "b2318eed-fd67-4df9-91ba-d55ab7578826",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -504,7 +504,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Flag FX",
-            "uuid": "3465e215-5614-481a-940c-fadef9ec658a",
+            "uuid": "84402493-240b-4e91-8cdc-f6775c656da2",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -536,7 +536,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Flag Yellow",
-            "uuid": "cbbf5cc7-ebd5-4ae7-8cc7-01d855c2487b",
+            "uuid": "d7b183a5-ffee-4009-b622-d97960fba145",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -568,7 +568,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Flag Red",
-            "uuid": "8c519a51-962c-4d5a-913a-c432bc988d0e",
+            "uuid": "0740abcd-1765-4253-ab9e-7a16223f7b60",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -600,7 +600,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Flag Checkered",
-            "uuid": "291bff0e-f2e1-4197-8a0a-d9eb7b25a2e3",
+            "uuid": "9dee0117-ce9a-48fd-bd81-c111afa79f3d",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -632,7 +632,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Cam Frame",
-            "uuid": "ea709a28-46a5-441f-a002-5a346ec55598",
+            "uuid": "dd3bfbdf-2d51-4fbe-aebb-09eac92c0ac8",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -664,7 +664,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Cam 2 Frame",
-            "uuid": "477ad02f-6a32-4261-b463-294fcc6c3177",
+            "uuid": "098b63a4-cff0-41f7-a0c7-ebb6384b5dab",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -696,7 +696,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Triple Frame",
-            "uuid": "7c4a812d-d622-4b1d-af92-2b498b05cee3",
+            "uuid": "b9b94cbd-4f0a-48f7-aea0-9573e1fc3022",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -728,7 +728,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Triple Frame Live",
-            "uuid": "5df83c61-ba39-431e-b243-d83528964f96",
+            "uuid": "b1abbf51-9e0b-415b-97e7-cdbcb05c3518",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -760,14 +760,14 @@
         {
             "prev_ver": 536936450,
             "name": "Music Starting Soon",
-            "uuid": "a1f296e0-99f3-4b5e-bd0d-ef86ffe5c1a0",
+            "uuid": "f6486d3f-e3d4-457e-9078-63a1e56460db",
             "id": "ffmpeg_source",
             "versioned_id": "ffmpeg_source",
             "settings": {
                 "local_file": "C:\\Users\\simot\\Documents\\Projects\\obs-pigreco-racing\\audio\\interstitials\\starting-soon.mp3",
                 "looping": true,
                 "restart_on_activate": true,
-                "close_when_inactive": true,
+                "close_when_inactive": false,
                 "clear_on_media_end": false,
                 "hw_decode": false,
                 "speed_percent": 100,
@@ -793,14 +793,14 @@
         {
             "prev_ver": 536936450,
             "name": "Music BRB",
-            "uuid": "cc8e6cd2-805d-491c-89b0-30886dc8c1ef",
+            "uuid": "adb41199-b75f-4763-a879-89d80c1fc021",
             "id": "ffmpeg_source",
             "versioned_id": "ffmpeg_source",
             "settings": {
                 "local_file": "C:\\Users\\simot\\Documents\\Projects\\obs-pigreco-racing\\audio\\interstitials\\brb.mp3",
                 "looping": true,
                 "restart_on_activate": true,
-                "close_when_inactive": true,
+                "close_when_inactive": false,
                 "clear_on_media_end": false,
                 "hw_decode": false,
                 "speed_percent": 100,
@@ -826,14 +826,14 @@
         {
             "prev_ver": 536936450,
             "name": "Music Ending",
-            "uuid": "0d435016-07a7-47a9-9c85-4a37ad1892d2",
+            "uuid": "e16fca3f-7c45-44f1-8963-7cb052068483",
             "id": "ffmpeg_source",
             "versioned_id": "ffmpeg_source",
             "settings": {
                 "local_file": "C:\\Users\\simot\\Documents\\Projects\\obs-pigreco-racing\\audio\\interstitials\\ending.mp3",
                 "looping": true,
                 "restart_on_activate": true,
-                "close_when_inactive": true,
+                "close_when_inactive": false,
                 "clear_on_media_end": false,
                 "hw_decode": false,
                 "speed_percent": 100,
@@ -859,7 +859,7 @@
         {
             "prev_ver": 536936450,
             "name": "Cam PIP",
-            "uuid": "4a35d7a1-3a60-4b0d-8a03-6ff6b4db63d0",
+            "uuid": "b3a4713e-a918-4f82-855e-9cab44726ed7",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -868,7 +868,7 @@
                 "items": [
                     {
                         "name": "Cam Backdrop Face",
-                        "source_uuid": "9cc3281a-51e3-4715-8318-11cc5908ebd9",
+                        "source_uuid": "9fc25d0f-33f9-4d5e-9213-ae20afd4df40",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -923,7 +923,7 @@
                     },
                     {
                         "name": "StreamCam",
-                        "source_uuid": "61e473a0-6d87-4965-a3c7-d320ff9617e4",
+                        "source_uuid": "2a0e840c-2724-45d5-89f7-db6569383d03",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -978,7 +978,7 @@
                     },
                     {
                         "name": "Overlay Cam Frame",
-                        "source_uuid": "ea709a28-46a5-441f-a002-5a346ec55598",
+                        "source_uuid": "dd3bfbdf-2d51-4fbe-aebb-09eac92c0ac8",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -1062,7 +1062,7 @@
         {
             "prev_ver": 536936450,
             "name": "Cam 2 PIP",
-            "uuid": "c1990749-860f-4436-bfec-2f4ad832d61c",
+            "uuid": "37111ab0-1293-4f49-bdd7-b52b0c67d15c",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -1071,7 +1071,7 @@
                 "items": [
                     {
                         "name": "Cam Backdrop 2",
-                        "source_uuid": "fe50ef24-d3cd-4a05-aaa5-fce764fadce8",
+                        "source_uuid": "a9b0ffab-b188-4e57-bb94-d450cc0c3d84",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -1126,7 +1126,7 @@
                     },
                     {
                         "name": "Cam 2",
-                        "source_uuid": "c02f0f1c-46b9-4ec2-8c83-3dec11c60257",
+                        "source_uuid": "c0b144d5-2bac-4046-8f7f-e7e121efe855",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -1181,7 +1181,7 @@
                     },
                     {
                         "name": "Overlay Cam 2 Frame",
-                        "source_uuid": "477ad02f-6a32-4261-b463-294fcc6c3177",
+                        "source_uuid": "098b63a4-cff0-41f7-a0c7-ebb6384b5dab",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -1265,7 +1265,7 @@
         {
             "prev_ver": 536936450,
             "name": "Starting Soon",
-            "uuid": "885b21d2-134b-4598-8844-564294deef83",
+            "uuid": "7b6e5ce3-7253-4353-8071-5b78ebce2e5a",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -1274,7 +1274,7 @@
                 "items": [
                     {
                         "name": "Overlay Starting Soon",
-                        "source_uuid": "9722b3f6-2f52-492e-a94e-6e331947c97e",
+                        "source_uuid": "e6c4e9ef-ddf5-41c1-b6d2-61f613ffd804",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -1329,7 +1329,7 @@
                     },
                     {
                         "name": "StreamCam",
-                        "source_uuid": "61e473a0-6d87-4965-a3c7-d320ff9617e4",
+                        "source_uuid": "2a0e840c-2724-45d5-89f7-db6569383d03",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -1384,7 +1384,7 @@
                     },
                     {
                         "name": "Music Starting Soon",
-                        "source_uuid": "a1f296e0-99f3-4b5e-bd0d-ef86ffe5c1a0",
+                        "source_uuid": "f6486d3f-e3d4-457e-9078-63a1e56460db",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -1468,7 +1468,7 @@
         {
             "prev_ver": 536936450,
             "name": "Replay iRacing",
-            "uuid": "874a2713-aff4-4f4b-94fb-f7c535032e7c",
+            "uuid": "25331502-c2d6-4fe0-aaea-4248eb96bfda",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -1477,7 +1477,7 @@
                 "items": [
                     {
                         "name": "Monitor Centro",
-                        "source_uuid": "808c137e-b226-40e8-b9d9-d48b28864130",
+                        "source_uuid": "b0ab9482-82b5-48ce-b7a1-6f1161834502",
                         "visible": false,
                         "locked": false,
                         "rot": 0.0,
@@ -1532,7 +1532,7 @@
                     },
                     {
                         "name": "Game Capture",
-                        "source_uuid": "f374d77f-ee04-4bb8-a656-5b176bb40444",
+                        "source_uuid": "2deb4de4-3cfc-40f4-ad7d-e499c87f542b",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -1587,7 +1587,7 @@
                     },
                     {
                         "name": "Overlay Replay Chrome",
-                        "source_uuid": "61536c6c-a959-445a-a768-da21e9c34c56",
+                        "source_uuid": "11a569da-6453-4778-a6cf-0280e9fc7f9d",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -1642,7 +1642,7 @@
                     },
                     {
                         "name": "Overlay Broadcast Chrome",
-                        "source_uuid": "9e479b09-9b14-41fb-b422-cbfd770953f2",
+                        "source_uuid": "d8e92141-b834-49bd-be8e-c37480d0ff46",
                         "visible": false,
                         "locked": true,
                         "rot": 0.0,
@@ -1697,7 +1697,7 @@
                     },
                     {
                         "name": "Overlay Track Map",
-                        "source_uuid": "9a367048-9ad9-4b99-8440-a2fc0e7f544c",
+                        "source_uuid": "b2318eed-fd67-4df9-91ba-d55ab7578826",
                         "visible": false,
                         "locked": true,
                         "rot": 0.0,
@@ -1752,7 +1752,7 @@
                     },
                     {
                         "name": "Cam PIP",
-                        "source_uuid": "4a35d7a1-3a60-4b0d-8a03-6ff6b4db63d0",
+                        "source_uuid": "b3a4713e-a918-4f82-855e-9cab44726ed7",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -1807,7 +1807,7 @@
                     },
                     {
                         "name": "Cam 2 PIP",
-                        "source_uuid": "c1990749-860f-4436-bfec-2f4ad832d61c",
+                        "source_uuid": "37111ab0-1293-4f49-bdd7-b52b0c67d15c",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -1862,7 +1862,7 @@
                     },
                     {
                         "name": "Overlay Flag FX",
-                        "source_uuid": "3465e215-5614-481a-940c-fadef9ec658a",
+                        "source_uuid": "84402493-240b-4e91-8cdc-f6775c656da2",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -1956,7 +1956,7 @@
         {
             "prev_ver": 536936450,
             "name": "Replay Monitor",
-            "uuid": "670caaca-e536-4405-92ca-9044d46d47eb",
+            "uuid": "0e3bbfbf-8730-4c20-b5bd-30fe09c0c268",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -1965,7 +1965,7 @@
                 "items": [
                     {
                         "name": "Monitor Centro",
-                        "source_uuid": "808c137e-b226-40e8-b9d9-d48b28864130",
+                        "source_uuid": "b0ab9482-82b5-48ce-b7a1-6f1161834502",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -2020,7 +2020,7 @@
                     },
                     {
                         "name": "Game Capture",
-                        "source_uuid": "f374d77f-ee04-4bb8-a656-5b176bb40444",
+                        "source_uuid": "2deb4de4-3cfc-40f4-ad7d-e499c87f542b",
                         "visible": false,
                         "locked": false,
                         "rot": 0.0,
@@ -2075,7 +2075,7 @@
                     },
                     {
                         "name": "Overlay Replay Chrome",
-                        "source_uuid": "61536c6c-a959-445a-a768-da21e9c34c56",
+                        "source_uuid": "11a569da-6453-4778-a6cf-0280e9fc7f9d",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -2130,7 +2130,7 @@
                     },
                     {
                         "name": "Overlay Broadcast Chrome",
-                        "source_uuid": "9e479b09-9b14-41fb-b422-cbfd770953f2",
+                        "source_uuid": "d8e92141-b834-49bd-be8e-c37480d0ff46",
                         "visible": false,
                         "locked": true,
                         "rot": 0.0,
@@ -2185,7 +2185,7 @@
                     },
                     {
                         "name": "Overlay Track Map",
-                        "source_uuid": "9a367048-9ad9-4b99-8440-a2fc0e7f544c",
+                        "source_uuid": "b2318eed-fd67-4df9-91ba-d55ab7578826",
                         "visible": false,
                         "locked": true,
                         "rot": 0.0,
@@ -2240,7 +2240,7 @@
                     },
                     {
                         "name": "Cam PIP",
-                        "source_uuid": "4a35d7a1-3a60-4b0d-8a03-6ff6b4db63d0",
+                        "source_uuid": "b3a4713e-a918-4f82-855e-9cab44726ed7",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -2295,7 +2295,7 @@
                     },
                     {
                         "name": "Cam 2 PIP",
-                        "source_uuid": "c1990749-860f-4436-bfec-2f4ad832d61c",
+                        "source_uuid": "37111ab0-1293-4f49-bdd7-b52b0c67d15c",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -2350,7 +2350,7 @@
                     },
                     {
                         "name": "Overlay Flag FX",
-                        "source_uuid": "3465e215-5614-481a-940c-fadef9ec658a",
+                        "source_uuid": "84402493-240b-4e91-8cdc-f6775c656da2",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -2444,7 +2444,7 @@
         {
             "prev_ver": 536936450,
             "name": "Rec Singolo",
-            "uuid": "d9df4b1c-e685-48ee-bc68-12ee36b5ddb3",
+            "uuid": "ef268e2a-677e-40f4-97f7-954d0b3f14af",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -2453,7 +2453,7 @@
                 "items": [
                     {
                         "name": "Monitor Centro",
-                        "source_uuid": "808c137e-b226-40e8-b9d9-d48b28864130",
+                        "source_uuid": "b0ab9482-82b5-48ce-b7a1-6f1161834502",
                         "visible": false,
                         "locked": true,
                         "rot": 0.0,
@@ -2508,7 +2508,7 @@
                     },
                     {
                         "name": "Game Capture",
-                        "source_uuid": "f374d77f-ee04-4bb8-a656-5b176bb40444",
+                        "source_uuid": "2deb4de4-3cfc-40f4-ad7d-e499c87f542b",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -2590,7 +2590,7 @@
         {
             "prev_ver": 536936450,
             "name": "Rec Triplo",
-            "uuid": "35d1335e-60dc-417a-8cb4-23b5c337d121",
+            "uuid": "ee023f04-aaf4-429e-9907-0ffbb150c30d",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -2599,7 +2599,7 @@
                 "items": [
                     {
                         "name": "Game Capture",
-                        "source_uuid": "f374d77f-ee04-4bb8-a656-5b176bb40444",
+                        "source_uuid": "2deb4de4-3cfc-40f4-ad7d-e499c87f542b",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -2679,7 +2679,7 @@
         {
             "prev_ver": 536936450,
             "name": "Rec Singolo Live",
-            "uuid": "4859d3eb-9d91-4cf1-aecf-d05a4cf06e85",
+            "uuid": "6458342b-e399-4271-bb8d-d6eb58d48b0d",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -2688,7 +2688,7 @@
                 "items": [
                     {
                         "name": "Monitor Centro",
-                        "source_uuid": "808c137e-b226-40e8-b9d9-d48b28864130",
+                        "source_uuid": "b0ab9482-82b5-48ce-b7a1-6f1161834502",
                         "visible": false,
                         "locked": false,
                         "rot": 0.0,
@@ -2743,7 +2743,7 @@
                     },
                     {
                         "name": "Game Capture",
-                        "source_uuid": "f374d77f-ee04-4bb8-a656-5b176bb40444",
+                        "source_uuid": "2deb4de4-3cfc-40f4-ad7d-e499c87f542b",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -2798,7 +2798,7 @@
                     },
                     {
                         "name": "Overlay Replay Chrome",
-                        "source_uuid": "61536c6c-a959-445a-a768-da21e9c34c56",
+                        "source_uuid": "11a569da-6453-4778-a6cf-0280e9fc7f9d",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -2853,7 +2853,7 @@
                     },
                     {
                         "name": "Overlay Broadcast Chrome",
-                        "source_uuid": "9e479b09-9b14-41fb-b422-cbfd770953f2",
+                        "source_uuid": "d8e92141-b834-49bd-be8e-c37480d0ff46",
                         "visible": false,
                         "locked": true,
                         "rot": 0.0,
@@ -2908,7 +2908,7 @@
                     },
                     {
                         "name": "Overlay Track Map",
-                        "source_uuid": "9a367048-9ad9-4b99-8440-a2fc0e7f544c",
+                        "source_uuid": "b2318eed-fd67-4df9-91ba-d55ab7578826",
                         "visible": false,
                         "locked": true,
                         "rot": 0.0,
@@ -2963,7 +2963,7 @@
                     },
                     {
                         "name": "Cam PIP",
-                        "source_uuid": "4a35d7a1-3a60-4b0d-8a03-6ff6b4db63d0",
+                        "source_uuid": "b3a4713e-a918-4f82-855e-9cab44726ed7",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -3018,7 +3018,7 @@
                     },
                     {
                         "name": "Cam 2 PIP",
-                        "source_uuid": "c1990749-860f-4436-bfec-2f4ad832d61c",
+                        "source_uuid": "37111ab0-1293-4f49-bdd7-b52b0c67d15c",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -3073,7 +3073,7 @@
                     },
                     {
                         "name": "Overlay Flag FX",
-                        "source_uuid": "3465e215-5614-481a-940c-fadef9ec658a",
+                        "source_uuid": "84402493-240b-4e91-8cdc-f6775c656da2",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -3167,7 +3167,7 @@
         {
             "prev_ver": 536936450,
             "name": "Rec Triplo Live",
-            "uuid": "b566918a-a9e0-4f7f-b703-49e25b528e42",
+            "uuid": "e9b5f9fc-3723-4560-8702-e86af35a17e1",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -3176,7 +3176,7 @@
                 "items": [
                     {
                         "name": "Game Capture",
-                        "source_uuid": "f374d77f-ee04-4bb8-a656-5b176bb40444",
+                        "source_uuid": "2deb4de4-3cfc-40f4-ad7d-e499c87f542b",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -3231,7 +3231,7 @@
                     },
                     {
                         "name": "Overlay Triple Frame Live",
-                        "source_uuid": "5df83c61-ba39-431e-b243-d83528964f96",
+                        "source_uuid": "b1abbf51-9e0b-415b-97e7-cdbcb05c3518",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -3286,7 +3286,7 @@
                     },
                     {
                         "name": "StreamCam",
-                        "source_uuid": "61e473a0-6d87-4965-a3c7-d320ff9617e4",
+                        "source_uuid": "2a0e840c-2724-45d5-89f7-db6569383d03",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -3341,7 +3341,7 @@
                     },
                     {
                         "name": "Overlay Broadcast Chrome",
-                        "source_uuid": "9e479b09-9b14-41fb-b422-cbfd770953f2",
+                        "source_uuid": "d8e92141-b834-49bd-be8e-c37480d0ff46",
                         "visible": false,
                         "locked": true,
                         "rot": 0.0,
@@ -3396,7 +3396,7 @@
                     },
                     {
                         "name": "Overlay Track Map",
-                        "source_uuid": "9a367048-9ad9-4b99-8440-a2fc0e7f544c",
+                        "source_uuid": "b2318eed-fd67-4df9-91ba-d55ab7578826",
                         "visible": false,
                         "locked": true,
                         "rot": 0.0,
@@ -3451,7 +3451,7 @@
                     },
                     {
                         "name": "Overlay Flag FX",
-                        "source_uuid": "3465e215-5614-481a-940c-fadef9ec658a",
+                        "source_uuid": "84402493-240b-4e91-8cdc-f6775c656da2",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -3541,7 +3541,7 @@
         {
             "prev_ver": 536936450,
             "name": "Flag Yellow",
-            "uuid": "872a69f9-2046-4a22-9911-348986da8b48",
+            "uuid": "970464c8-1d66-4e7b-8724-b5b30f968f89",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -3550,7 +3550,7 @@
                 "items": [
                     {
                         "name": "Monitor Centro",
-                        "source_uuid": "808c137e-b226-40e8-b9d9-d48b28864130",
+                        "source_uuid": "b0ab9482-82b5-48ce-b7a1-6f1161834502",
                         "visible": false,
                         "locked": false,
                         "rot": 0.0,
@@ -3605,7 +3605,7 @@
                     },
                     {
                         "name": "Game Capture",
-                        "source_uuid": "f374d77f-ee04-4bb8-a656-5b176bb40444",
+                        "source_uuid": "2deb4de4-3cfc-40f4-ad7d-e499c87f542b",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -3660,7 +3660,7 @@
                     },
                     {
                         "name": "Overlay Replay Chrome",
-                        "source_uuid": "61536c6c-a959-445a-a768-da21e9c34c56",
+                        "source_uuid": "11a569da-6453-4778-a6cf-0280e9fc7f9d",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -3715,7 +3715,7 @@
                     },
                     {
                         "name": "Overlay Broadcast Chrome",
-                        "source_uuid": "9e479b09-9b14-41fb-b422-cbfd770953f2",
+                        "source_uuid": "d8e92141-b834-49bd-be8e-c37480d0ff46",
                         "visible": false,
                         "locked": true,
                         "rot": 0.0,
@@ -3770,7 +3770,7 @@
                     },
                     {
                         "name": "Overlay Track Map",
-                        "source_uuid": "9a367048-9ad9-4b99-8440-a2fc0e7f544c",
+                        "source_uuid": "b2318eed-fd67-4df9-91ba-d55ab7578826",
                         "visible": false,
                         "locked": true,
                         "rot": 0.0,
@@ -3825,7 +3825,7 @@
                     },
                     {
                         "name": "Cam PIP",
-                        "source_uuid": "4a35d7a1-3a60-4b0d-8a03-6ff6b4db63d0",
+                        "source_uuid": "b3a4713e-a918-4f82-855e-9cab44726ed7",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -3880,7 +3880,7 @@
                     },
                     {
                         "name": "Cam 2 PIP",
-                        "source_uuid": "c1990749-860f-4436-bfec-2f4ad832d61c",
+                        "source_uuid": "37111ab0-1293-4f49-bdd7-b52b0c67d15c",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -3935,7 +3935,7 @@
                     },
                     {
                         "name": "Overlay Flag Yellow",
-                        "source_uuid": "cbbf5cc7-ebd5-4ae7-8cc7-01d855c2487b",
+                        "source_uuid": "d7b183a5-ffee-4009-b622-d97960fba145",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -4029,7 +4029,7 @@
         {
             "prev_ver": 536936450,
             "name": "Flag Red",
-            "uuid": "f7342fde-0776-4356-8368-1a334b7da7fe",
+            "uuid": "7d55f47e-53cf-4090-bb95-a4aae034552a",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -4038,7 +4038,7 @@
                 "items": [
                     {
                         "name": "Monitor Centro",
-                        "source_uuid": "808c137e-b226-40e8-b9d9-d48b28864130",
+                        "source_uuid": "b0ab9482-82b5-48ce-b7a1-6f1161834502",
                         "visible": false,
                         "locked": false,
                         "rot": 0.0,
@@ -4093,7 +4093,7 @@
                     },
                     {
                         "name": "Game Capture",
-                        "source_uuid": "f374d77f-ee04-4bb8-a656-5b176bb40444",
+                        "source_uuid": "2deb4de4-3cfc-40f4-ad7d-e499c87f542b",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -4148,7 +4148,7 @@
                     },
                     {
                         "name": "Overlay Replay Chrome",
-                        "source_uuid": "61536c6c-a959-445a-a768-da21e9c34c56",
+                        "source_uuid": "11a569da-6453-4778-a6cf-0280e9fc7f9d",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -4203,7 +4203,7 @@
                     },
                     {
                         "name": "Overlay Broadcast Chrome",
-                        "source_uuid": "9e479b09-9b14-41fb-b422-cbfd770953f2",
+                        "source_uuid": "d8e92141-b834-49bd-be8e-c37480d0ff46",
                         "visible": false,
                         "locked": true,
                         "rot": 0.0,
@@ -4258,7 +4258,7 @@
                     },
                     {
                         "name": "Overlay Track Map",
-                        "source_uuid": "9a367048-9ad9-4b99-8440-a2fc0e7f544c",
+                        "source_uuid": "b2318eed-fd67-4df9-91ba-d55ab7578826",
                         "visible": false,
                         "locked": true,
                         "rot": 0.0,
@@ -4313,7 +4313,7 @@
                     },
                     {
                         "name": "Cam PIP",
-                        "source_uuid": "4a35d7a1-3a60-4b0d-8a03-6ff6b4db63d0",
+                        "source_uuid": "b3a4713e-a918-4f82-855e-9cab44726ed7",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -4368,7 +4368,7 @@
                     },
                     {
                         "name": "Cam 2 PIP",
-                        "source_uuid": "c1990749-860f-4436-bfec-2f4ad832d61c",
+                        "source_uuid": "37111ab0-1293-4f49-bdd7-b52b0c67d15c",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -4423,7 +4423,7 @@
                     },
                     {
                         "name": "Overlay Flag Red",
-                        "source_uuid": "8c519a51-962c-4d5a-913a-c432bc988d0e",
+                        "source_uuid": "0740abcd-1765-4253-ab9e-7a16223f7b60",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -4517,7 +4517,7 @@
         {
             "prev_ver": 536936450,
             "name": "Flag Checkered",
-            "uuid": "b21e592b-9ffd-45fb-8a6e-773c6769b200",
+            "uuid": "d8b46d97-fd73-4bc1-aa3e-a3263dfeb6bf",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -4526,7 +4526,7 @@
                 "items": [
                     {
                         "name": "Monitor Centro",
-                        "source_uuid": "808c137e-b226-40e8-b9d9-d48b28864130",
+                        "source_uuid": "b0ab9482-82b5-48ce-b7a1-6f1161834502",
                         "visible": false,
                         "locked": false,
                         "rot": 0.0,
@@ -4581,7 +4581,7 @@
                     },
                     {
                         "name": "Game Capture",
-                        "source_uuid": "f374d77f-ee04-4bb8-a656-5b176bb40444",
+                        "source_uuid": "2deb4de4-3cfc-40f4-ad7d-e499c87f542b",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -4636,7 +4636,7 @@
                     },
                     {
                         "name": "Overlay Replay Chrome",
-                        "source_uuid": "61536c6c-a959-445a-a768-da21e9c34c56",
+                        "source_uuid": "11a569da-6453-4778-a6cf-0280e9fc7f9d",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -4691,7 +4691,7 @@
                     },
                     {
                         "name": "Overlay Broadcast Chrome",
-                        "source_uuid": "9e479b09-9b14-41fb-b422-cbfd770953f2",
+                        "source_uuid": "d8e92141-b834-49bd-be8e-c37480d0ff46",
                         "visible": false,
                         "locked": true,
                         "rot": 0.0,
@@ -4746,7 +4746,7 @@
                     },
                     {
                         "name": "Overlay Track Map",
-                        "source_uuid": "9a367048-9ad9-4b99-8440-a2fc0e7f544c",
+                        "source_uuid": "b2318eed-fd67-4df9-91ba-d55ab7578826",
                         "visible": false,
                         "locked": true,
                         "rot": 0.0,
@@ -4801,7 +4801,7 @@
                     },
                     {
                         "name": "Cam PIP",
-                        "source_uuid": "4a35d7a1-3a60-4b0d-8a03-6ff6b4db63d0",
+                        "source_uuid": "b3a4713e-a918-4f82-855e-9cab44726ed7",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -4856,7 +4856,7 @@
                     },
                     {
                         "name": "Cam 2 PIP",
-                        "source_uuid": "c1990749-860f-4436-bfec-2f4ad832d61c",
+                        "source_uuid": "37111ab0-1293-4f49-bdd7-b52b0c67d15c",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -4911,7 +4911,7 @@
                     },
                     {
                         "name": "Overlay Flag Checkered",
-                        "source_uuid": "291bff0e-f2e1-4197-8a0a-d9eb7b25a2e3",
+                        "source_uuid": "9dee0117-ce9a-48fd-bd81-c111afa79f3d",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -5005,7 +5005,7 @@
         {
             "prev_ver": 536936450,
             "name": "BRB",
-            "uuid": "2d476299-926c-4c9a-a4ad-278788a5eaed",
+            "uuid": "cf0a9af6-0821-4b63-83a6-7f5a11980cb7",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -5014,7 +5014,7 @@
                 "items": [
                     {
                         "name": "Overlay BRB",
-                        "source_uuid": "4cad0508-b4f4-4b90-8c02-86cc7c4cc864",
+                        "source_uuid": "a03e4464-52cc-4228-b460-9502a901c9eb",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -5069,7 +5069,7 @@
                     },
                     {
                         "name": "StreamCam",
-                        "source_uuid": "61e473a0-6d87-4965-a3c7-d320ff9617e4",
+                        "source_uuid": "2a0e840c-2724-45d5-89f7-db6569383d03",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -5124,7 +5124,7 @@
                     },
                     {
                         "name": "Music BRB",
-                        "source_uuid": "cc8e6cd2-805d-491c-89b0-30886dc8c1ef",
+                        "source_uuid": "adb41199-b75f-4763-a879-89d80c1fc021",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -5208,7 +5208,7 @@
         {
             "prev_ver": 536936450,
             "name": "Ending",
-            "uuid": "26f99f58-08f3-4a91-a96d-339c868b707b",
+            "uuid": "4abaf278-4a19-403c-bb1e-3206e088fa05",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -5217,7 +5217,7 @@
                 "items": [
                     {
                         "name": "Overlay Ending",
-                        "source_uuid": "2b1cf967-192b-4f00-8b8b-e7bb9748d2e4",
+                        "source_uuid": "d5b65e74-d9fd-4dbc-8703-9516c66f0019",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -5272,7 +5272,7 @@
                     },
                     {
                         "name": "Music Ending",
-                        "source_uuid": "0d435016-07a7-47a9-9c85-4a37ad1892d2",
+                        "source_uuid": "e16fca3f-7c45-44f1-8963-7cb052068483",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -5394,13 +5394,13 @@
     "current_scene": "Starting Soon",
     "current_program_scene": "Starting Soon",
     "canvases": [],
-    "current_transition": "S.Marcato Move",
-    "transition_duration": 650,
+    "current_transition": "Dissolvenza",
+    "transition_duration": 900,
     "transitions": [
         {
             "prev_ver": 536936450,
             "name": "S.Marcato Move",
-            "uuid": "c9489079-53d7-484c-b48e-6dfcb8758ad2",
+            "uuid": "2013afd0-9ecc-4770-a319-68b6783b9a8d",
             "id": "move_transition",
             "versioned_id": "move_transition",
             "settings": {
@@ -5447,7 +5447,7 @@
         {
             "prev_ver": 536936450,
             "name": "S.Marcato Stinger",
-            "uuid": "f4ec07ad-49ca-4ad0-8967-b2ef54392e88",
+            "uuid": "7dea7343-9566-492c-85bd-7287ac8b23c8",
             "id": "obs_stinger_transition",
             "versioned_id": "obs_stinger_transition",
             "settings": {
@@ -5463,7 +5463,7 @@
             "mixers": 0,
             "sync": 0,
             "flags": 0,
-            "volume": 1.0,
+            "volume": 0.45,
             "balance": 0.5,
             "enabled": true,
             "muted": false,
@@ -5480,7 +5480,7 @@
         {
             "prev_ver": 536936450,
             "name": "Taglio",
-            "uuid": "a13b6370-47f9-4516-906d-3739e3be6bf9",
+            "uuid": "c02a9ef8-9617-43f2-9a7d-b32478dc2f56",
             "id": "cut_transition",
             "versioned_id": "cut_transition",
             "settings": {},
@@ -5504,7 +5504,7 @@
         {
             "prev_ver": 536936450,
             "name": "Dissolvenza",
-            "uuid": "f2c2297f-d5ff-4047-b226-16cf79dcb12e",
+            "uuid": "1bdadb4b-80be-4500-b5b6-d5edd78d14a7",
             "id": "fade_transition",
             "versioned_id": "fade_transition",
             "settings": {},
@@ -5528,7 +5528,7 @@
         {
             "prev_ver": 536936450,
             "name": "Swipe Racing",
-            "uuid": "652d78f6-f379-4c8a-8ffa-7d022ffd4942",
+            "uuid": "bde9bc9a-98e5-4bb5-84b3-b8941340dd57",
             "id": "swipe_transition",
             "versioned_id": "swipe_transition",
             "settings": {
@@ -5554,7 +5554,7 @@
         {
             "prev_ver": 536936450,
             "name": "Slide Racing",
-            "uuid": "25c3dea6-3cf5-4fb1-a9d8-9d7bf773da82",
+            "uuid": "856767d8-5cc8-4f50-9dbc-329268647801",
             "id": "slide_transition",
             "versioned_id": "slide_transition",
             "settings": {
@@ -5580,7 +5580,7 @@
         {
             "prev_ver": 536936450,
             "name": "Flash Carbon",
-            "uuid": "729ed344-b667-4193-8183-b4213a7db30a",
+            "uuid": "4e0bfd85-8e27-4ca7-ba8d-2690b7114a44",
             "id": "fade_to_color_transition",
             "versioned_id": "fade_to_color_transition",
             "settings": {
@@ -5613,8 +5613,8 @@
             "fade_to_black": false
         },
         {
-            "name": "S.Marcato Move",
-            "duration": 650,
+            "name": "Dissolvenza",
+            "duration": 900,
             "hotkeys": [],
             "id": 2,
             "fade_to_black": false
