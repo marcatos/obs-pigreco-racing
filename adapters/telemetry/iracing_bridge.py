@@ -31,6 +31,7 @@ if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
 from domain_enrich import apply_pos_change, delta_best_ms  # noqa: E402
+from domain_events import EventDetector  # noqa: E402
 from domain_standings import build_relatives, standings_from_cars  # noqa: E402
 
 SCHEMA_VERSION = 1
@@ -42,6 +43,7 @@ DEFAULT_JSON_PATH = HERE / "telemetry.json"
 
 log = logging.getLogger("pigreco.telemetry.iracing")
 _prev_pos_by_car: dict = {}
+detector = EventDetector(sensitivity="normal")
 
 # SessionFlags bits (subset)
 _FLAG_CHECKERED = 0x00000001
@@ -489,6 +491,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Override folder to log for IBT output (sim still writes to its default)",
     )
     p.add_argument("--log-level", default="INFO")
+    p.add_argument(
+        "--sensitivity",
+        choices=("calm", "normal", "hype"),
+        default="normal",
+        help="Event detector sensitivity (default: normal)",
+    )
     return p.parse_args(argv)
 
 
@@ -605,11 +613,12 @@ async def async_main(args: argparse.Namespace) -> int:
     ibt_dir = (args.ibt_dir or default_ibt_dir()).expanduser().resolve()
 
     log.info(
-        "iRacing bridge starting ws://%s:%d hz=%.1f ibt=%s",
+        "iRacing bridge starting ws://%s:%d hz=%.1f ibt=%s sensitivity=%s",
         args.host,
         args.port,
         args.hz,
         bool(args.ibt),
+        args.sensitivity,
     )
     if args.ibt:
         log.info("IBT folder (sim-managed): %s", ibt_dir)
@@ -662,13 +671,22 @@ async def async_main(args: argparse.Namespace) -> int:
                     pass
                 continue
 
+            events = detector.feed(tick)
             payload = json.dumps(tick, separators=(",", ":"))
+            event_payloads = [
+                json.dumps(ev, separators=(",", ":")) for ev in events
+            ]
             if args.also_file:
+                # File fallback stores the latest tick only; events are WS-only.
                 write_tick_file(args.json_path.resolve(), tick)
+            for ev in events:
+                log.info("event kind=%s id=%s", ev["kind"], ev["eventId"])
             dead: list[Any] = []
             for ws in list(clients):
                 try:
                     await ws.send(payload)
+                    for ep in event_payloads:
+                        await ws.send(ep)
                 except Exception:  # noqa: BLE001
                     dead.append(ws)
             for ws in dead:
@@ -720,6 +738,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.hz <= 0:
         log.error("hz must be > 0")
         return 2
+    detector.set_sensitivity(args.sensitivity)
     try:
         return asyncio.run(async_main(args))
     except KeyboardInterrupt:

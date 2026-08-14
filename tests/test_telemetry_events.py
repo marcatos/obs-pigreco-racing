@@ -70,3 +70,28 @@ def test_debounce_suppresses_repeat_battle():
     for t in range(3, 6):
         more.extend(d.feed(_tick(gapAheadMs=400, ts=100 + t)))
     assert not any(e["kind"] == "battle" for e in more)
+
+
+def test_mock_tick_sequence_can_yield_flag_event():
+    from domain_events import EventDetector
+    from mock_server import build_tick
+    d = EventDetector(sensitivity="normal")
+    # find yellow window: int(elapsed) % 47 in (12,13,14)
+    d.feed(build_tick(11.0))
+    ev = d.feed(build_tick(12.0))
+    assert any(e["kind"] == "flag_change" for e in ev)
+
+
+def test_mock_and_bridge_accept_sensitivity_flag():
+    from mock_server import parse_args as mock_parse
+    from iracing_bridge import parse_args as bridge_parse
+
+    mock_default = mock_parse([])
+    assert mock_default.sensitivity == "normal"
+    mock_hype = mock_parse(["--sensitivity", "hype"])
+    assert mock_hype.sensitivity == "hype"
+
+    bridge_default = bridge_parse([])
+    assert bridge_default.sensitivity == "normal"
+    bridge_calm = bridge_parse(["--sensitivity", "calm"])
+    assert bridge_calm.sensitivity == "calm"

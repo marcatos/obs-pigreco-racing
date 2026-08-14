@@ -9,7 +9,7 @@ Canonical decision: [`docs/adr/005-telemetry-adapter-port.md`](../../docs/adr/00
 | Mode | Endpoint | Notes |
 |------|----------|-------|
 | **WebSocket (preferred)** | `ws://127.0.0.1:8765` | JSON text frames, one object per message |
-| **File fallback** | `adapters/telemetry/telemetry.json` | Latest `telemetry.tick` overwritten each tick |
+| **File fallback** | `adapters/telemetry/telemetry.json` | Latest `telemetry.tick` overwritten each tick. `telemetry.event` frames are **WebSocket-only** (not written to the file). |
 
 Default bind: `127.0.0.1` only (not LAN). Change host/port via CLI flags when needed.
 
@@ -141,6 +141,44 @@ Additive director fields. Consumers must ignore unknown keys.
 | `gapMs` | number \| null | Interval to focus (ms), signed by `rel` |
 | `carIdx` | number \| null | |
 
+### `telemetry.event` (server → client)
+
+Sparse frames emitted on the **WebSocket** after the tick that produced them (tick first, then each event). File mode does **not** persist events.
+
+```json
+{
+  "type": "telemetry.event",
+  "schemaVersion": 1,
+  "ts": 1738000000500,
+  "eventId": "evt-1",
+  "kind": "flag_change",
+  "priority": 100,
+  "ttlMs": 4000,
+  "payload": { "flag": "yellow", "prev": "green" }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `eventId` | string | Monotonic id (`evt-N`) unique per producer process |
+| `kind` | string | See kinds table |
+| `priority` | number | Higher = more urgent for director hero UI |
+| `ttlMs` | number | Suggested overlay lifetime (default 4000) |
+| `payload` | object | Kind-specific fields |
+
+| `kind` | Trigger | Typical `payload` |
+|--------|---------|-------------------|
+| `flag_change` | `flag` differs from previous tick | `{ "flag": "yellow", "prev": "green" }` |
+| `battle` | gap ahead or behind within sensitivity threshold for N ticks | `{ "gapMs": 800, "withCarNumber": "7" }` |
+| `overtake` | focus `position` improves | `{ "fromPos": 5, "toPos": 4 }` |
+| `fast_lap` | focus `lastLapMs` ≤ `bestLapMs` on a completed lap | `{ "lapMs": 90123 }` |
+| `pit` | focus enters or leaves pit | `{ "state": "enter" \| "exit" }` |
+| `session_end` | checkered or white flag | `{ "flag": "checkered" }` |
+
+**Priority (high → low):** `flag_change` (100) > `session_end` (90) > `overtake` (80) > `battle` (60) > `fast_lap` (50) > `pit` (40).
+
+**Debounce:** per-kind, driven by producer `--sensitivity` (`calm` \| `normal` \| `hype`; default `normal`). Mock and iRacing bridge emit the same kinds.
+
 ### `telemetry.status` (server → client)
 
 ```json
@@ -176,6 +214,10 @@ python adapters/telemetry/iracing_bridge.py
 
 # Optional: ask sim to write native .ibt under Documents/iRacing/telemetry
 python adapters/telemetry/iracing_bridge.py --ibt
+
+# Optional: event detector sensitivity (calm | normal | hype)
+python adapters/telemetry/mock_server.py --sensitivity hype
+python adapters/telemetry/iracing_bridge.py --sensitivity calm
 ```
 
 Dependency: **`websockets`**. iRacing bridge also needs **`pyirsdk`** when talking to the sim.

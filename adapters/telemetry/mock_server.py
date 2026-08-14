@@ -27,6 +27,7 @@ if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
 from domain_enrich import apply_pos_change, delta_best_ms  # noqa: E402
+from domain_events import EventDetector  # noqa: E402
 from domain_standings import build_relatives, mock_standings  # noqa: E402
 
 SCHEMA_VERSION = 1
@@ -39,6 +40,7 @@ DEFAULT_JSON_PATH = HERE / "telemetry.json"
 
 log = logging.getLogger("pigreco.telemetry.mock")
 _prev_pos_by_car: dict = {}
+detector = EventDetector(sensitivity="normal")
 
 
 @dataclass(frozen=True)
@@ -49,6 +51,7 @@ class MockConfig:
     mode: str
     json_path: Path
     duration_s: float | None
+    sensitivity: str = "normal"
 
 
 def _ms_now() -> int:
@@ -185,6 +188,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default="INFO",
         help="DEBUG | INFO | WARNING | ERROR (default INFO)",
     )
+    p.add_argument(
+        "--sensitivity",
+        choices=("calm", "normal", "hype"),
+        default="normal",
+        help="Event detector sensitivity (default: normal)",
+    )
     return p.parse_args(argv)
 
 
@@ -215,6 +224,7 @@ async def _run_file_loop(cfg: MockConfig, stop: asyncio.Event) -> int:
             elapsed = time.perf_counter() - started
             tick = build_tick(elapsed)
             t0 = time.perf_counter()
+            # File fallback stores the latest tick only; telemetry.event is WS-only.
             write_tick_file(cfg.json_path, tick)
             write_ms = (time.perf_counter() - t0) * 1000
             ticks += 1
@@ -314,14 +324,23 @@ async def _run_ws_loop(cfg: MockConfig, stop: asyncio.Event, also_file: bool) ->
                 break
             elapsed = time.perf_counter() - started
             tick = build_tick(elapsed)
+            events = detector.feed(tick)
             payload = json.dumps(tick, separators=(",", ":"))
+            event_payloads = [
+                json.dumps(ev, separators=(",", ":")) for ev in events
+            ]
             t0 = time.perf_counter()
             if also_file:
+                # File fallback stores the latest tick only; events are WS-only.
                 write_tick_file(cfg.json_path, tick)
+            for ev in events:
+                log.info("event kind=%s id=%s", ev["kind"], ev["eventId"])
             dead: list[Any] = []
             for ws in list(clients):
                 try:
                     await ws.send(payload)
+                    for ep in event_payloads:
+                        await ws.send(ep)
                 except Exception:  # noqa: BLE001
                     dead.append(ws)
             for ws in dead:
@@ -390,9 +409,10 @@ async def async_main(cfg: MockConfig) -> int:
 
     wall0 = time.perf_counter()
     log.info(
-        "Mock telemetry start mode=%s schemaVersion=%d",
+        "Mock telemetry start mode=%s schemaVersion=%d sensitivity=%s",
         cfg.mode,
         SCHEMA_VERSION,
+        cfg.sensitivity,
     )
 
     ticks = 0
@@ -421,6 +441,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.hz <= 0:
         log.error("hz must be > 0")
         return 2
+    detector.set_sensitivity(args.sensitivity)
     cfg = MockConfig(
         host=args.host,
         port=args.port,
@@ -428,6 +449,7 @@ def main(argv: list[str] | None = None) -> int:
         mode=args.mode,
         json_path=args.json_path.resolve(),
         duration_s=args.duration,
+        sensitivity=args.sensitivity,
     )
     try:
         return asyncio.run(async_main(cfg))
