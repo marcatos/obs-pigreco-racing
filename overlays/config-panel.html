@@ -181,6 +181,22 @@
     </fieldset>
 
     <fieldset>
+      <legend>YouTube promo</legend>
+      <label class="check"><input type="checkbox" name="youtubePromoEnabled" /> Pannello like / subscribe / campanella</label>
+      <label class="check"><input type="checkbox" name="youtubePromoLapTriggers" /> Forza a fine 1° giro e ultimo giro</label>
+      <label>Handle YouTube<input name="youtubeHandle" placeholder="SenorMarcato (vuoto = socialHandle)" /></label>
+      <label>Titolo<input name="youtubePromoTitle" placeholder="LIKE & SUBSCRIBE" /></label>
+      <div class="row">
+        <label>Prima apparizione (ms)
+          <input name="youtubePromoFirstDelayMs" type="number" min="5000" max="300000" step="5000" />
+        </label>
+        <label>Pausa tra passaggi (ms)
+          <input name="youtubePromoIdleMs" type="number" min="30000" max="600000" step="10000" />
+        </label>
+      </div>
+    </fieldset>
+
+    <fieldset>
       <legend>Telecronaca (telemetry)</legend>
       <label class="check"><input type="checkbox" name="telemetryEnabled" /> Overlay broadcast attivo</label>
       <label>WebSocket URL<input name="telemetryWsUrl" placeholder="ws://127.0.0.1:8765" /></label>
@@ -191,8 +207,18 @@
       <div class="row">
         <label class="check"><input type="checkbox" name="broadcastFocus" /> Focus card</label>
         <label class="check"><input type="checkbox" name="broadcastSession" /> Session strip</label>
+        <label class="check"><input type="checkbox" name="broadcastTicker" /> Ticker campo (NASCAR)</label>
       </div>
       <label>Righe classifica<input name="broadcastLeaderboardRows" type="number" min="5" max="20" step="1" /></label>
+      <label>Refresh distacchi (ms)
+        <input name="broadcastBoardRefreshMs" type="number" min="1500" max="15000" step="500" />
+      </label>
+      <label>Velocità ticker (px/s)
+        <input name="broadcastTickerSpeed" type="number" min="40" max="200" step="5" />
+      </label>
+      <label>Pausa ticker (ms)
+        <input name="broadcastTickerIdleMs" type="number" min="5000" max="120000" step="1000" />
+      </label>
       <div class="row">
         <label>Director
           <select name="broadcastDirector">
@@ -209,6 +235,9 @@
           </select>
         </label>
       </div>
+      <label>Mark pilota (URL — match su Nome pilota)
+        <input name="broadcastPilotMarkUrl" placeholder="assets/brand/monogram_sm42_transparent.png" />
+      </label>
       <label class="check"><input type="checkbox" name="trackMapEnabled" /> Track map (minimap)</label>
       <label>Track map WS URL<input name="trackMapWsUrl" placeholder="ws://127.0.0.1:8765" /></label>
     </fieldset>
@@ -271,6 +300,7 @@
       "sessionBadgeEnabled", "countdownEnabled", "brbShowCountdown",
       "endingCtaEnabled", "sponsorsEnabled", "telemetryEnabled",
       "broadcastLeaderboard", "broadcastRelative", "broadcastFocus", "broadcastSession",
+      "broadcastTicker",
       "trackMapEnabled"
     ];
     const SELECTS = [

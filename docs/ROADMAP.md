@@ -35,6 +35,7 @@ Update this file when claiming or finishing an ID.
 | P2-02 | Alert box theme (follow/sub/raid) | done | `adapters/streamelements/alerts/` |
 | P2-03 | Hotkey map + Stream Deck profile export | ready | JSON/docs |
 | P2-04 | Instant Replay / Highlight scene | ready | replay buffer media source |
+| P2-05 | YouTube like/subscribe/bell promo | done | `youtube-promo.js` in live-chrome; config `youtubePromo*` |
 
 ## Phase 3 — Sim pro
 
@@ -47,6 +48,8 @@ Update this file when claiming or finishing an ID.
 | P3-05 | Audio buses + VOD track guide | ready | docs + OBS profile notes |
 | P3-06 | Broadcast director + tick enrichment | done | spec 2026-08-14; hybrid auto/manual moments |
 | P3-07 | Official iRacing SVG track maps | done | sync CLI + local cache; overlay SVG; `docs/TRACK_MAP.md` |
+| P3-08 | Sector timing on broadcast chrome | done | SplitTimeInfo + live Δ; focus S1–Sn; map ticks |
+| P3-09 | NASCAR-style field ticker | done | bottom scroll strip; `broadcastTicker` |
 
 ## Phase 4 — Team distribution
 

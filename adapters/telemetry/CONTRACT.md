@@ -109,6 +109,19 @@ Additive director fields. Consumers must ignore unknown keys.
 | `sof` | number \| null | Strength of field when available |
 | `yawRad` | number \| null | Vehicle yaw (radians) when available |
 
+#### Optional P3-08 sector timing (ignore if absent)
+
+Additive sector / split fields. Present when the source exposes split geometry (iRacing `SplitTimeInfo`). Live deltas require the camera on the **player** car (`LapCurrentLapTime` / `LapDeltaToBestLap`).
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `sectors` | array \| null | `{ "num": 1, "startPct": 0.0 }` … from track splits |
+| `sector` | number \| null | 1-based sector under the focus car |
+| `deltaLiveMs` | number \| null | Live delta to best lap (ms); negative = ahead |
+| `lastSectorsMs` | array \| null | Last completed sector durations (ms) |
+| `bestSectorsMs` | array \| null | Best sector durations this session (ms) |
+| `sectorDeltaMs` | array \| null | `last − best` per sector (ms); negative = purple/green gain |
+
 #### Optional P3-03 / P3-07 track map (ignore if absent)
 
 | Field | Type | Description |
@@ -130,9 +143,11 @@ Additive director fields. Consumers must ignore unknown keys.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `posChange` | number \| null | −1 / 0 / +1 vs previous tick (null on first tick) |
+| `posChange` | number \| null | Places gained vs **starting grid** (`startPos − pos`); negative = lost. Null if no grid. 0 during formation / rolling-start hold. |
 | `inPit` | boolean \| null | Row car is in pit |
 | `iRating` | number \| null | Driver iRating when available |
+| `clubName` | string \| null | iRacing club (`DriverInfo.ClubName`); not nationality |
+| `startPos` | number \| null | 1-based grid / qualify start position |
 
 **`standings[]` row**
 

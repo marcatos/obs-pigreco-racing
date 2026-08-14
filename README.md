@@ -31,7 +31,7 @@ Full-bleed **1920×1080** previews — browse locally: [`showcase/index.html`](s
 <p align="center">
   <img src="showcase/marcato-02-live-chrome.png" alt="Live Chrome" width="720" />
   <br />
-  <sub>Live Chrome — lower-third + CAM</sub>
+  <sub>Live Chrome — watermark + CAM</sub>
 </p>
 
 ### PiGreco Racing

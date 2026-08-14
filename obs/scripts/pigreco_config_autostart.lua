@@ -46,7 +46,7 @@ function script_description()
 (una sola volta, silenzioso).
 
 Sincronizza anche il layout faccia: se nascondi Cam PIP (o StreamCam),
-l'overlay passa a cam=0 e il lower-third torna in basso a sinistra.
+l'overlay passa a cam=0 e nasconde il riquadro CAM.
 Cam 2 PIP e' indipendente: occhio on/off senza toccare la faccia.]]
 end
 
@@ -240,7 +240,7 @@ end
 -- Face-cam layout sync (no process spawn — safe timer)
 -- Prefer "Cam PIP" eye (nested face block). Fallback: direct "StreamCam"
 -- (e.g. Rec Triplo Live band slot).
--- Cam 2 PIP is independent — never drives lower-third cam= query.
+-- Cam 2 PIP is independent — never drives live-chrome cam= query.
 -- ---------------------------------------------------------------------------
 
 local OVERLAY_NAMES = {

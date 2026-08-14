@@ -66,17 +66,17 @@ def mock_standings(elapsed_s: float, *, focus_pos: int, field: int = 12) -> list
 
     wave = math.sin(elapsed_s * 0.35)
     others = [
-        ("7", "Rossi"),
-        ("23", "Bianchi"),
-        ("11", "Verdi"),
-        ("88", "Neri"),
-        ("5", "Gialli"),
-        ("16", "Blu"),
-        ("99", "Grigi"),
-        ("3", "Viola"),
-        ("21", "Arancio"),
-        ("44", "Celesti"),
-        ("55", "Marroni"),
+        ("7", "Rossi", "Italy"),
+        ("23", "Bianchi", "Italy"),
+        ("11", "Verdi", "California"),
+        ("88", "Neri", "Florida"),
+        ("5", "Gialli", "UK & I"),
+        ("16", "Blu", "France"),
+        ("99", "Grigi", "Germany"),
+        ("3", "Viola", "Benelux"),
+        ("21", "Arancio", "Spain"),
+        ("44", "Celesti", "Brazil"),
+        ("55", "Marroni", "Australia"),
     ]
     focus_pos = max(1, min(int(focus_pos), field))
     field = max(2, min(field, 1 + len(others)))
@@ -85,9 +85,9 @@ def mock_standings(elapsed_s: float, *, focus_pos: int, field: int = 12) -> list
     other_i = 0
     for pos in range(1, field + 1):
         if pos == focus_pos:
-            num, name, car_idx, is_focus = "42", "S.Marcato", 1, True
+            num, name, club, car_idx, is_focus = "42", "S.Marcato", "Italy", 1, True
         else:
-            num, name = others[other_i % len(others)]
+            num, name, club = others[other_i % len(others)]
             other_i += 1
             car_idx, is_focus = pos + 10, False
         gap_to_leader = 0 if pos == 1 else int(1200 + (pos - 1) * (850 + wave * 40))
@@ -98,6 +98,7 @@ def mock_standings(elapsed_s: float, *, focus_pos: int, field: int = 12) -> list
                 "pos": pos,
                 "carNumber": num,
                 "name": name,
+                "clubName": club,
                 "gapMs": gap_to_leader,
                 "intervalMs": interval,
                 "lastLapMs": leader_best + int(pos * 120 + wave * 30),
@@ -111,6 +112,16 @@ def mock_standings(elapsed_s: float, *, focus_pos: int, field: int = 12) -> list
             }
         )
     return rows
+
+
+def _car_lap(c: dict[str, Any]) -> int:
+    lap = c.get("lap")
+    if lap is None:
+        return -1
+    try:
+        return int(lap)
+    except (TypeError, ValueError):
+        return -1
 
 
 def standings_from_cars(
@@ -132,8 +143,8 @@ def standings_from_cars(
         c
         for c in cars
         if c.get("carIdx") is not None
-        and int(c.get("lap") or -1) >= 0
-        and float(c.get("distPct") or -1) >= 0
+        and _car_lap(c) >= 0
+        and float(c["distPct"] if c.get("distPct") is not None else -1) >= 0
     ]
     if not active:
         return []
@@ -147,15 +158,15 @@ def standings_from_cars(
     else:
         ordered = sorted(
             active,
-            key=lambda c: (int(c.get("lap") or 0) + float(c.get("distPct") or 0.0)),
+            key=lambda c: (_car_lap(c) + float(c.get("distPct") or 0.0)),
             reverse=True,
         )
 
     rows: list[dict[str, Any]] = []
-    leader_progress = int(ordered[0].get("lap") or 0) + float(ordered[0].get("distPct") or 0.0)
+    leader_progress = _car_lap(ordered[0]) + float(ordered[0].get("distPct") or 0.0)
     prev_progress = leader_progress
     for i, c in enumerate(ordered):
-        progress = int(c.get("lap") or 0) + float(c.get("distPct") or 0.0)
+        progress = _car_lap(c) + float(c.get("distPct") or 0.0)
         gap_laps = leader_progress - progress
         interval_laps = prev_progress - progress if i > 0 else 0.0
         gap_ms = 0 if i == 0 else int(gap_laps * est_lap_ms)
@@ -165,6 +176,7 @@ def standings_from_cars(
                 "pos": i + 1,
                 "carNumber": str(c.get("carNumber") or ""),
                 "name": str(c.get("name") or ""),
+                "clubName": (str(c.get("clubName") or "").strip() or None),
                 "gapMs": gap_ms,
                 "intervalMs": max(0, interval_ms),
                 "lastLapMs": c.get("lastLapMs"),

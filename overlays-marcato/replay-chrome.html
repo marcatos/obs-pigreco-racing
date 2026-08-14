@@ -7,7 +7,7 @@
 </head>
 <body>
   <div class="stage">
-    <div class="live-root has-cam">
+    <div class="live-root has-cam no-lower">
       <div class="session-badge session-badge-replay" data-session-badge>
         <span data-session-value>REPLAY</span>
       </div>
@@ -18,22 +18,6 @@
 
       <div class="cam-frame">
         <span class="cam-badge">CAM</span>
-      </div>
-
-      <div class="lower-third">
-        <img
-          class="lower-mark"
-          src="assets/brand/mark42_rosso_corsa_transparent.png"
-          alt=""
-        />
-        <div class="lower-body">
-          <div class="lower-name" data-cfg="pilotName">S.Marcato</div>
-          <div class="lower-meta">
-            <span class="lower-race" data-cfg="raceNumber">42</span>
-            <span class="lower-sep"> · </span>
-            <span data-cfg="eventTitle">Sim Racing Session</span>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -53,7 +37,7 @@
       const root = document.querySelector(".live-root");
       if (!root) return;
       const camOff = cam === "0" || cam === "false" || cam === "off" || cam === "no";
-      // cam=0: niente riquadro + lower-third in basso a sinistra (no has-cam)
+      // cam=0: niente riquadro CAM (no has-cam)
       root.classList.toggle("has-cam", !camOff);
       root.classList.toggle("no-cam-frame", camOff);
     })();

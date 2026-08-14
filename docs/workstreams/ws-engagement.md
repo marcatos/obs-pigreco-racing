@@ -1,6 +1,6 @@
 # Workstream: Engagement
 
-**Roadmap IDs:** P2-01 … P2-04  
+**Roadmap IDs:** P2-01 … P2-05  
 **Owns (planned):** `adapters/streamelements/`, `adapters/streamdeck/`, docs for replay.
 
 ## Goals
@@ -13,6 +13,7 @@ Viewer interaction chrome matches PiGreco theme; streamer controls are one-click
 - P2-02 Alert widgets theme
 - P2-03 Hotkey cheat-sheet + Stream Deck profile JSON
 - P2-04 Highlight scene wired to replay buffer
+- P2-05 YouTube like / subscribe / bell promo — **done** (`overlays/youtube-promo.js`)
 
 ## Constraints
 

@@ -30,8 +30,21 @@ HERE = Path(__file__).resolve().parent
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
-from domain_enrich import apply_pos_change, delta_best_ms  # noqa: E402
+from domain_enrich import delta_best_ms  # noqa: E402
 from domain_events import EventDetector  # noqa: E402
+from domain_grid import (  # noqa: E402
+    apply_start_positions,
+    parse_qualify_grid,
+    race_live_order_ready,
+    standings_from_grid_order,
+)
+from domain_sectors import (  # noqa: E402
+    SectorLapTracker,
+    current_sector,
+    delta_live_ms,
+    normalize_sector_starts,
+    sectors_payload,
+)
 from domain_standings import build_relatives, standings_from_cars  # noqa: E402
 from domain_track_map import build_map_cars, format_track_id  # noqa: E402
 
@@ -47,6 +60,9 @@ _prev_pos_by_car: dict = {}
 _last_focus_car_idx: Any = None
 _last_session_time_ms: int | None = None
 detector = EventDetector(sensitivity="normal")
+_sector_tracker = SectorLapTracker()
+_start_by_car: dict[int, int] = {}
+_grid_session_key: Any = None
 SESSION_BACKJUMP_MS = 1000
 
 
@@ -73,6 +89,7 @@ def continuity_broke(
 def reset_continuity() -> None:
     """Clear event + pos-change memory (disconnect / invalid tick)."""
     global _prev_pos_by_car, _last_focus_car_idx, _last_session_time_ms
+    global _start_by_car, _grid_session_key
     had_state = (
         detector._prev is not None
         or bool(_prev_pos_by_car)
@@ -82,6 +99,9 @@ def reset_continuity() -> None:
     _prev_pos_by_car = {}
     _last_focus_car_idx = None
     _last_session_time_ms = None
+    _sector_tracker.reset()
+    _start_by_car = {}
+    _grid_session_key = None
     if had_state:
         log.info("continuity reset detector and pos-change map")
 
@@ -98,6 +118,9 @@ def note_tick_continuity(*, focus_car_idx: Any, session_time_ms: Any) -> bool:
     if broke:
         detector.reset()
         _prev_pos_by_car = {}
+        # Keep sector best/last memory; only drop in-progress open splits.
+        _sector_tracker._open = []
+        _sector_tracker._prev_dist = None
         log.info(
             "continuity reset focusCarIdx %s→%s sessionTimeMs %s→%s",
             _last_focus_car_idx,
@@ -239,13 +262,14 @@ def _driver_map(ir: Any) -> dict[int, dict[str, Any]]:
             "class": d.get("CarClassShortName") or d.get("CarClassStr") or None,
             "carName": d.get("CarScreenName") or d.get("CarPath") or None,
             "iRating": irating,
+            "clubName": (str(d.get("ClubName") or "").strip() or None),
         }
     return out
 
 
 def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
     """Return a telemetry.tick dict, or None if not connected / no data."""
-    global _prev_pos_by_car
+    global _prev_pos_by_car, _start_by_car, _grid_session_key
     if not getattr(ir, "is_initialized", False) or not getattr(ir, "is_connected", False):
         return None
 
@@ -349,29 +373,119 @@ def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
                 pass
         note_tick_continuity(focus_car_idx=focus_idx, session_time_ms=session_time_ms)
 
+        session_type = None
+        session_num = _safe_get(ir, "SessionNum", 0)
+        try:
+            sessions = ir["SessionInfo"]["Sessions"]
+            sid = int(session_num or 0)
+            if sessions and 0 <= sid < len(sessions):
+                session_type = sessions[sid].get("SessionType")
+        except Exception:  # noqa: BLE001
+            pass
+        session_kind = _session_kind(session_type)
+        session_state = _safe_get(ir, "SessionState", None)
+        pace_mode = _safe_get(ir, "PaceMode", None)
+        try:
+            session_state_i = int(session_state) if session_state is not None else None
+        except (TypeError, ValueError):
+            session_state_i = None
+        try:
+            pace_mode_i = int(pace_mode) if pace_mode is not None else None
+        except (TypeError, ValueError):
+            pace_mode_i = None
+
+        try:
+            sn = int(session_num) if session_num is not None else None
+        except (TypeError, ValueError):
+            sn = None
+        grid_key = (sn, session_kind)
+        if grid_key != _grid_session_key:
+            _grid_session_key = grid_key
+            _start_by_car = {}
+            log.info("grid reset sessionNum=%s kind=%s", sn, session_kind)
+
+        if not _start_by_car:
+            try:
+                qinfo = ir["QualifyResultsInfo"]
+                _start_by_car = parse_qualify_grid(qinfo)
+                if _start_by_car:
+                    log.info(
+                        "grid latched QualifyResultsInfo cars=%d",
+                        len(_start_by_car),
+                    )
+            except Exception:  # noqa: BLE001
+                pass
+        if not _start_by_car and session_kind == "race":
+            tmp: dict[int, int] = {}
+            for c in cars:
+                op = c.get("officialPos")
+                try:
+                    idx = int(c["carIdx"])
+                    opi = int(op)
+                except (TypeError, ValueError, KeyError):
+                    continue
+                if opi > 0:
+                    tmp[idx] = opi
+            if len(tmp) >= max(2, len(cars) // 2):
+                _start_by_car = tmp
+                log.info("grid latched CarIdxPosition cars=%d", len(_start_by_car))
+
+        live_order = race_live_order_ready(
+            session_kind=session_kind,
+            session_state=session_state_i,
+            pace_mode=pace_mode_i,
+            cars=cars,
+        )
+
         # Prefer official positions only when enough cars have them and not in replay
         use_official = (not is_replay) and official_valid >= max(2, len(cars) // 2)
         est_lap = 90000.0
-        # Estimate lap time from focus best/last if available
         for c in cars:
             if c.get("carIdx") == focus_idx and c.get("bestLapMs"):
                 est_lap = float(c["bestLapMs"])
                 break
 
-        standings = standings_from_cars(
-            cars,
-            focus_car_idx=focus_idx,
-            use_official_pos=use_official,
-            est_lap_ms=est_lap,
-        )
-        standings, _prev_pos_by_car = apply_pos_change(standings, _prev_pos_by_car)
+        if session_kind == "race" and _start_by_car and not live_order:
+            # Hold grid through formation / pace / first S/F chaos
+            standings = standings_from_grid_order(
+                cars,
+                focus_car_idx=focus_idx,
+                start_by_car=_start_by_car,
+            )
+        else:
+            standings = standings_from_cars(
+                cars,
+                focus_car_idx=focus_idx,
+                use_official_pos=use_official,
+                est_lap_ms=est_lap,
+            )
+            standings = apply_start_positions(
+                standings,
+                _start_by_car,
+                show_delta=bool(_start_by_car),
+            )
+        new_pos_map: dict[Any, int] = {}
+        for r in standings:
+            key = r.get("carIdx")
+            if key is None:
+                key = r.get("carNumber")
+            pos = r.get("pos")
+            if key is not None and isinstance(pos, (int, float)):
+                new_pos_map[key] = int(pos)
+        _prev_pos_by_car = new_pos_map
         for r in standings:
             idx = r.get("carIdx")
             if idx in pit_by_idx:
                 r["inPit"] = pit_by_idx[idx]
             info = drivers.get(idx) if idx is not None else None
-            if info is not None and "iRating" in info:
-                r["iRating"] = info.get("iRating")
+            if info is not None:
+                if "iRating" in info:
+                    r["iRating"] = info.get("iRating")
+                club = info.get("clubName")
+                if club:
+                    r["clubName"] = club
+                elif "clubName" not in r:
+                    r["clubName"] = None
         relatives = build_relatives(standings, focus_car_idx=focus_idx, window=2)
 
         focus_row = next((r for r in standings if r.get("carIdx") == focus_idx), None)
@@ -406,7 +520,6 @@ def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
         track_name = None
         track_id_raw = None
         track_config = None
-        session_type = None
         try:
             weekend = ir["WeekendInfo"]
             track_name = weekend.get("TrackDisplayName") or weekend.get("TrackName")
@@ -414,14 +527,7 @@ def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
             track_config = weekend.get("TrackConfigName") or weekend.get("TrackConfig")
         except Exception:  # noqa: BLE001
             pass
-        try:
-            # Current session type from SessionInfo
-            sessions = ir["SessionInfo"]["Sessions"]
-            sid = int(_safe_get(ir, "SessionNum", 0) or 0)
-            if sessions and 0 <= sid < len(sessions):
-                session_type = sessions[sid].get("SessionType")
-        except Exception:  # noqa: BLE001
-            pass
+        # session_type / session_kind already resolved above for grid gating
 
         focus_info = drivers.get(focus_idx, {})
         class_p = None
@@ -481,6 +587,68 @@ def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
         if yaw is None:
             yaw = _safe_get(ir, "Yaw", None)
 
+        # —— Sectors (SplitTimeInfo + player lap clock when cam == player) ——
+        sector_starts: list[float] = []
+        try:
+            sti = ir["SplitTimeInfo"]
+            if isinstance(sti, dict):
+                sector_starts = normalize_sector_starts(sti.get("Sectors"))
+            else:
+                sector_starts = normalize_sector_starts(sti)
+        except Exception:  # noqa: BLE001
+            sector_starts = []
+        if sector_starts:
+            _sector_tracker.set_starts(sector_starts)
+
+        focus_dist = None
+        for c in cars:
+            if c.get("carIdx") == focus_idx:
+                focus_dist = c.get("distPct")
+                break
+
+        player_idx = _safe_get(ir, "PlayerCarIdx", None)
+        try:
+            player_i = int(player_idx) if player_idx is not None else None
+        except (TypeError, ValueError):
+            player_i = None
+        watching_player = player_i is None or player_i == focus_idx
+
+        current_lap_ms = None
+        raw_cur = _safe_get(ir, "LapCurrentLapTime", None)
+        if raw_cur is not None:
+            try:
+                cur_s = float(raw_cur)
+                if cur_s > 0:
+                    current_lap_ms = int(round(cur_s * 1000))
+            except (TypeError, ValueError):
+                pass
+
+        sector_fields: dict[str, Any] = {
+            "sectors": sectors_payload(sector_starts) if sector_starts else None,
+            "sector": current_sector(focus_dist, sector_starts) if sector_starts else None,
+            "deltaLiveMs": None,
+            "lastSectorsMs": None,
+            "bestSectorsMs": None,
+            "sectorDeltaMs": None,
+        }
+        if watching_player and sector_starts:
+            snap = _sector_tracker.update(
+                dist_pct=focus_dist,
+                current_lap_ms=current_lap_ms,
+                lap=lap_focus if lap_focus is not None else race_laps,
+                last_lap_ms=last_ms,
+            )
+            sector_fields["sector"] = snap.get("sector")
+            sector_fields["lastSectorsMs"] = snap.get("lastSectorsMs")
+            sector_fields["bestSectorsMs"] = snap.get("bestSectorsMs")
+            sector_fields["sectorDeltaMs"] = snap.get("sectorDeltaMs")
+            sector_fields["deltaLiveMs"] = delta_live_ms(
+                _safe_get(ir, "LapDeltaToBestLap", None),
+                _safe_get(ir, "LapDeltaToBestLap_OK", None),
+            )
+        elif sector_starts:
+            sector_fields["sector"] = current_sector(focus_dist, sector_starts)
+
         return _envelope(
             "telemetry.tick",
             session=session_kind,
@@ -497,7 +665,7 @@ def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
             airTempC=_num_or_none(_safe_get(ir, "AirTemp", None)),
             trackTempC=_num_or_none(track_temp),
             sof=None,
-            currentLapMs=None,
+            currentLapMs=current_lap_ms if watching_player else None,
             lap=lap_focus if lap_focus is not None else race_laps,
             lapsTotal=None,
             flag=flag,
@@ -522,6 +690,7 @@ def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
             trackConfig=track_config,
             mapCars=build_map_cars(cars, focus_car_idx=focus_idx),
             yawRad=_num_or_none(yaw),
+            **sector_fields,
         )
     finally:
         try:

@@ -81,6 +81,9 @@ Layout (periferico, niente centro FOV):
 | Left rail | Focus (camera) + Battle relative (`AHD` / `CAM` / `BHD`) |
 | Top right | Standings |
 | Mid-right (above Cam 2) | Track minimap |
+| Bottom edge | NASCAR-style scrolling field ticker (`broadcastTicker`); shows `clubName` when present |
+
+Focus shows **S1–Sn** sector chips + live **Δ** when the bridge emits P3-08 fields (`sectors`, `sector`, `sectorDeltaMs`, `deltaLiveMs`). On iRacing, live sector times need the camera on the **player** car; geometry ticks still appear on the map for any focus.
 
 ## Config keys
 
@@ -88,10 +91,17 @@ See `overlays/config.example.js`:
 
 - `telemetryEnabled` (default `false`)
 - `telemetryWsUrl` (default `ws://127.0.0.1:8765`)
-- `broadcastLeaderboard` / `Relative` / `Focus` / `Session`
+- `broadcastLeaderboard` / `Relative` / `Focus` / `Session` / `Ticker`
 - `broadcastLeaderboardRows` (5–20)
+- `broadcastBoardRefreshMs` (default `4000`) — TV-style refresh for standings **gaps** and the relative panel; order + ▲/▼ vs **starting grid** stay live
+- `broadcastTicker` (default `true`) — bottom field strip; **rise** (FIELD only) → **expand** right → scroll once P1→last → **collapse** to FIELD → **drop** down; then wait `broadcastTickerIdleMs`
+- `broadcastTickerSpeed` (default `85`) — scroll speed in px/sec while visible
+- `broadcastTickerIdleMs` (default `60000`) — pause **after** a pass before the next appearance (~1 min)
+- `broadcastTickerFirstDelayMs` (default `4000`) — delay before first appearance
 - `broadcastDirector` (`auto` | `manual` | `off`, default `auto`)
 - `broadcastDirectorSensitivity` (`calm` | `normal` | `hype`, default `normal`)
+
+Race rolling starts: the bridge holds grid order through formation / pace and until enough cars have crossed S/F (`lap >= 1`), so the first timing-line chaos after the pace car does not reshuffle the board.
 
 `broadcastDirectorSensitivity` is stored for future client-side filters. **Detection** lives on the producer (`python adapters/telemetry/mock_server.py --sensitivity hype` or the iRacing bridge). The overlay does not dual-detect.
 
