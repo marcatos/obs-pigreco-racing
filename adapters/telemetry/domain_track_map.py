@@ -40,6 +40,195 @@ def apply_dist_offset(
     return t
 
 
+_SVG_TOKEN_RE = re.compile(
+    r"([MmZzLlHhVvCcSsQqTtAa])|([-+]?(?:\d*\.\d+|\d+)(?:[eE][-+]?\d+)?)"
+)
+
+# Parameter counts per command (repeating groups allowed).
+_SVG_ARITY = {
+    "M": 2,
+    "m": 2,
+    "L": 2,
+    "l": 2,
+    "H": 1,
+    "h": 1,
+    "V": 1,
+    "v": 1,
+    "C": 6,
+    "c": 6,
+    "S": 4,
+    "s": 4,
+    "Q": 4,
+    "q": 4,
+    "T": 2,
+    "t": 2,
+    "A": 7,
+    "a": 7,
+}
+
+
+def svg_path_bbox(d: str) -> tuple[float, float, float, float] | None:
+    """Axis-aligned bbox of an SVG path `d`, resolving relative commands."""
+    tokens = _SVG_TOKEN_RE.findall(d or "")
+    if not tokens:
+        return None
+
+    cx = cy = 0.0
+    start_x = start_y = 0.0
+    min_x = min_y = float("inf")
+    max_x = max_y = float("-inf")
+    cmd = ""
+    nums: list[float] = []
+
+    def mark(x: float, y: float) -> None:
+        nonlocal min_x, min_y, max_x, max_y
+        if x < min_x:
+            min_x = x
+        if y < min_y:
+            min_y = y
+        if x > max_x:
+            max_x = x
+        if y > max_y:
+            max_y = y
+
+    def flush() -> None:
+        nonlocal cx, cy, start_x, start_y, cmd, nums
+        if not cmd or cmd in ("Z", "z"):
+            if cmd in ("Z", "z"):
+                cx, cy = start_x, start_y
+                mark(cx, cy)
+            nums = []
+            return
+        arity = _SVG_ARITY.get(cmd)
+        if not arity or len(nums) < arity:
+            nums = []
+            return
+        i = 0
+        first = True
+        while i + arity <= len(nums):
+            chunk = nums[i : i + arity]
+            i += arity
+            if cmd == "M":
+                cx, cy = chunk[0], chunk[1]
+                if first:
+                    start_x, start_y = cx, cy
+                    mark(cx, cy)
+                    first = False
+                else:
+                    # Extra pairs after M are implicit LineTo
+                    mark(cx, cy)
+                # Subsequent pairs behave as L
+                if i < len(nums):
+                    cmd = "L"
+                    arity = 2
+                    first = False
+                    continue
+            elif cmd == "m":
+                cx += chunk[0]
+                cy += chunk[1]
+                if first:
+                    start_x, start_y = cx, cy
+                    mark(cx, cy)
+                    first = False
+                else:
+                    mark(cx, cy)
+                if i < len(nums):
+                    cmd = "l"
+                    arity = 2
+                    first = False
+                    continue
+            elif cmd == "L":
+                cx, cy = chunk[0], chunk[1]
+                mark(cx, cy)
+            elif cmd == "l":
+                cx += chunk[0]
+                cy += chunk[1]
+                mark(cx, cy)
+            elif cmd == "H":
+                cx = chunk[0]
+                mark(cx, cy)
+            elif cmd == "h":
+                cx += chunk[0]
+                mark(cx, cy)
+            elif cmd == "V":
+                cy = chunk[0]
+                mark(cx, cy)
+            elif cmd == "v":
+                cy += chunk[0]
+                mark(cx, cy)
+            elif cmd == "C":
+                mark(chunk[0], chunk[1])
+                mark(chunk[2], chunk[3])
+                cx, cy = chunk[4], chunk[5]
+                mark(cx, cy)
+            elif cmd == "c":
+                mark(cx + chunk[0], cy + chunk[1])
+                mark(cx + chunk[2], cy + chunk[3])
+                cx += chunk[4]
+                cy += chunk[5]
+                mark(cx, cy)
+            elif cmd == "S":
+                mark(chunk[0], chunk[1])
+                cx, cy = chunk[2], chunk[3]
+                mark(cx, cy)
+            elif cmd == "s":
+                mark(cx + chunk[0], cy + chunk[1])
+                cx += chunk[2]
+                cy += chunk[3]
+                mark(cx, cy)
+            elif cmd == "Q":
+                mark(chunk[0], chunk[1])
+                cx, cy = chunk[2], chunk[3]
+                mark(cx, cy)
+            elif cmd == "q":
+                mark(cx + chunk[0], cy + chunk[1])
+                cx += chunk[2]
+                cy += chunk[3]
+                mark(cx, cy)
+            elif cmd == "T":
+                cx, cy = chunk[0], chunk[1]
+                mark(cx, cy)
+            elif cmd == "t":
+                cx += chunk[0]
+                cy += chunk[1]
+                mark(cx, cy)
+            elif cmd == "A":
+                cx, cy = chunk[5], chunk[6]
+                mark(cx, cy)
+            elif cmd == "a":
+                cx += chunk[5]
+                cy += chunk[6]
+                mark(cx, cy)
+            first = False
+        nums = []
+
+    for kind, num in tokens:
+        if kind:
+            flush()
+            cmd = kind
+            nums = []
+            if cmd in ("Z", "z"):
+                flush()
+        else:
+            nums.append(float(num))
+    flush()
+
+    if min_x == float("inf"):
+        return None
+    return (min_x, min_y, max_x, max_y)
+
+
+def path_viewbox(d: str, *, pad: float = 80.0) -> str:
+    """SVG viewBox string that fully contains path `d` (relative-safe)."""
+    bb = svg_path_bbox(d)
+    if not bb:
+        return "0 0 2000 1200"
+    min_x, min_y, max_x, max_y = bb
+    w = max(1.0, (max_x - min_x) + 2 * pad)
+    h = max(1.0, (max_y - min_y) + 2 * pad)
+    return f"{min_x - pad:.2f} {min_y - pad:.2f} {w:.2f} {h:.2f}"
+
+
 def generic_oval_points(n: int = 64) -> list[tuple[float, float]]:
     """Unit-ish oval in viewBox 0..1 (padding 0.08)."""
     pts: list[tuple[float, float]] = []

@@ -16,7 +16,9 @@ from domain_track_map import (  # noqa: E402
     format_track_id,
     generic_oval_points,
     normalize_track_id,
+    path_viewbox,
     point_on_polyline,
+    svg_path_bbox,
 )
 from track_learn import TrackLearner  # noqa: E402
 
@@ -38,6 +40,27 @@ def test_format_track_id_falls_back_to_slug():
 def test_apply_dist_offset_wraps():
     assert abs(apply_dist_offset(0.9, offset=0.2, direction=1) - 0.1) < 1e-9
     assert abs(apply_dist_offset(0.1, offset=0.0, direction=-1) - 0.9) < 1e-9
+
+
+def test_svg_path_bbox_resolves_relative_cubics():
+    # Absolute M then relative c — naive min/max of raw numbers would see -50.
+    d = "M100,100c50,0 50,50 0,50c-50,0 -50,-50 0,-50z"
+    bb = svg_path_bbox(d)
+    assert bb is not None
+    min_x, min_y, max_x, max_y = bb
+    assert min_x >= 40  # control point at 100-50, not absolute -50
+    assert max_x <= 160
+    assert min_y >= 90
+    assert max_y <= 160
+
+
+def test_path_viewbox_pads():
+    vb = path_viewbox("M10,10 L90,10 L90,90 L10,90 Z", pad=10)
+    parts = [float(x) for x in vb.split()]
+    assert parts[0] == 0.0
+    assert parts[1] == 0.0
+    assert parts[2] == 100.0
+    assert parts[3] == 100.0
 
 
 def test_point_on_polyline_midpoint():

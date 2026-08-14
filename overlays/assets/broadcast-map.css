@@ -38,13 +38,14 @@
   width: 100%;
   height: calc(100% - 22px);
   display: block;
+  overflow: visible;
 }
 
 .tm-track path,
 .tm-path {
   fill: none !important;
   stroke: var(--accent, #00c400) !important;
-  stroke-width: 1.6;
+  stroke-width: 10;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
