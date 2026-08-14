@@ -12,7 +12,7 @@ Update this file when claiming or finishing an ID.
 | P0-02 | Brand overlays + official assets | done |
 | P0-03 | Sponsor rotator discreto | done |
 | P0-04 | Setup.bat/ps1 + Python elevate | done |
-| P0-05 | Guida PDF brand + showcase | done |
+| P0-05 | Guida PDF brand + showcase | done | maintain: EN vanity README + `docs/README.md` hub (2026-08-14) |
 | P0-06 | Multi-agent scaffolding (this docs set) | done |
 | P0-07 | OBS Config Panel (Custom Browser Dock) | done | `Start-ConfigPanel.bat` + :8766 |
 

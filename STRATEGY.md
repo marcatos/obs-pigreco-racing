@@ -1,9 +1,11 @@
 ---
-last_updated: 2026-07-31
+last_updated: 2026-08-14
 product: obs-pigreco-racing
 ---
 
 # Strategy — OBS PiGreco Racing
+
+**Pitch:** a shareable, local-first OBS pack so PiGreco Racing pilots (and friendly streamers) go live with on-brand chrome in minutes — double-click setup, Browser Source overlays, optional iRacing telecronaca — without becoming OBS engineers or depending on a cloud overlay SaaS.
 
 ## Target problem
 

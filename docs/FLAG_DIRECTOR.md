@@ -1,6 +1,6 @@
 # Flag Director (P3-04)
 
-Switches OBS program scenes when iRacing / mock telemetry reports **yellow**, **red**, or **checkered**. Returns to the previous live scene on **green**. Broadcast overlay banners stay independent (P3-06).
+Hands-free race direction for OBS: when telemetry reports **yellow**, **red**, or **checkered**, the director cuts to branded flag scenes and returns to your previous live scene on **green**. Overlay banners (P3-06) stay independent of scene cuts.
 
 Pack scenes (after `python tools/generate_pack.py --profile marcato`):
 

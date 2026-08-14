@@ -1,5 +1,7 @@
 # Architecture
 
+This pack is **files + OBS**, not a hosted product: streamer config and overlay behavior stay portable; Python tools generate scene JSON, showcase PNGs, and the Windows install path at the edges.
+
 ## Intent
 
 Keep **domain/config** free of OBS/file IO where practical; put generation and install at the edges. Overlays are the “UI adapter” for the stream.

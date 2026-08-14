@@ -1,19 +1,13 @@
 # Track map minimap (P3-03)
 
-Peripheral Browser Source showing the field as dots on a track outline.
+A peripheral race minimap for viewers: the field as dots on a track outline, drawn inside broadcast chrome so center gameplay stays clear. Open assets and self-learned outlines improve as you drive.
 
 ## Enable
 
-1. Config panel / `config.values.json`: `trackMapEnabled: true` (telemetry bridge running + config server).
-2. OBS: eye on **Overlay Track Map** (already in Replay / Rec 2K after regenerating the pack), or add Browser Source:
-
-```text
-http://127.0.0.1:8766/o/marcato/track-map.html
-```
-
-or `/o/overlays/track-map.html` for PiGreco. Size 1920×1080, eye on when you want the map. Default placement is bottom-right (outside center FOV).
-
-3. Telemetry: `Start-Telemetry.bat mock` or `iracing`.
+1. Config: `trackMapEnabled: true` (+ telemetry running).
+2. OBS: eye **ON** only on **Overlay Broadcast Chrome** — the minimap is drawn **inside** that page (middle-right, above Cam 2).
+3. Optional separate source **Overlay Track Map** can stay eye-off (legacy / standalone).
+4. Refresh cache on the Broadcast Browser Source after updates.
 
 ## Asset resolution
 
