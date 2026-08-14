@@ -1,5 +1,6 @@
 /**
  * Track minimap (P3-07): official iRacing SVG cache by TrackID.
+ * Style: black ribbon + white edge, numbered car dots (no dark plate).
  * Mount: [data-track-map-root]
  */
 (function initTrackMap() {
@@ -33,9 +34,11 @@
   let pathEl = null;
   let meta = { offset: 0, direction: 1 };
   let loadGen = 0;
+  let markerR = 18;
 
-  function setHint(text) {
-    if (labelEl) labelEl.textContent = text;
+  function setHint(text, state) {
+    if (labelEl) labelEl.textContent = text || "";
+    if (state) root.dataset.state = state;
   }
 
   function applyDistOffset(distPct, offset, direction) {
@@ -45,6 +48,14 @@
     t = (t + Number(offset || 0)) % 1;
     if (t < 0) t += 1;
     return t;
+  }
+
+  function escapeXml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
   }
 
   function candidateUrls(trackId) {
@@ -76,10 +87,11 @@
   }
 
   function pickPath(svgRoot) {
-    const paths = svgRoot.querySelectorAll("path");
+    const paths = svgRoot.querySelectorAll("path.tm-path, path");
     let best = null;
     let bestLen = 0;
     paths.forEach(function (p) {
+      if (p.classList.contains("tm-path-outline")) return;
       try {
         const len = p.getTotalLength();
         if (len > bestLen) {
@@ -91,6 +103,30 @@
       }
     });
     return best;
+  }
+
+  function styleTrackPaths(container) {
+    const paths = Array.from(container.querySelectorAll("path"));
+    paths.forEach(function (p) {
+      p.removeAttribute("fill");
+      p.removeAttribute("stroke");
+      p.removeAttribute("stroke-width");
+      const outline = p.cloneNode(true);
+      outline.classList.add("tm-path-outline");
+      outline.classList.remove("tm-path");
+      p.classList.add("tm-path");
+      if (p.parentNode) p.parentNode.insertBefore(outline, p);
+    });
+  }
+
+  function updateMarkerScale() {
+    if (!svgEl || !svgEl.viewBox || !svgEl.viewBox.baseVal) {
+      markerR = 18;
+      return;
+    }
+    const vb = svgEl.viewBox.baseVal;
+    const m = Math.min(vb.width || 1000, vb.height || 1000);
+    markerR = Math.max(14, Math.min(36, m * 0.03));
   }
 
   async function loadTrack(trackId) {
@@ -120,8 +156,7 @@
     const hit = await fetchFirstOk(candidateUrls(id));
     if (gen !== loadGen) return false;
     if (!hit) {
-      setHint("TRACK MAP — run Start-SyncTrackMaps");
-      root.dataset.state = "missing";
+      setHint("TRACK MAP — run Start-SyncTrackMaps", "missing");
       return false;
     }
     const text = await hit.res.text();
@@ -129,8 +164,7 @@
     const parsed = new DOMParser().parseFromString(text, "image/svg+xml");
     const srcSvg = parsed.documentElement;
     if (!srcSvg || srcSvg.nodeName.toLowerCase() !== "svg") {
-      setHint("TRACK MAP — invalid SVG");
-      root.dataset.state = "error";
+      setHint("TRACK MAP — invalid SVG", "error");
       return false;
     }
 
@@ -142,7 +176,6 @@
       svgEl.setAttribute("viewBox", "0 0 " + w + " " + h);
     }
 
-    // Import children into host (paths/groups)
     const frag = document.createDocumentFragment();
     Array.from(srcSvg.childNodes).forEach(function (n) {
       frag.appendChild(document.importNode(n, true));
@@ -150,13 +183,11 @@
     if (hostEl) {
       hostEl.innerHTML = "";
       hostEl.appendChild(frag);
-      hostEl.querySelectorAll("path").forEach(function (p) {
-        p.classList.add("tm-path");
-      });
+      styleTrackPaths(hostEl);
       pathEl = pickPath(hostEl);
     }
-    setHint("TRACK " + id);
-    root.dataset.state = "ready";
+    updateMarkerScale();
+    setHint("", "ready");
     return !!pathEl;
   }
 
@@ -173,21 +204,36 @@
         return;
       }
       if (!(total > 0)) return;
-      carsEl.innerHTML = cars
+      updateMarkerScale();
+      // Focus on top of stack
+      const ordered = cars.slice().sort(function (a, b) {
+        return (a.isFocus ? 1 : 0) - (b.isFocus ? 1 : 0);
+      });
+      carsEl.innerHTML = ordered
         .map(function (c) {
           const t = applyDistOffset(c.distPct, meta.offset, meta.direction);
           const pt = pathEl.getPointAtLength(t * total);
+          const r = c.isFocus ? markerR * 1.15 : markerR;
+          const num = escapeXml(c.carNumber != null && c.carNumber !== "" ? c.carNumber : "?");
           const cls = c.isFocus ? "tm-car is-focus" : "tm-car";
+          const fs = (r * 1.05).toFixed(2);
           return (
-            '<circle class="' +
+            '<g class="' +
             cls +
-            '" cx="' +
+            '" transform="translate(' +
             pt.x.toFixed(2) +
-            '" cy="' +
+            " " +
             pt.y.toFixed(2) +
-            '" r="' +
-            (c.isFocus ? 2.4 : 1.6) +
-            '"></circle>'
+            ')">' +
+            '<circle class="tm-car-dot" cx="0" cy="0" r="' +
+            r.toFixed(2) +
+            '"></circle>' +
+            '<text class="tm-car-num" x="0" y="0" font-size="' +
+            fs +
+            '">' +
+            num +
+            "</text>" +
+            "</g>"
           );
         })
         .join("");
@@ -203,7 +249,6 @@
     }
     socket.addEventListener("open", function () {
       retryMs = 1000;
-      if (!loadedTrackId) setHint("TRACK MAP");
     });
     socket.addEventListener("message", function (ev) {
       let msg;
@@ -215,12 +260,12 @@
       if (msg && msg.type === "telemetry.tick") render(msg);
     });
     socket.addEventListener("close", function () {
-      root.dataset.state = "reconnecting";
+      setHint("TRACK MAP — reconnecting…", "reconnecting");
       window.setTimeout(connect, retryMs);
       retryMs = Math.min(retryMs * 1.5, 8000);
     });
   }
 
-  setHint("TRACK MAP");
+  setHint("", "ready");
   connect();
 })();
