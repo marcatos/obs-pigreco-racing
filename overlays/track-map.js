@@ -25,9 +25,9 @@
   const url = cfg.trackMapWsUrl || cfg.telemetryWsUrl || "ws://127.0.0.1:8765";
   // Advance dots along the lap (0–1). Replay/WS often trail the live camera.
   const leadPct = Number(cfg.trackMapLeadPct);
-  const lead = Number.isFinite(leadPct) ? leadPct : 0.016;
+  const lead = Number.isFinite(leadPct) ? leadPct : 0.012;
   const predictSec = Number(cfg.trackMapPredictSec);
-  const predict = Number.isFinite(predictSec) ? predictSec : 0.05;
+  const predict = Number.isFinite(predictSec) ? predictSec : 0.03;
   const labelEl = root.querySelector("[data-tm-label]");
   const hostEl = root.querySelector("[data-tm-track]");
   const carsEl = root.querySelector("[data-tm-cars]");
