@@ -71,5 +71,7 @@ window.PIGRECO_CONFIG = {
   broadcastRelative: true,
   broadcastFocus: true,
   broadcastSession: true,
-  broadcastLeaderboardRows: 10
+  broadcastLeaderboardRows: 10,
+  broadcastDirector: "auto",
+  broadcastDirectorSensitivity: "normal"
 };

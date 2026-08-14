@@ -25,9 +25,14 @@
 
   const maxLb = Math.max(5, Math.min(20, Number(cfg.broadcastLeaderboardRows) || 10));
   const url = cfg.telemetryWsUrl || "ws://127.0.0.1:8765";
+  const director = cfg.broadcastDirector || "auto"; // auto|manual|off
+  const sensitivity = cfg.broadcastDirectorSensitivity || "normal";
+  const Director = window.PigrecoBroadcastDirector;
   let socket = null;
   let retryMs = 1000;
   let lastFlag = "";
+  let directorState = { hero: null, queue: [] };
+  const t0 = (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now();
 
   const elSession = root.querySelector("[data-bc-session]");
   const elLb = root.querySelector("[data-bc-lb-rows]");
@@ -35,12 +40,85 @@
   const elFocus = root.querySelector("[data-bc-focus]");
   const elBanner = root.querySelector("[data-bc-flag-banner]");
   const elStatus = root.querySelector("[data-bc-status]");
+  const elMoment = root.querySelector("[data-bc-moment]");
 
   function setStatus(text) {
     if (elStatus) elStatus.textContent = text;
   }
 
+  function directorLog(level, msg, extra) {
+    var line = "[broadcast-director] " + msg;
+    if (level === "ERROR") console.error(line, extra != null ? extra : "");
+    else if (level === "WARN") console.warn(line, extra != null ? extra : "");
+    else if (level === "DEBUG") console.debug(line, extra != null ? extra : "");
+    else console.info(line, extra != null ? extra : "");
+  }
+
+  directorLog("INFO", "start mode=" + director + " sensitivity=" + sensitivity);
+  if (!Director) {
+    directorLog("ERROR", "PigrecoBroadcastDirector missing — moment layer disabled");
+  }
+
   setStatus("CONNECTING " + url);
+
+  function applyFlagBanner(flag) {
+    if (!elBanner) return;
+    var f = String(flag || "none").toLowerCase();
+    var show = f && f !== "none" && f !== "green";
+    elBanner.classList.toggle("is-on", show);
+    elBanner.dataset.flag = show ? f : "";
+    if (show) lastFlag = f;
+    else lastFlag = "";
+  }
+
+  function showHero(item) {
+    if (!item) return;
+    item.until = Date.now() + item.ttlMs;
+    directorState.hero = item;
+    if (!elMoment) return;
+    elMoment.hidden = false;
+    elMoment.dataset.kind = item.kind;
+    elMoment.classList.remove("is-exit");
+    elMoment.classList.add("is-enter");
+    var label = Director
+      ? Director.formatMomentLabel(item)
+      : String(item.kind).replace("_", " ").toUpperCase();
+    elMoment.innerHTML = '<div class="bc-moment-chip">' + label + "</div>";
+  }
+
+  function enqueueEvent(ev) {
+    if (director !== "auto") return;
+    if (!ev || !ev.kind) return;
+    if (!Director) return;
+    var prevHero = directorState.hero;
+    directorState = Director.enqueueEvent(directorState, ev, director);
+    directorLog("DEBUG", "event kind=" + ev.kind + " priority=" + (ev.priority || 0));
+    if (ev.kind === "flag_change") {
+      applyFlagBanner(ev.payload && ev.payload.flag);
+    }
+    if (directorState.hero && directorState.hero !== prevHero) {
+      showHero(directorState.hero);
+    }
+  }
+
+  function tickHero() {
+    var hero = directorState.hero;
+    if (!hero) return;
+    if (Date.now() < hero.until) return;
+    if (elMoment) {
+      elMoment.classList.remove("is-enter");
+      elMoment.classList.add("is-exit");
+    }
+    directorState.hero = null;
+    window.setTimeout(function () {
+      if (directorState.queue.length) showHero(directorState.queue.shift());
+      else if (elMoment) {
+        elMoment.hidden = true;
+        elMoment.innerHTML = "";
+      }
+    }, 200);
+  }
+  window.setInterval(tickHero, 100);
 
   function fmtMs(ms) {
     if (ms == null || !Number.isFinite(Number(ms))) return "—";
@@ -112,14 +190,8 @@
         (flagLabel ? "<span>" + flagLabel + "</span>" : "");
     }
 
-    if (elBanner) {
-      const show = flag && flag !== "none" && flag !== "green";
-      elBanner.classList.toggle("is-on", show);
-      elBanner.dataset.flag = show ? flag : "";
-      if (show && flag !== lastFlag) {
-        lastFlag = flag;
-      }
-      if (!show) lastFlag = "";
+    if (elBanner && director !== "auto") {
+      applyFlagBanner(flag);
     }
 
     const standings = Array.isArray(tick.standings) ? tick.standings : [];
@@ -263,6 +335,8 @@
       retryMs = 1000;
       root.dataset.state = "live";
       setStatus("LIVE");
+      var now = (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now();
+      directorLog("INFO", "ws open in " + Math.round(now - t0) + " ms");
     });
 
     socket.addEventListener("message", function (ev) {
@@ -277,6 +351,8 @@
         root.dataset.state = "live";
         setStatus("LIVE");
         render(msg);
+      } else if (msg.type === "telemetry.event") {
+        enqueueEvent(msg);
       } else if (msg.type === "telemetry.status" && msg.connected === false) {
         root.dataset.state = "idle";
         setStatus("SIM DISCONNECTED");
