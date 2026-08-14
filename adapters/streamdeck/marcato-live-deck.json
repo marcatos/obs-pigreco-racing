@@ -1,0 +1,78 @@
+{
+  "name": "S.Marcato 42 Live Deck",
+  "version": 1,
+  "roadmap": "P2-03",
+  "obsCollection": "S.Marcato 42",
+  "docs": ["docs/OBS_VIRTUALDECK.md", "docs/SESSION_DIRECTOR.md"],
+  "notes": "Checklist for OBS VirtualDeck / Stream Deck. Import scenes manually in the app if no JSON import exists.",
+  "buttons": [
+    {
+      "id": "scene-starting-soon",
+      "label": "Starting Soon",
+      "action": "SetCurrentProgramScene",
+      "sceneName": "Starting Soon",
+      "hotkeyHint": "F1"
+    },
+    {
+      "id": "scene-live",
+      "label": "Live",
+      "action": "SetCurrentProgramScene",
+      "sceneName": "Live",
+      "hotkeyHint": "F2"
+    },
+    {
+      "id": "scene-lobby",
+      "label": "Lobby",
+      "action": "SetCurrentProgramScene",
+      "sceneName": "Lobby",
+      "hotkeyHint": "F3"
+    },
+    {
+      "id": "scene-brb",
+      "label": "BRB",
+      "action": "SetCurrentProgramScene",
+      "sceneName": "BRB",
+      "hotkeyHint": "F4"
+    },
+    {
+      "id": "scene-ending",
+      "label": "Ending",
+      "action": "SetCurrentProgramScene",
+      "sceneName": "Ending",
+      "hotkeyHint": "F5"
+    },
+    {
+      "id": "scene-flag-yellow",
+      "label": "Flag Yellow",
+      "action": "SetCurrentProgramScene",
+      "sceneName": "Flag Yellow",
+      "hotkeyHint": null
+    },
+    {
+      "id": "scene-flag-red",
+      "label": "Flag Red",
+      "action": "SetCurrentProgramScene",
+      "sceneName": "Flag Red",
+      "hotkeyHint": null
+    },
+    {
+      "id": "scene-flag-checkered",
+      "label": "Flag Checkered",
+      "action": "SetCurrentProgramScene",
+      "sceneName": "Flag Checkered",
+      "hotkeyHint": null
+    },
+    {
+      "id": "stream-toggle",
+      "label": "Start/Stop Stream",
+      "action": "ToggleStream",
+      "hotkeyHint": null
+    },
+    {
+      "id": "record-toggle",
+      "label": "Start/Stop Record",
+      "action": "ToggleRecord",
+      "hotkeyHint": null
+    }
+  ]
+}
