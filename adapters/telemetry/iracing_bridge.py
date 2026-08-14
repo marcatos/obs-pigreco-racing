@@ -520,7 +520,7 @@ def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
             relatives=relatives,
             trackId=format_track_id(track_id_raw, track_name),
             trackConfig=track_config,
-            mapCars=build_map_cars(standings, focus_car_idx=focus_idx),
+            mapCars=build_map_cars(cars, focus_car_idx=focus_idx),
             yawRad=_num_or_none(yaw),
         )
     finally:

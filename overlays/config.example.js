@@ -76,5 +76,7 @@ window.PIGRECO_CONFIG = {
   broadcastDirectorSensitivity: "normal",
   // P3-03 track minimap Browser Source (track-map.html)
   trackMapEnabled: false,
-  trackMapWsUrl: "ws://127.0.0.1:8765"
+  trackMapWsUrl: "ws://127.0.0.1:8765",
+  // Advance dots slightly along the lap (0–1) to counter replay/WS lag; 0 disables
+  trackMapLeadPct: 0.012,
 };

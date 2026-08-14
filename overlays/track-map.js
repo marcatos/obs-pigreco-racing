@@ -23,6 +23,9 @@
   root.setAttribute("aria-hidden", "false");
 
   const url = cfg.trackMapWsUrl || cfg.telemetryWsUrl || "ws://127.0.0.1:8765";
+  // Small lead to counter WS/replay display lag (fraction of lap).
+  const leadPct = Number(cfg.trackMapLeadPct);
+  const lead = Number.isFinite(leadPct) ? leadPct : 0.012;
   const labelEl = root.querySelector("[data-tm-label]");
   const hostEl = root.querySelector("[data-tm-track]");
   const carsEl = root.querySelector("[data-tm-cars]");
@@ -211,7 +214,11 @@
       });
       carsEl.innerHTML = ordered
         .map(function (c) {
-          const t = applyDistOffset(c.distPct, meta.offset, meta.direction);
+          const t = applyDistOffset(
+            Number(c.distPct) + lead,
+            meta.offset,
+            meta.direction
+          );
           const pt = pathEl.getPointAtLength(t * total);
           const r = c.isFocus ? markerR * 1.15 : markerR;
           const num = escapeXml(c.carNumber != null && c.carNumber !== "" ? c.carNumber : "?");
