@@ -15,15 +15,20 @@
       --blue: #009fe5;
     }
     * { box-sizing: border-box; }
-    body {
+    html, body {
       margin: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
       font: 13px/1.4 Segoe UI, Rajdhani, sans-serif;
       background: var(--bg);
       color: var(--text);
-      min-height: 100vh;
     }
     header {
-      position: sticky; top: 0; z-index: 2;
+      flex: 0 0 auto;
       display: flex; align-items: center; gap: 10px;
       padding: 12px 14px;
       background: linear-gradient(180deg, #11161a, #0c1013);
@@ -41,7 +46,16 @@
     }
     header .profile-wrap label { font-size: 10px; color: var(--muted); margin: 0; }
     header .profile-wrap select { padding: 4px 6px; font-size: 11px; }
-    form { padding: 12px 14px 88px; display: grid; gap: 10px; }
+    /* Dedicated scroller — OBS CEF docks often ignore body overflow */
+    .panel-scroll {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-x: hidden;
+      overflow-y: scroll;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+    form { padding: 12px 14px 16px; display: grid; gap: 10px; }
     fieldset {
       margin: 0; border: 1px solid var(--line); background: var(--panel);
       border-left: 3px solid var(--blue); padding: 10px 10px 12px;
@@ -63,7 +77,7 @@
     .check { display: flex; align-items: center; gap: 8px; margin-top: 8px; color: var(--text); }
     .check input { width: auto; }
     footer {
-      position: fixed; left: 0; right: 0; bottom: 0;
+      flex: 0 0 auto;
       padding: 10px 14px; background: #0c1013; border-top: 1px solid var(--line);
       display: grid; gap: 6px;
     }
@@ -95,12 +109,16 @@
     </div>
   </header>
 
+  <div class="panel-scroll">
   <form id="form">
     <fieldset>
       <legend>Identità</legend>
       <label>Username<input name="username" autocomplete="off" /></label>
       <label>Nome pilota<input name="pilotName" /></label>
-      <label>Twitch handle<input name="twitchHandle" placeholder="@nick" /></label>
+      <div class="row">
+        <label>Numero gara<input name="raceNumber" placeholder="42" /></label>
+        <label>Twitch handle<input name="twitchHandle" placeholder="@nick" /></label>
+      </div>
       <label>Team<input name="teamName" /></label>
     </fieldset>
 
@@ -161,7 +179,39 @@
         <textarea name="sponsorsJson" spellcheck="false"></textarea>
       </label>
     </fieldset>
+
+    <fieldset>
+      <legend>Telecronaca (telemetry)</legend>
+      <label class="check"><input type="checkbox" name="telemetryEnabled" /> Overlay broadcast attivo</label>
+      <label>WebSocket URL<input name="telemetryWsUrl" placeholder="ws://127.0.0.1:8765" /></label>
+      <div class="row">
+        <label class="check"><input type="checkbox" name="broadcastLeaderboard" /> Classifica</label>
+        <label class="check"><input type="checkbox" name="broadcastRelative" /> Relative</label>
+      </div>
+      <div class="row">
+        <label class="check"><input type="checkbox" name="broadcastFocus" /> Focus card</label>
+        <label class="check"><input type="checkbox" name="broadcastSession" /> Session strip</label>
+      </div>
+      <label>Righe classifica<input name="broadcastLeaderboardRows" type="number" min="5" max="20" step="1" /></label>
+      <div class="row">
+        <label>Director
+          <select name="broadcastDirector">
+            <option value="auto">Auto</option>
+            <option value="manual">Manual</option>
+            <option value="off">Off</option>
+          </select>
+        </label>
+        <label>Sensitivity
+          <select name="broadcastDirectorSensitivity">
+            <option value="calm">Calm</option>
+            <option value="normal">Normal</option>
+            <option value="hype">Hype</option>
+          </select>
+        </label>
+      </div>
+    </fieldset>
   </form>
+  </div>
 
   <footer>
     <div id="status">Caricamento…</div>
@@ -217,7 +267,11 @@
 
     const BOOLS = [
       "sessionBadgeEnabled", "countdownEnabled", "brbShowCountdown",
-      "endingCtaEnabled", "sponsorsEnabled"
+      "endingCtaEnabled", "sponsorsEnabled", "telemetryEnabled",
+      "broadcastLeaderboard", "broadcastRelative", "broadcastFocus", "broadcastSession"
+    ];
+    const SELECTS = [
+      "sessionType", "broadcastDirector", "broadcastDirectorSensitivity"
     ];
 
     function fill(cfg) {
@@ -230,6 +284,7 @@
         const el = form.elements.namedItem(k);
         if (!el) continue;
         if (el.type === "checkbox") el.checked = Boolean(v);
+        else if (el.tagName === "SELECT" || SELECTS.indexOf(k) >= 0) el.value = v == null ? "" : String(v);
         else el.value = v == null ? "" : v;
       }
     }
@@ -240,6 +295,7 @@
       for (const el of form.elements) {
         if (!el.name || el.name === "sponsorsJson" || el.disabled) continue;
         if (el.type === "checkbox") cfg[el.name] = el.checked;
+        else if (el.tagName === "SELECT" || SELECTS.indexOf(el.name) >= 0) cfg[el.name] = el.value;
         else if (el.type === "number") cfg[el.name] = el.value === "" ? 0 : Number(el.value);
         else cfg[el.name] = el.value;
       }

@@ -32,7 +32,16 @@ window.PIGRECO_CONFIG = {
   "endingFollowText": "",
   "sponsorsEnabled": false,
   "sponsorLabel": "",
-  "sponsors": []
+  "sponsors": [],
+  "telemetryEnabled": true,
+  "telemetryWsUrl": "ws://127.0.0.1:8765",
+  "broadcastLeaderboard": true,
+  "broadcastRelative": true,
+  "broadcastFocus": true,
+  "broadcastSession": true,
+  "broadcastLeaderboardRows": 10,
+  "broadcastDirector": "auto",
+  "broadcastDirectorSensitivity": "normal"
 };
 
 (function applyConfig() {

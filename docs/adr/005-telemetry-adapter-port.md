@@ -101,5 +101,6 @@ All times in **milliseconds** unless noted. Null means “unknown / N/A”.
 
 - Core pack remains usable without Python telemetry process.
 - HTML never imports iRacing/SimHub SDKs; only the adapter process does.
-- Contract changes require bumping `schemaVersion` and updating `CONTRACT.md` + this ADR.
-- P3-02+ widgets bind to this schema only.
+- **Additive optional fields** (standings, relatives, focus*, isReplay) stay on `schemaVersion: 1`; consumers must ignore unknowns. Breaking renames bump the major schema version.
+- P3-02 telecronaca widgets bind to this schema only (`broadcast-chrome.html`).
+- iRacing **replay** often lacks reliable `CarIdxPosition`; the iRacing bridge must derive standings from lap distance when needed.

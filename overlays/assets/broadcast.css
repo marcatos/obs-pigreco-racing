@@ -1,0 +1,452 @@
+/* Broadcast telecronaca chrome — uses theme tokens (--accent, --panel, --text, …) */
+
+.broadcast-root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+  font-family: var(--font-body);
+  color: var(--text);
+}
+
+.broadcast-root[hidden] {
+  display: none !important;
+}
+
+/* Status chip — visible only while connecting / errors */
+.bc-status {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9;
+  padding: 0.25rem 0.7rem;
+  font-family: var(--font-display);
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text);
+  background: color-mix(in srgb, var(--panel, #111) 92%, transparent);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.14));
+  border-top: 2px solid var(--accent, #00c400);
+  pointer-events: none;
+}
+
+.broadcast-root[data-state="live"] .bc-status {
+  opacity: 0;
+  transition: opacity 400ms ease;
+}
+
+.broadcast-root[data-state="connecting"] .bc-status,
+.broadcast-root[data-state="reconnecting"] .bc-status,
+.broadcast-root[data-state="idle"] .bc-status,
+.broadcast-root[data-state="error"] .bc-status,
+.broadcast-root[data-state="unsupported"] .bc-status {
+  opacity: 1;
+}
+
+.broadcast-root[data-state="connecting"] .bc-leaderboard,
+.broadcast-root[data-state="reconnecting"] .bc-leaderboard,
+.broadcast-root[data-state="idle"] .bc-focus {
+  opacity: 0.45;
+}
+
+/* Session strip — top center */
+.bc-session {
+  position: absolute;
+  top: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.35rem 0.9rem;
+  background: color-mix(in srgb, var(--panel, #111) 88%, transparent);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  border-top: 2px solid var(--accent, #00c400);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.bc-session .bc-flag-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent, #00c400);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent, #00c400) 60%, transparent);
+}
+
+.bc-session[data-flag="yellow"] .bc-flag-dot {
+  background: #f5d000;
+  box-shadow: 0 0 8px rgba(245, 208, 0, 0.55);
+}
+.bc-session[data-flag="red"] .bc-flag-dot,
+.bc-session[data-flag="checkered"] .bc-flag-dot {
+  background: #e10600;
+}
+.bc-session[data-flag="white"] .bc-flag-dot {
+  background: #f7fafc;
+}
+.bc-session[data-flag="blue"] .bc-flag-dot {
+  background: #009fe5;
+}
+
+.bc-session .bc-replay-tag {
+  color: var(--accent, #00c400);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+}
+
+/* —— Left rail: focus + relative stacked (clears cam / lower-third) —— */
+.bc-left-rail {
+  position: absolute;
+  top: 88px;
+  left: 28px;
+  width: min(300px, 22vw);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: calc(100% - 88px - 250px); /* leave room for bottom-left cam */
+  overflow: hidden;
+}
+
+.bc-panel {
+  background: color-mix(in srgb, var(--panel, #111) 90%, transparent);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  border-left: 3px solid var(--accent, #00c400);
+  overflow: hidden;
+}
+
+.bc-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.4rem 0.65rem;
+  font-family: var(--font-display);
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted, #a7b1ba);
+  border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.1));
+}
+
+.bc-panel-head strong {
+  color: var(--text);
+  font-weight: 400;
+}
+
+/* Focus card inside left rail */
+.bc-focus {
+  padding: 0;
+}
+
+.bc-focus-body {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.55rem 0.75rem;
+  align-items: center;
+  padding: 0.65rem 0.75rem 0.75rem;
+}
+
+.bc-focus-pos {
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  letter-spacing: 0.04em;
+  color: var(--accent, #00c400);
+  line-height: 1;
+  grid-row: span 2;
+}
+
+.bc-focus-name {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bc-focus-meta {
+  font-size: 0.72rem;
+  color: var(--muted, #a7b1ba);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+}
+
+.bc-focus-meta span strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.bc-focus-meta .is-purple {
+  color: #c084fc; /* lap improvement only; not UI chrome glow */
+}
+
+.bc-focus-meta .is-slow {
+  color: var(--muted, #9aa3ad);
+}
+
+.bc-pit-tag {
+  color: #080a0c;
+  background: #009fe5;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  letter-spacing: 0.06em;
+}
+
+/* Relative / battle under focus */
+.bc-relative {
+  padding: 0;
+  flex: 0 1 auto;
+  min-height: 0;
+}
+
+.bc-rel-rows {
+  padding: 0.2rem 0;
+}
+
+.bc-rel-row {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: 0.4rem;
+  align-items: center;
+  padding: 0.32rem 0.65rem;
+  font-size: 0.8rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--line, #fff) 35%, transparent);
+}
+
+.bc-rel-row:last-child {
+  border-bottom: 0;
+}
+
+.bc-rel-tag {
+  font-family: var(--font-display);
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  color: var(--muted, #a7b1ba);
+}
+
+.bc-rel-row.is-ahead .bc-rel-tag {
+  color: var(--muted, #a7b1ba);
+}
+
+.bc-rel-row.is-focus {
+  background: color-mix(in srgb, var(--accent, #00c400) 16%, transparent);
+}
+
+.bc-rel-row.is-focus .bc-rel-tag {
+  color: var(--accent, #00c400);
+  font-weight: 700;
+}
+
+.bc-rel-row.is-behind .bc-rel-tag {
+  color: var(--muted, #a7b1ba);
+}
+
+.bc-rel-driver {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.bc-rel-gap {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.72rem;
+  color: var(--muted, #a7b1ba);
+}
+
+.bc-rel-row.is-focus .bc-rel-gap {
+  color: var(--accent, #00c400);
+}
+
+/* Leaderboard — top right */
+.bc-leaderboard {
+  position: absolute;
+  top: 88px;
+  right: 28px;
+  width: min(340px, 28vw);
+  background: color-mix(in srgb, var(--panel, #111) 90%, transparent);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  border-left: 3px solid var(--accent, #00c400);
+  overflow: hidden;
+}
+
+.bc-leaderboard-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.45rem 0.65rem;
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted, #a7b1ba);
+  border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.1));
+}
+
+.bc-leaderboard-head strong {
+  color: var(--text);
+  font-weight: 400;
+}
+
+.bc-lb-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 420px;
+  overflow: hidden;
+}
+
+.bc-lb-row {
+  display: grid;
+  grid-template-columns: 40px 36px 1fr auto;
+  gap: 0.35rem;
+  align-items: center;
+  padding: 0.28rem 0.55rem;
+  font-size: 0.82rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--line, #fff) 40%, transparent);
+}
+
+.bc-lb-row.is-focus {
+  background: color-mix(in srgb, var(--accent, #00c400) 18%, transparent);
+}
+
+.bc-lb-pos {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--accent, #00c400);
+  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.bc-pos-up {
+  color: #00c400;
+  font-size: 10px;
+  margin-left: 2px;
+}
+
+.bc-pos-down {
+  color: #e5484d;
+  font-size: 10px;
+  margin-left: 2px;
+}
+
+.bc-lb-num {
+  font-variant-numeric: tabular-nums;
+  color: var(--muted, #a7b1ba);
+  font-size: 0.75rem;
+}
+
+.bc-lb-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.bc-lb-gap {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.72rem;
+  color: var(--muted, #a7b1ba);
+}
+
+/* Flag banner */
+.bc-flag-banner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  opacity: 0;
+  transition: opacity 200ms ease;
+  background: transparent;
+  z-index: 8;
+}
+
+.bc-flag-banner.is-on {
+  opacity: 1;
+}
+
+.bc-flag-banner[data-flag="yellow"] {
+  background: repeating-linear-gradient(
+    90deg,
+    #f5d000 0 24px,
+    #111 24px 48px
+  );
+}
+.bc-flag-banner[data-flag="red"] {
+  background: #e10600;
+}
+.bc-flag-banner[data-flag="white"] {
+  background: #f7fafc;
+}
+.bc-flag-banner[data-flag="blue"] {
+  background: #009fe5;
+}
+.bc-flag-banner[data-flag="checkered"] {
+  background: repeating-conic-gradient(#111 0% 25%, #f7fafc 0% 50%) 0 0 / 16px 16px;
+}
+
+.broadcast-root.no-leaderboard .bc-leaderboard,
+.broadcast-root.no-relative .bc-relative,
+.broadcast-root.no-focus .bc-focus,
+.broadcast-root.no-session .bc-session {
+  display: none;
+}
+
+.broadcast-root.no-relative.no-focus .bc-left-rail {
+  display: none;
+}
+
+/* Moment chip — top center under session strip (not center FOV) */
+.bc-moment {
+  position: absolute;
+  left: 50%;
+  top: 120px;
+  transform: translate(-50%, -8px);
+  z-index: 40;
+  pointer-events: none;
+  opacity: 0;
+}
+.bc-moment.is-enter {
+  animation: bcMomentIn 300ms ease-out forwards;
+}
+.bc-moment.is-exit {
+  animation: bcMomentOut 200ms ease-in forwards;
+}
+.bc-moment-chip {
+  font-family: inherit;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  font-size: 28px;
+  padding: 10px 22px;
+  background: rgba(8, 10, 12, 0.88);
+  border: 2px solid var(--accent, #00c400);
+  color: #fff;
+}
+.bc-moment[data-kind="flag_change"] .bc-moment-chip { border-color: #f5d90a; }
+.bc-moment[data-kind="overtake"] .bc-moment-chip { border-color: var(--accent, #00c400); }
+.bc-moment[data-kind="fast_lap"] .bc-moment-chip { border-color: #c084fc; }
+.bc-moment[data-kind="pit"] .bc-moment-chip { border-color: #009fe5; }
+.bc-moment[data-kind="session_end"] .bc-moment-chip {
+  border-color: #f7fafc;
+  font-size: 32px;
+  letter-spacing: 0.18em;
+  box-shadow: 0 0 0 2px #080a0c, 0 0 0 4px #f7fafc;
+}
+@keyframes bcMomentIn {
+  from { opacity: 0; transform: translate(-50%, -16px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+@keyframes bcMomentOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}

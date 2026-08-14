@@ -13,34 +13,44 @@ Salva su **`config.values.json`** nel profilo overlay attivo e rigenera il rispe
 
 ## Setup (una volta)
 
-1. Avvia il server (lascia la finestra aperta):
+1. **Autostart (due livelli)**  
+   - **OBS Scripts (Lua):** nelle collezioni generate è cablato  
+     `obs/scripts/pigreco_config_autostart.lua` — parte **una sola volta** all’apertura di OBS  
+     (ShellExecute nascosto, niente timer / niente console nera).  
+     Se in Scripts vedi ancora `pigreco_config_autostart.py`, **rimuovilo** (è disattivato).  
+   - **Windows Startup (opzionale):**  
+     `powershell -File tools/install_config_autostart.ps1`  
+     Per rimuoverlo: `powershell -File tools/install_config_autostart.ps1 -Remove`
+
+2. Dock browser (se non c’è già):
+
+   - **Visualizza → Docks → Custom Browser Docks…**
+   - **Dock Name:** `PiGreco Config`
+   - **URL:** `http://127.0.0.1:8766/`
+   - Apply / Close
+
+3. (Opzionale) Avvio manuale / emergenza:
 
    ```bat
    Start-ConfigPanel.bat
    ```
 
-   Oppure: `python tools\config_server.py`
+   Usa `tools/ensure_config_server.py` (idempotente, lascia il server in background).
 
-2. In OBS: **Visualizza (View) → Docks → Custom Browser Docks…**
-   - **Dock Name:** `PiGreco Config`
-   - **URL:** `http://127.0.0.1:8766/`
-   - Apply / Close
-
-3. Sposta il dock dove ti è comodo (accanto a Controlli / Audio).
-
-4. (Consigliato) Script refresh:
-   - OBS → **Strumenti / Tools → Scripts**
-   - `+` → scegli `obs/scripts/pigreco_refresh_browsers.py`
-   - Dopo ogni **Salva e applica** nel pannello, clicca **Refresh overlay Browser Sources**
-
-Se non usi lo script: su ogni Browser Source overlay → tasto destro → **Refresh cache of current page**.
+4. Refresh overlay dopo Salva: script OBS Python legacy  
+   `obs/scripts/pigreco_refresh_browsers.py` (se Python OBS funziona),  
+   oppure tasto destro sulla Browser Source → Refresh cache.
 
 ## Uso quotidiano
 
-1. `Start-ConfigPanel.bat` acceso  
-2. Modifica i campi nel dock **PiGreco Config**  
-3. **Salva e applica**  
-4. Refresh browser (script o manuale)  
+1. Apri OBS (lo script Lua avvia il config server)  
+2. Apri il dock **PiGreco Config** (Visualizza → Docks)  
+3. Modifica i campi → **Salva e applica**  
+4. Refresh browser (manuale o script)
+
+Se il dock è bianco: il server non è su. In **Strumenti → Scripts** seleziona  
+`pigreco_config_autostart.lua` → **Avvia / verifica config server ora**,  
+oppure `Start-ConfigPanel.bat`.
 
 ## Profilo S.Marcato
 
@@ -51,6 +61,23 @@ Per editare `overlays-marcato/config.values.json` invece del pack PiGreco:
 - Salva e applica come sopra; rigenera `overlays-marcato/config.js`.
 
 Il dock può restare su un solo URL: cambia profilo dal menu a tendina (ricarica la pagina con `?profile=`).
+
+## Telecronaca (P3-02)
+
+Nel fieldset **Telemetria / broadcast**:
+
+- **Overlay broadcast attivo** → `telemetryEnabled` (default off: nessuna connessione WS)
+- URL WebSocket (default `ws://127.0.0.1:8765`)
+- Toggle classifica / relative / focus / session strip
+
+Avvio producer (processo esterno, non da OBS Scripts):
+
+```bat
+Start-Telemetry.bat mock
+Start-Telemetry.bat iracing
+```
+
+Poi in OBS: occhio su **Overlay Broadcast Chrome**. Dettagli: [`docs/TELEMETRY_BROADCAST.md`](TELEMETRY_BROADCAST.md).
 
 ## Note
 

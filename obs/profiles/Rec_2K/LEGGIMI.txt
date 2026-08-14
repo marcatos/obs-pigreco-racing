@@ -1,0 +1,36 @@
+S.Marcato — Registrazione 2K (2560×1440)
+
+1. Profilo OBS → Rec 2K
+2. Collezione → S.Marcato Rec 2K
+
+Scene
+- Rec Singolo / Rec Triplo     clean (niente grafiche)
+- Rec Singolo Live             Game Capture (+ Monitor occhio off) + chrome + cam
+- Rec Triplo Live              iRacing + bande brand + cam
+
+Su Rec Singolo / Rec Singolo Live: **Game Capture** e' attivo di default;
+**Monitor Centrale** resta in lista (occhio) come fallback desktop.
+
+Cam (opzionale, indipendenti)
+- Occhio su **Cam PIP** = solo faccia (sinistra).
+- Occhio su **Cam 2 PIP** = solo sedile (destra).
+- Puoi: entrambe ON, una sola, o entrambe OFF.
+- Sfondo carbon + NVIDIA Quality+Chair su entrambe.
+- Cam PIP OFF → lower-third a sinistra (Lua). Cam 2 non sposta il lower-third.
+- Guida: docs/CAMERAS.md
+
+Le grafiche sono le stesse del pack 1080, scalate sul canvas 2K.
+
+Encoder: NVENC HEVC VBR 25 Mbps (max 40). Su iRacing 1440p60
+aspettati ~3–5 GB / 17 min, non decine di GB (H.264 CQP non ha tetto).
+Split automatico ogni 15 minuti.
+
+Per lo stream: torna al profilo 1080 + collezione S.Marcato 42 / Replay.
+
+Telecronaca (opzionale)
+- Source **Overlay Broadcast Chrome** sulle scene Rec * Live (occhio off di default).
+- URL source (obbligatoria): http://127.0.0.1:8766/o/marcato/broadcast-chrome.html
+  (serve Start-ConfigPanel / config server; non usare file://)
+- Bridge: Start-Telemetry.bat iracing
+- telemetryEnabled nel pannello config (?profile=marcato)
+- Guida: docs/TELEMETRY_BROADCAST.md

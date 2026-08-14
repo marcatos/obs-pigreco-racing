@@ -168,6 +168,7 @@ def test_marcato_replay_collection():
     assert "overlays-marcato" in text.replace("\\\\", "/")
     assert "replay-chrome.html" in text
     assert "live-chrome.html" not in text
+    assert "pigreco_config_autostart.lua" in text.replace("\\\\", "/")
     assert "Monitor Sinistro" in text
     assert "iRacing.com Simulator:SimWinClass:iRacingSim64DX11.exe" in text
     rec_triple = next(s for s in data["sources"] if s.get("name") == "Rec Triplo")
@@ -179,7 +180,50 @@ def test_marcato_replay_collection():
         "Game Capture",
         "Overlay Triple Frame Live",
         "StreamCam",
+        "Overlay Broadcast Chrome",
     ]
+    assert "broadcast-chrome.html" in text
+    assert (ROOT / "overlays-marcato" / "broadcast-chrome.html").is_file()
+    # Replay PIP scenes: nested Cam PIP (webcam + CAM frame) as optional block
+    cam_pip = next(s for s in data["sources"] if s.get("name") == "Cam PIP")
+    assert cam_pip.get("id") == "scene"
+    assert [it.get("name") for it in cam_pip.get("settings", {}).get("items", [])] == [
+        "Cam Backdrop Face",
+        "StreamCam",
+        "Overlay Cam Frame",
+    ]
+    assert (ROOT / "overlays-marcato" / "cam-frame.html").is_file()
+    assert (ROOT / "overlays-marcato" / "cam-frame-2.html").is_file()
+    cam2_pip = next(s for s in data["sources"] if s.get("name") == "Cam 2 PIP")
+    assert [it.get("name") for it in cam2_pip.get("settings", {}).get("items", [])] == [
+        "Cam Backdrop 2",
+        "Cam 2",
+        "Overlay Cam 2 Frame",
+    ]
+    stream = next(s for s in data["sources"] if s.get("name") == "StreamCam")
+    assert any(f.get("id") == "nv_greenscreen_filter" for f in (stream.get("filters") or []))
+    assert (stream.get("filters") or [])[0].get("settings", {}).get("mode") == 2
+    for scene_name in ("Replay iRacing", "Replay Monitor", "Rec Singolo Live"):
+        scene = next(s for s in data["sources"] if s.get("name") == scene_name)
+        names = [it.get("name") for it in scene.get("settings", {}).get("items", [])]
+        assert "Cam PIP" in names
+        assert "Cam 2 PIP" in names
+        assert "StreamCam" not in names  # cam only via Cam PIP
+        assert "Overlay Broadcast Chrome" in names
+    ov_bc = next(s for s in data["sources"] if s.get("name") == "Overlay Broadcast Chrome")
+    assert "broadcast-chrome.html" in ov_bc.get("settings", {}).get("url", "")
+    assert ov_bc["settings"]["url"].startswith("http://127.0.0.1:8766/o/marcato/")
+    # Eye off by default until bridge + telemetryEnabled
+    for scene_name in ("Replay iRacing", "Rec Singolo Live", "Rec Triplo Live"):
+        scene = next(s for s in data["sources"] if s.get("name") == scene_name)
+        bc = next(
+            it
+            for it in scene["settings"]["items"]
+            if it.get("name") == "Overlay Broadcast Chrome"
+        )
+        assert bc.get("visible") is False
+    ov_replay = next(s for s in data["sources"] if s.get("name") == "Overlay Replay Chrome")
+    assert "cam=0" in ov_replay.get("settings", {}).get("url", "")
     ov = next(s for s in data["sources"] if s.get("name") == "Overlay Triple Frame Live")
     assert "badge=REPLAY" in ov.get("settings", {}).get("url", "")
     assert (ROOT / "overlays-marcato" / "triple-frame.html").is_file()
@@ -210,6 +254,82 @@ def test_marcato_live_has_rec_scenes():
     ]
     ov = next(s for s in data["sources"] if s.get("name") == "Overlay Triple Frame Live")
     assert "badge=LIVE" in ov.get("settings", {}).get("url", "")
+
+
+def test_marcato_rec_2k_collection():
+    path = ROOT / "obs" / "S_Marcato_Rec_2K.json"
+    assert path.is_file()
+    data = json.loads(path.read_text(encoding="utf-8"))
+    assert data.get("name") == "S.Marcato Rec 2K"
+    assert data.get("resolution") == {"x": 2560, "y": 1440}
+    names = {s.get("name") for s in data.get("scene_order", [])}
+    assert names == {
+        "Rec Singolo",
+        "Rec Triplo",
+        "Rec Singolo Live",
+        "Rec Triplo Live",
+    }
+    assert "Live Race" not in names
+    rec_single = next(s for s in data["sources"] if s.get("name") == "Rec Singolo")
+    items = rec_single["settings"]["items"]
+    assert [it["name"] for it in items] == ["Monitor Centrale", "Game Capture"]
+    assert items[0].get("visible") is False
+    assert items[1].get("visible") is True
+
+    live = next(s for s in data["sources"] if s.get("name") == "Rec Singolo Live")
+    live_names = [it.get("name") for it in live["settings"]["items"]]
+    assert live_names == [
+        "Monitor Centrale",
+        "Game Capture",
+        "Overlay Live Chrome",
+        "Overlay Broadcast Chrome",
+        "Cam PIP",
+        "Cam 2 PIP",
+    ]
+    assert live["settings"]["items"][0].get("visible") is False
+    assert live["settings"]["items"][1].get("visible") is True
+    ov_item = next(it for it in live["settings"]["items"] if it["name"] == "Overlay Live Chrome")
+    # 1920 overlay scaled 4/3 onto 2560 canvas
+    assert abs(ov_item["scale"]["x"] - (2560 / 1920)) < 1e-9
+    bc = next(
+        it for it in live["settings"]["items"] if it["name"] == "Overlay Broadcast Chrome"
+    )
+    assert bc.get("visible") is False
+    assert abs(bc["scale"]["x"] - (2560 / 1920)) < 1e-9
+
+    triple_live = next(s for s in data["sources"] if s.get("name") == "Rec Triplo Live")
+    assert [it.get("name") for it in triple_live["settings"]["items"]] == [
+        "Game Capture",
+        "Overlay Triple Frame Live",
+        "Overlay Broadcast Chrome",
+        "StreamCam",
+        "Cam 2 PIP",
+    ]
+    text = path.read_text(encoding="utf-8")
+    assert "overlays-marcato" in text.replace("\\\\", "/")
+    assert "live-chrome.html" in text
+    assert "broadcast-chrome.html" in text
+    assert "triple-frame.html" in text
+
+    profile = ROOT / "obs" / "profiles" / "Rec_2K" / "basic.ini"
+    assert profile.is_file()
+    ini = profile.read_text(encoding="utf-8")
+    assert "BaseCX=2560" in ini
+    assert "BaseCY=1440" in ini
+    assert "RecEncoder=obs_nvenc_hevc_tex" in ini
+    assert "RecSplitFile=true" in ini
+    assert "RefreshToken=" not in ini
+    assert "Token=" not in ini
+
+    encoder = json.loads(
+        (ROOT / "obs" / "profiles" / "Rec_2K" / "recordEncoder.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert encoder.get("rate_control") == "VBR"
+    assert encoder.get("bitrate") == 25000
+    assert encoder.get("max_bitrate") == 40000
+    assert encoder.get("profile") == "main"
 
 
 def test_rec_triplo_game_bounds_and_cam_slot():

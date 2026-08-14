@@ -7,7 +7,7 @@ Due profili nello stesso repo:
 | Profilo | Brand | Overlay | Collezioni OBS |
 |---------|--------|---------|----------------|
 | **PiGreco Racing** | Team `#00C400` / `#009FE5` | `overlays/` | `obs/PiGreco_Racing.json` |
-| **S.Marcato 42** | Personale carbon / ice / Rosso Corsa | `overlays-marcato/` | `obs/S_Marcato_42.json`, `obs/S_Marcato_Replay.json` |
+| **S.Marcato 42** | Personale carbon / ice / Rosso Corsa | `overlays-marcato/` | `obs/S_Marcato_42.json`, `obs/S_Marcato_Replay.json`, `obs/S_Marcato_Rec_2K.json` |
 
 > Non-technical? Apri **`LEGGIMI.txt`** oppure fai doppio clic su **`Setup.bat`**.
 
@@ -87,11 +87,13 @@ Ti chiede nick / nome pilota, installa Python se manca (UAC), personalizza gli o
 
 ### 3. Pannello config (opzionale ma comodo)
 
-1. Doppio clic su `Start-ConfigPanel.bat` (lascia aperta la finestra)
-2. In OBS: **Visualizza → Docks → Custom Browser Docks**
-3. URL:
+All’apertura di OBS lo script Lua `obs/scripts/pigreco_config_autostart.lua` avvia da solo il server su `http://127.0.0.1:8766/` (non richiede Python Settings in OBS). Opzionale: `tools/install_config_autostart.ps1` lo tiene caldo anche a login Windows.
+
+1. **Visualizza → Docks → Custom Browser Docks** (se manca):
    - PiGreco: `http://127.0.0.1:8766/`
    - Marcato: `http://127.0.0.1:8766/?profile=marcato`
+2. Emergenza / primo avvio: doppio clic su `Start-ConfigPanel.bat` (poi puoi chiudere la finestra)
+3. Telecronaca (opzionale): `Start-Telemetry.bat mock` oppure `iracing` — vedi [`docs/TELEMETRY_BROADCAST.md`](docs/TELEMETRY_BROADCAST.md)
 
 Dettagli: [`docs/OBS_CONFIG_PANEL.md`](docs/OBS_CONFIG_PANEL.md)
 
@@ -123,13 +125,31 @@ Solo pack replay (niente Live Race/Singolo/Triplo):
 
 | Scena | Uso |
 |-------|-----|
-| Replay iRacing | Game Capture + badge REPLAY + cam |
-| Replay Monitor | Monitor centrale + REPLAY + cam |
+| Replay iRacing | Game Capture + badge REPLAY + **Cam PIP** (webcam + riquadro CAM, eye on/off) |
+| Replay Monitor | Monitor centrale + REPLAY + Cam PIP |
 | Rec Singolo / Rec Triplo | Registrazione clean |
-| Rec \* Live | Stream commentato sul replay |
+| Rec \* Live | Stream commentato (+ Cam PIP / slot CAM su Triplo) |
 | BRB / Ending | Pausa e chiusura |
 
 Guida breve: [`replays/LEGGIMI.txt`](replays/LEGGIMI.txt)
+
+### Telecronaca (classifica / focus / flag)
+
+Overlay **Overlay Broadcast Chrome** sulle scene Replay / Rec * Live (occhio off di default).
+Bridge locale iRacing o mock → `ws://127.0.0.1:8765`. Guida: [`docs/TELEMETRY_BROADCAST.md`](docs/TELEMETRY_BROADCAST.md)
+
+## Registrazione 2K (2560×1440)
+
+Per VOD nativi (senza downscale a 1080):
+
+1. **Profilo OBS** → `Rec 2K` (canvas/output 2560×1440)
+2. **Collezione** → `S.Marcato Rec 2K`
+3. Scene: `Rec Singolo Live` / `Rec Triplo Live` (con grafiche + cam), oppure Rec clean senza overlay
+4. Cam opzionale: occhio su **StreamCam** — con cam off il lower-third torna in basso a sinistra
+5. Encoder: **NVENC HEVC VBR 25 Mbps** (max 40) — ~3–5 GB / 17 min a 1440p60, non H.264 CQP
+6. Per lo stream resta il profilo 1080 + collezioni Live/Replay
+
+Profilo template: `obs/profiles/Rec_2K/` · ADR: [`docs/adr/007-recording-1440p.md`](docs/adr/007-recording-1440p.md)
 
 ## Scene — PiGreco Racing
 

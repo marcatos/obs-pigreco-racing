@@ -23,7 +23,7 @@ Update this file when claiming or finishing an ID.
 | P1-01 | Countdown Starting Soon | done | `goLiveAt` / `countdownSeconds` |
 | P1-02 | Badge sessione (Practice/Quali/Race) | done | pill top-center |
 | P1-03 | Stinger transition (webm/mov or HTML) | done | `overlays/stinger/` + `docs/STINGER.md` |
-| P1-04 | Dual cam layout (face + wheel) toggle | ready | second dshow + hotkey hide |
+| P1-04 | Dual cam layout (face + wheel) toggle | done | Cam PIP + Cam 2 PIP, NVIDIA greenscreen chair + carbon BG; `docs/CAMERAS.md` |
 | P1-05 | Ending ricco (Discord QR + CTA) | done | config URLs + QR PNG |
 | P1-06 | BRB smart timer “torno alle HH:MM” | done | `brbUntil` + optional countdown |
 
@@ -41,10 +41,11 @@ Update this file when claiming or finishing an ID.
 | ID | Item | Status | Notes |
 |----|------|--------|-------|
 | P3-01 | Telemetry bridge design (SimHub/iRacing) | done | ADR-005 + mock `adapters/telemetry/` |
-| P3-02 | Live relative / position widget | ready | consume CONTRACT.md tick fields |
+| P3-02 | Live relative / position widget | done | broadcast-chrome + mock + iracing_bridge; docs/TELEMETRY_BROADCAST.md |
 | P3-03 | Minimap / track map | later | |
 | P3-04 | Auto scene on flags | later | obs-websocket |
 | P3-05 | Audio buses + VOD track guide | ready | docs + OBS profile notes |
+| P3-06 | Broadcast director + tick enrichment | done | spec 2026-08-14; hybrid auto/manual moments |
 
 ## Phase 4 — Team distribution
 
@@ -57,10 +58,9 @@ Update this file when claiming or finishing an ID.
 
 ## Suggested next agent claims
 
-1. `P1-04` Dual cam layout (second dshow + hotkey)  
-2. `P2-03` hotkey map + Stream Deck  
-3. `P3-02` live position/gap widget (consumes telemetry CONTRACT)  
-4. `P3-05` audio buses + VOD track guide  
+1. `P2-03` hotkey map + Stream Deck  
+2. `P3-03` minimap (later) / `P3-05` audio buses + VOD track guide  
+3. Showcase PNG for broadcast chrome when widgets are stable on stream  
 
 ## Definition of done (any ID)
 

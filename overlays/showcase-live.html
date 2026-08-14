@@ -29,8 +29,8 @@
       position: absolute;
       left: 36px;
       bottom: 36px;
-      width: 360px;
-      height: 202px;
+      width: 560px;
+      height: 315px;
       z-index: 1;
       display: grid;
       place-items: center;
@@ -47,8 +47,7 @@
     <div class="mock-game"></div>
     <div class="mock-hud">MOCK GAMEPLAY · SHOWCASE</div>
     <div class="cam-placeholder">STREAMCAM</div>
-    <div class="live-root has-cam">
-      <div class="sponsor-rotator" data-sponsor-rotator aria-hidden="true"></div>
+    <div class="live-root has-cam no-lower">
       <div class="session-badge" data-session-badge>
         <span data-session-value>RACE</span>
       </div>
@@ -59,13 +58,19 @@
           <span data-cfg="twitchHandle">@senormarcato</span>
         </div>
       </div>
-      <div class="cam-frame"><span class="cam-badge">CAM</span></div>
-      <div class="lower-third">
-        <div class="lower-body">
-          <div class="lower-label" data-cfg="teamName">PiGreco Racing</div>
-          <div class="lower-name" data-cfg="pilotName">Simone Marcato</div>
-          <div class="lower-meta" data-cfg="eventTitle">Sim Racing Session</div>
+      <div class="cam-frame" aria-hidden="true">
+        <span class="cam-corner tl"></span>
+        <span class="cam-corner tr"></span>
+        <span class="cam-corner bl"></span>
+        <span class="cam-corner br"></span>
+        <div class="cam-top-bar">
+          <span class="cam-nick" data-cfg="username">senormarcato</span>
+          <div class="cam-top-cluster">
+            <img class="cam-pi" src="assets/logo-pigreco.svg" alt="" />
+            <span class="cam-race-num" data-cfg="raceNumber">42</span>
+          </div>
         </div>
+        <div class="cam-bottom-bar" data-sponsor-rotator="cam-bar" aria-hidden="true"></div>
       </div>
     </div>
   </div>
@@ -74,7 +79,7 @@
   <script>
     window.PIGRECO_CONFIG.sponsorInitialDelayMs = 300;
     window.PIGRECO_CONFIG.sponsorDisplayMs = 5000;
-    window.PIGRECO_CONFIG.sponsorGapMs = 800;
+    window.PIGRECO_CONFIG.sponsorGapMs = 0;
   </script>
   <script src="sponsors.js"></script>
 </body>

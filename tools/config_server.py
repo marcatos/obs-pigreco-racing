@@ -108,6 +108,12 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/health":
             self._json(200, {"ok": True, "service": "pigreco-config"})
             return
+        # Overlay pack over HTTP (OBS Browser Source + WebSocket need http:// not file://)
+        # /o/marcato/... -> overlays-marcato/
+        # /o/overlays/... or /o/pigreco/... -> overlays/
+        if path.startswith("/o/"):
+            self._serve_overlay_pack(path)
+            return
         # static assets for panel (logo)
         if path.startswith("/assets/"):
             rel = path[len("/assets/") :]
@@ -128,6 +134,46 @@ class Handler(BaseHTTPRequestHandler):
             self._bytes(200, file_path.read_bytes(), ctype)
             return
         self._json(404, {"ok": False, "error": "not found"})
+
+    def _serve_overlay_pack(self, path: str) -> None:
+        """Serve overlay HTML/JS/CSS so CEF can open ws://127.0.0.1:8765."""
+        # path like /o/marcato/broadcast-chrome.html
+        rest = path[len("/o/") :]
+        if "/" not in rest:
+            self._json(404, {"ok": False, "error": "not found"})
+            return
+        pack, rel = rest.split("/", 1)
+        pack = pack.strip().lower()
+        if pack in ("marcato",):
+            root = PROFILES["marcato"]
+        elif pack in ("overlays", "pigreco"):
+            root = PROFILES["pigreco"]
+        else:
+            self._json(404, {"ok": False, "error": "unknown pack"})
+            return
+        if ".." in rel.replace("\\", "/").split("/"):
+            self._json(403, {"ok": False, "error": "forbidden"})
+            return
+        file_path = (root / rel).resolve()
+        root_resolved = root.resolve()
+        if not str(file_path).startswith(str(root_resolved)) or not file_path.is_file():
+            self._json(404, {"ok": False, "error": "not found"})
+            return
+        suffix = file_path.suffix.lower()
+        ctype = {
+            ".html": "text/html; charset=utf-8",
+            ".js": "application/javascript; charset=utf-8",
+            ".css": "text/css; charset=utf-8",
+            ".json": "application/json; charset=utf-8",
+            ".png": "image/png",
+            ".svg": "image/svg+xml",
+            ".jpg": "image/jpeg",
+            ".jpeg": "image/jpeg",
+            ".webp": "image/webp",
+            ".woff": "font/woff",
+            ".woff2": "font/woff2",
+        }.get(suffix, "application/octet-stream")
+        self._bytes(200, file_path.read_bytes(), ctype)
 
     def do_POST(self) -> None:
         path = self._parsed_url().path

@@ -7,7 +7,7 @@
 </head>
 <body>
   <div class="stage">
-    <div class="live-root has-cam">
+    <div class="live-root has-cam" data-live-root>
       <div class="session-badge" data-session-badge>
         <span data-session-value>RACE</span>
       </div>
@@ -39,5 +39,17 @@
   </div>
   <script src="config.js"></script>
   <script src="../overlays/session-badge.js"></script>
+  <script>
+    (function applyCamLayout() {
+      const root = document.querySelector("[data-live-root]") || document.querySelector(".live-root");
+      if (!root) return;
+      const params = new URLSearchParams(window.location.search);
+      const raw = (params.get("cam") || "").trim().toLowerCase();
+      // Default ON (has-cam). cam=0|false|off → PIP off, lower-third in basso a sinistra.
+      const camOff = raw === "0" || raw === "false" || raw === "off" || raw === "no";
+      root.classList.toggle("has-cam", !camOff);
+      root.classList.toggle("no-cam-frame", camOff);
+    })();
+  </script>
 </body>
 </html>

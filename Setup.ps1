@@ -270,6 +270,15 @@ try {
     $ms = [int]((Get-Date) - $t1).TotalMilliseconds
     Write-Log INFO "setup_streamer completato in ${ms}ms"
 
+    $autostart = Join-Path $ScriptDir "tools\install_config_autostart.ps1"
+    if (Test-Path $autostart) {
+        Write-Log INFO "Installazione autostart config server (Startup Windows)..."
+        & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $autostart
+        if ($LASTEXITCODE -ne 0) {
+            Write-Log WARN "install_config_autostart exit=$LASTEXITCODE (puoi rilanciare tools/install_config_autostart.ps1)"
+        }
+    }
+
     $totalMs = [int]((Get-Date) - $Script:StartedAt).TotalMilliseconds
     Write-Host ""
     Write-Host "SETUP COMPLETATO" -ForegroundColor Green

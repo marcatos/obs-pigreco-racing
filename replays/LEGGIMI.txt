@@ -7,13 +7,19 @@ Streaming replay
 1. Apri iRacing → Replay → file .rpy della corsa.
 2. In OBS: collezione "S.Marcato Replay".
 3. Starting Soon → avvia stream → Replay iRacing (o Replay Monitor / Rec Triplo Live).
-4. Play in iRacing e commenta in cam.
+4. Play in iRacing e commenta in cam (opzionale: vedi sotto).
 
 Scene
-- Replay iRacing       Game Capture + badge REPLAY + cam
-- Replay Monitor       monitor centrale + REPLAY + cam
-- Rec Triplo Live      iRacing + bande brand (REPLAY) + cam
-- Rec Singolo Live     centrale + REPLAY + cam
+- Replay iRacing       Game Capture + badge REPLAY + Cam PIP (opzionale)
+- Replay Monitor       monitor centrale + REPLAY + Cam PIP (opzionale)
+- Rec Triplo Live      iRacing + bande brand (REPLAY) + cam in fascia
+- Rec Singolo Live     centrale + REPLAY + Cam PIP (opzionale)
+
+Cam (opzionale, indipendenti)
+- **Cam PIP** = faccia (sinistra). **Cam 2 PIP** = sedile USB (destra).
+- Occhio indipendente: una sola, entrambe, o nessuna.
+- Su Rec Triplo Live la faccia è nello slot bande; Cam 2 PIP resta a destra.
+- Guida: docs/CAMERAS.md
 
 Registrazione (pulita, senza overlay/cam)
 - Rec Singolo          monitor centrale
@@ -25,3 +31,12 @@ trova "iRacing.com Simulator". Se è nero: proprietà → seleziona la finestra.
 Video file (opzionale)
 - Se metti qui un file race-replay.mp4 e rigeneri il pack, compare Replay Video.
 - Senza quel file OBS non deve chiedere nulla: usa Replay iRacing / Rec.
+
+Telecronaca (classifica / focus / flag)
+1. pip install -r adapters/telemetry/requirements.txt
+2. Apri il replay in iRacing, poi: Start-Telemetry.bat iracing
+   (per test UI senza sim: Start-Telemetry.bat mock)
+3. Pannello config → attiva "Overlay broadcast attivo".
+4. Nelle scene Replay */Rec * Live: occhio su **Overlay Broadcast Chrome**
+   (di default è spento).
+Dettagli: docs/TELEMETRY_BROADCAST.md

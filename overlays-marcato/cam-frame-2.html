@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>S.Marcato 42 — Cam 2 Frame</title>
+  <link rel="stylesheet" href="assets/theme.css" />
+  <style>
+    /* Mirror of .cam-frame but anchored bottom-right for seat / wheel cam */
+    .live-root.has-cam2 .cam-frame {
+      left: auto;
+      right: 36px;
+      bottom: 36px;
+      width: 320px;
+      height: 180px;
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="live-root has-cam has-cam2">
+      <div class="cam-frame">
+        <span class="cam-badge">CAM 2</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

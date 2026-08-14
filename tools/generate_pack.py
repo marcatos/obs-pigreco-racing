@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import ctypes
 import json
 import logging
@@ -24,7 +25,7 @@ ASSETS = OVERLAYS / "assets"
 OBS_DIR = ROOT / "obs"
 AUDIO_DIR = ROOT / "audio" / "interstitials"
 
-# Match OBS base canvas + stream output (1920x1080)
+# Match OBS base canvas + stream output (1920x1080) — ADR-002
 CANVAS_W = 1920
 CANVAS_H = 1080
 
@@ -32,19 +33,56 @@ STREAMCAM_ID = (
     r"Logitech StreamCam:\\?\usb#22vid_046d&pid_0893&mi_00#228&33ee287c&0&0000"
     r"#22{65e8773d-8f56-11d0-a3b9-00a0c9223196}\global"
 )
+# Second camera (seat / wide) on this PC — re-pick in OBS if USB port changes
+USBCAM_ID = (
+    r"USB Camera:\\?\usb#vid_0c6a&pid_646a&mi_00#9&1779791d&0&0000"
+    r"#{65e8773d-8f56-11d0-a3b9-00a0c9223196}\global"
+)
 MIC_ID = "{0.0.1.00000000}.{0679eb69-e8f9-4599-80e1-eef13c5d18e6}"
 # OBS window capture id: title:class:exe
 IRACING_WINDOW = "iRacing.com Simulator:SimWinClass:iRacingSim64DX11.exe"
 PREV_VER = 536936450
 CANVAS_UUID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+# Recording-only 2K canvas (ADR-007)
+CANVAS_UUID_2K = "c3d4e5f6-a7b8-9012-cdef-1234567890ab"
+REC_2K_W = 2560
+REC_2K_H = 1440
 
 
 def new_uuid() -> str:
     return str(uuid.uuid4())
 
 
+@contextlib.contextmanager
+def canvas_context(width: int, height: int, *, canvas_uuid: str | None = None):
+    """Temporarily set module canvas constants (stream vs Rec 2K packs)."""
+    global CANVAS_W, CANVAS_H, CANVAS_UUID
+    prev = (CANVAS_W, CANVAS_H, CANVAS_UUID)
+    CANVAS_W, CANVAS_H = int(width), int(height)
+    if canvas_uuid:
+        CANVAS_UUID = canvas_uuid
+    try:
+        yield
+    finally:
+        CANVAS_W, CANVAS_H, CANVAS_UUID = prev
+
+
 def file_url(path: Path) -> str:
     return path.resolve().as_uri()
+
+
+# OBS Browser Source + WebSocket: CEF often blocks ws:// from file:// pages.
+# Serve telecronaca HTML via the local config server instead.
+CONFIG_HTTP_BASE = "http://127.0.0.1:8766"
+
+
+def overlay_http_url(overlays_dir: Path, html: str, *, query: str = "") -> str:
+    """URL under config_server /o/<pack>/… (marcato | overlays)."""
+    pack = "marcato" if overlays_dir.name == "overlays-marcato" else "overlays"
+    url = f"{CONFIG_HTTP_BASE}/o/{pack}/{html.lstrip('/')}"
+    if query:
+        url = f"{url}?{query.lstrip('?')}"
+    return url
 
 
 def discover_monitors() -> list[dict]:
@@ -268,6 +306,24 @@ def layout_iracing_window(
     return item
 
 
+def config_autostart_scripts() -> list[dict]:
+    """Wire OBS Scripts tool to auto-start the local config panel server.
+
+    Prefer Lua: OBS always embeds Lua. Python OBS scripting often fails with
+    system Python 3.12+/3.14 (no matching python3xx.dll for obs-scripting).
+    """
+    script = (ROOT / "obs" / "scripts" / "pigreco_config_autostart.lua").resolve()
+    pack = ROOT.resolve()
+    return [
+        {
+            "path": str(script).replace("\\", "/"),
+            "settings": {
+                "pack_root": str(pack).replace("\\", "/"),
+            },
+        }
+    ]
+
+
 def export_logo_png() -> Path:
     """Keep official pi mark as primary logo; only write fallback if missing."""
     t0 = time.perf_counter()
@@ -295,8 +351,16 @@ def export_logo_png() -> Path:
     return out
 
 
-def source_base(name: str, source_id: str, settings: dict, *, mixers: int = 0, volume: float = 1.0) -> dict:
-    return {
+def source_base(
+    name: str,
+    source_id: str,
+    settings: dict,
+    *,
+    mixers: int = 0,
+    volume: float = 1.0,
+    filters: list[dict] | None = None,
+) -> dict:
+    out = {
         "prev_ver": PREV_VER,
         "name": name,
         "uuid": new_uuid(),
@@ -320,6 +384,60 @@ def source_base(name: str, source_id: str, settings: dict, *, mixers: int = 0, v
         "monitoring_type": 0,
         "private_settings": {},
     }
+    if filters:
+        out["filters"] = filters
+    return out
+
+
+# NVIDIA Background Removal (nv-filters.dll) — mode 2 = Quality + Chair
+# (keeps seat / mic stand; drops messy room). Requires Video Effects SDK.
+NV_GS_MODE_QUALITY_CHAIR = 2
+
+
+def nv_greenscreen_filter(
+    *,
+    name: str = "NVIDIA Background Removal",
+    mode: int = NV_GS_MODE_QUALITY_CHAIR,
+    threshold: float = 0.92,
+) -> dict:
+    return {
+        "prev_ver": PREV_VER,
+        "name": name,
+        "uuid": new_uuid(),
+        "id": "nv_greenscreen_filter",
+        "versioned_id": "nv_greenscreen_filter",
+        "settings": {
+            "mode": int(mode),
+            "threshold": float(threshold),
+            "processing_interval": 1,
+        },
+        "enabled": True,
+    }
+
+
+def cam_carbon_backdrop(name: str, *, width: int, height: int, marcato: bool) -> dict:
+    """Solid brand plate behind greenscreen cams (OBS color is 0xAABBGGRR)."""
+    # #08080A marcato / #080A0C pigreco → ABGR
+    color = 0xFF0A0808 if marcato else 0xFF0C0A08
+    return source_base(
+        name,
+        "color_source_v3",
+        {"width": int(width), "height": int(height), "color": color},
+    )
+
+
+def dshow_cam(name: str, device_id: str, *, resolution: str = "1920x1080") -> dict:
+    return source_base(
+        name,
+        "dshow_input",
+        {
+            "video_device_id": device_id,
+            "last_video_device_id": device_id,
+            "res_type": 1,
+            "resolution": resolution,
+        },
+        filters=[nv_greenscreen_filter()],
+    )
 
 
 def pos_rel(pos: tuple[float, float]) -> dict[str, float]:
@@ -611,17 +729,8 @@ def build_collection(
         mixers=255,
         volume=0.85,
     )
-    cam = source_base(
-        "StreamCam",
-        "dshow_input",
-        {
-            "video_device_id": STREAMCAM_ID,
-            "last_video_device_id": STREAMCAM_ID,
-            "res_type": 1,
-            "resolution": "1920x1080",
-        },
-        mixers=0,
-    )
+    cam = dshow_cam("StreamCam", STREAMCAM_ID)
+    cam2 = dshow_cam("Cam 2", USBCAM_ID)
     roles = monitor_roles()
     for role, mon in roles.items():
         if mon:
@@ -739,8 +848,8 @@ def build_collection(
             )
         ]
 
-    # Webcam ~360x202 inside cam frame (left 36, bottom 36 on 1920x1080)
-    cam_w, cam_h = 360.0, 202.0
+    # Webcam 560×315 inside cam chrome (left 36, bottom 36 on 1920×1080)
+    cam_w, cam_h = 560.0, 315.0
     cam_scale = cam_w / 1920.0
     cam_x, cam_y = 36.0, CANVAS_H - 36.0 - cam_h
     cam_ref = (1920.0, 1080.0)
@@ -800,11 +909,12 @@ def build_collection(
         "Live Singolo",
         [
             fullscreen(mon_single["name"], mon_single["uuid"], 1),
-            fullscreen(ov_live["name"], ov_live["uuid"], 2, locked=True),
+            fullscreen(game["name"], game["uuid"], 2, visible=False),
+            fullscreen(ov_live["name"], ov_live["uuid"], 3, locked=True),
             scene_item(
                 cam["name"],
                 cam["uuid"],
-                3,
+                4,
                 pos=(cam_x, cam_y),
                 scale=(cam_scale, cam_scale),
                 scale_ref=cam_ref,
@@ -842,8 +952,10 @@ def build_collection(
                 mon_center["uuid"],
                 1,
                 roles["center"],
+                visible=False,
                 locked=True,
             ),
+            fullscreen(game["name"], game["uuid"], 2, locked=True),
         ],
     )
     scene_rec_triple = make_scene(
@@ -899,12 +1011,14 @@ def build_collection(
                 mon_center["uuid"],
                 1,
                 roles["center"],
+                visible=False,
             ),
-            fullscreen(ov_live["name"], ov_live["uuid"], 2, locked=True),
+            fullscreen(game["name"], game["uuid"], 2),
+            fullscreen(ov_live["name"], ov_live["uuid"], 3, locked=True),
             scene_item(
                 cam["name"],
                 cam["uuid"],
-                3,
+                4,
                 pos=(cam_x, cam_y),
                 scale=(cam_scale, cam_scale),
                 scale_ref=cam_ref,
@@ -984,7 +1098,7 @@ def build_collection(
         "scaling_off_x": 0.0,
         "scaling_off_y": 0.0,
         "modules": {
-            "scripts-tool": [],
+            "scripts-tool": config_autostart_scripts(),
             "auto-scene-switcher": {
                 "interval": 300,
                 "non_matching_scene": "",
@@ -1052,16 +1166,14 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
         mixers=255,
         volume=0.9,
     )
-    cam = source_base(
-        "StreamCam",
-        "dshow_input",
-        {
-            "video_device_id": STREAMCAM_ID,
-            "last_video_device_id": STREAMCAM_ID,
-            "res_type": 1,
-            "resolution": "1920x1080",
-        },
-        mixers=0,
+    # P1-04 dual cam + NVIDIA greenscreen (Quality+Chair) + carbon plate
+    cam = dshow_cam("StreamCam", STREAMCAM_ID)
+    cam2 = dshow_cam("Cam 2", USBCAM_ID)
+    cam_bd_face = cam_carbon_backdrop(
+        "Cam Backdrop Face", width=360, height=202, marcato=True
+    )
+    cam_bd_2 = cam_carbon_backdrop(
+        "Cam Backdrop 2", width=320, height=180, marcato=True
     )
     roles = monitor_roles()
     for role, mon in roles.items():
@@ -1143,7 +1255,24 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
     ov_soon = browser("Overlay Starting Soon", "starting-soon.html")
     ov_brb = browser("Overlay BRB", "brb.html")
     ov_end = browser("Overlay Ending", "ending.html")
-    ov_replay = browser("Overlay Replay Chrome", "replay-chrome.html")
+    # cam=0: riquadro CAM non duplicato (sta nella nested scene Cam PIP)
+    ov_replay = browser("Overlay Replay Chrome", "replay-chrome.html", query="cam=0")
+    # Telecronaca (P3-02): HTTP URL so OBS CEF can open the telemetry WebSocket
+    ov_broadcast = source_base(
+        "Overlay Broadcast Chrome",
+        "browser_source",
+        {
+            "url": overlay_http_url(overlays_dir, "broadcast-chrome.html"),
+            "width": CANVAS_W,
+            "height": CANVAS_H,
+            "fps": 30,
+            "shutdown": True,
+            "restart_when_active": True,
+            "webpage_control_level": 1,
+        },
+    )
+    ov_cam_frame = browser("Overlay Cam Frame", "cam-frame.html")
+    ov_cam_frame_2 = browser("Overlay Cam 2 Frame", "cam-frame-2.html")
     ov_triple = browser("Overlay Triple Frame", "triple-frame.html", query="badge=REPLAY")
     ov_triple_live = browser(
         "Overlay Triple Frame Live",
@@ -1196,6 +1325,9 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
     cam_scale = cam_w / 1920.0
     cam_x, cam_y = 36.0, CANVAS_H - 36.0 - cam_h
     cam_ref = (1920.0, 1080.0)
+    cam2_w, cam2_h = 320.0, 180.0
+    cam2_scale = cam2_w / 1920.0
+    cam2_x, cam2_y = CANVAS_W - 36.0 - cam2_w, CANVAS_H - 36.0 - cam2_h
     cam_sm_w = 280.0
     cam_sm_scale = cam_sm_w / 1920.0
     cam_sm_h = 1080.0 * cam_sm_scale
@@ -1242,6 +1374,78 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
             scale_ref=cam_ref,
         )
 
+    # Nested: carbon plate + NVIDIA greenscreen cam + frame
+    scene_cam_pip = make_scene(
+        "Cam PIP",
+        [
+            scene_item(
+                cam_bd_face["name"],
+                cam_bd_face["uuid"],
+                1,
+                pos=(cam_x, cam_y),
+                scale=(1.0, 1.0),
+                scale_ref=(cam_w, cam_h),
+                locked=True,
+            ),
+            scene_item(
+                cam["name"],
+                cam["uuid"],
+                2,
+                pos=(cam_x, cam_y),
+                scale=(cam_scale, cam_scale),
+                scale_ref=cam_ref,
+            ),
+            fullscreen(ov_cam_frame["name"], ov_cam_frame["uuid"], 3, locked=True),
+        ],
+    )
+    scene_cam2_pip = make_scene(
+        "Cam 2 PIP",
+        [
+            scene_item(
+                cam_bd_2["name"],
+                cam_bd_2["uuid"],
+                1,
+                pos=(cam2_x, cam2_y),
+                scale=(1.0, 1.0),
+                scale_ref=(cam2_w, cam2_h),
+                locked=True,
+            ),
+            scene_item(
+                cam2["name"],
+                cam2["uuid"],
+                2,
+                pos=(cam2_x, cam2_y),
+                scale=(cam2_scale, cam2_scale),
+                scale_ref=cam_ref,
+            ),
+            fullscreen(ov_cam_frame_2["name"], ov_cam_frame_2["uuid"], 3, locked=True),
+        ],
+    )
+
+    def cam_pip_optional(item_id: int, *, visible: bool = True) -> dict:
+        """Optional face-cam block (webcam + CAM frame) for replay commentary scenes."""
+        return scene_item(
+            scene_cam_pip["name"],
+            scene_cam_pip["uuid"],
+            item_id,
+            pos=(0.0, 0.0),
+            scale=(1.0, 1.0),
+            visible=visible,
+            scale_ref=(float(CANVAS_W), float(CANVAS_H)),
+        )
+
+    def cam2_pip_optional(item_id: int, *, visible: bool = True) -> dict:
+        """Optional seat/wide cam (bottom-right) with virtual carbon BG."""
+        return scene_item(
+            scene_cam2_pip["name"],
+            scene_cam2_pip["uuid"],
+            item_id,
+            pos=(0.0, 0.0),
+            scale=(1.0, 1.0),
+            visible=visible,
+            scale_ref=(float(CANVAS_W), float(CANVAS_H)),
+        )
+
     scene_soon = make_scene(
         "Starting Soon",
         [
@@ -1256,7 +1460,11 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
             fullscreen(mon_center["name"], mon_center["uuid"], 1, visible=False),
             fullscreen(game["name"], game["uuid"], 2),
             fullscreen(ov_replay["name"], ov_replay["uuid"], 3, locked=True),
-            cam_pip(4),
+            fullscreen(
+                ov_broadcast["name"], ov_broadcast["uuid"], 4, visible=False, locked=True
+            ),
+            cam_pip_optional(5, visible=True),
+            cam2_pip_optional(6, visible=True),
         ],
     )
     scene_monitor = make_scene(
@@ -1265,8 +1473,13 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
             layout_single_monitor(
                 mon_center["name"], mon_center["uuid"], 1, roles["center"]
             ),
-            fullscreen(ov_replay["name"], ov_replay["uuid"], 2, locked=True),
-            cam_pip(3),
+            fullscreen(game["name"], game["uuid"], 2, visible=False),
+            fullscreen(ov_replay["name"], ov_replay["uuid"], 3, locked=True),
+            fullscreen(
+                ov_broadcast["name"], ov_broadcast["uuid"], 4, visible=False, locked=True
+            ),
+            cam_pip_optional(5, visible=True),
+            cam2_pip_optional(6, visible=True),
         ],
     )
     scene_video = None
@@ -1276,12 +1489,20 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
             [
                 fullscreen(race_video["name"], race_video["uuid"], 1),
                 fullscreen(ov_replay["name"], ov_replay["uuid"], 2, locked=True),
-                cam_pip(3),
+                fullscreen(
+                    ov_broadcast["name"],
+                    ov_broadcast["uuid"],
+                    3,
+                    visible=False,
+                    locked=True,
+                ),
+                cam_pip_optional(4, visible=True),
+                cam2_pip_optional(5, visible=True),
             ],
         )
 
     def items_replay_triple() -> list[dict]:
-        """iRacing + letterbox brand (REPLAY) + cam — Rec Triplo Live on replay pack."""
+        """iRacing + letterbox brand (REPLAY) + optional cam in bottom band."""
         return [
             layout_iracing_window(game["name"], game["uuid"], 1, roles),
             fullscreen(ov_triple_live["name"], ov_triple_live["uuid"], 2, locked=True),
@@ -1292,6 +1513,7 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
                 pos=(cam_triple_x, cam_triple_y),
                 scale=(cam_triple_scale, cam_triple_scale),
                 scale_ref=cam_ref,
+                visible=True,
             ),
         ]
 
@@ -1304,8 +1526,10 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
                 mon_center["uuid"],
                 1,
                 roles["center"],
+                visible=False,
                 locked=True,
             ),
+            fullscreen(game["name"], game["uuid"], 2, locked=True),
         ],
     )
     scene_rec_triple = make_scene(
@@ -1320,13 +1544,26 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
         "Rec Singolo Live",
         [
             layout_single_monitor(
-                mon_center["name"], mon_center["uuid"], 1, roles["center"]
+                mon_center["name"], mon_center["uuid"], 1, roles["center"], visible=False
             ),
-            fullscreen(ov_replay["name"], ov_replay["uuid"], 2, locked=True),
-            cam_pip(3),
+            fullscreen(game["name"], game["uuid"], 2),
+            fullscreen(ov_replay["name"], ov_replay["uuid"], 3, locked=True),
+            fullscreen(
+                ov_broadcast["name"], ov_broadcast["uuid"], 4, visible=False, locked=True
+            ),
+            cam_pip_optional(5, visible=True),
+            cam2_pip_optional(6, visible=True),
         ],
     )
-    scene_rec_triple_live = make_scene("Rec Triplo Live", items_replay_triple())
+    scene_rec_triple_live = make_scene(
+        "Rec Triplo Live",
+        [
+            *items_replay_triple(),
+            fullscreen(
+                ov_broadcast["name"], ov_broadcast["uuid"], 4, visible=False, locked=True
+            ),
+        ],
+    )
     scene_brb = make_scene(
         "BRB",
         [
@@ -1346,6 +1583,9 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
     music_sources = [s for s in (mus_soon, mus_brb, mus_end) if s is not None]
     sources = [
         cam,
+        cam2,
+        cam_bd_face,
+        cam_bd_2,
         mon_left,
         mon_center,
         mon_right,
@@ -1355,9 +1595,14 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
         ov_brb,
         ov_end,
         ov_replay,
+        ov_broadcast,
+        ov_cam_frame,
+        ov_cam_frame_2,
         ov_triple,
         ov_triple_live,
         *music_sources,
+        scene_cam_pip,
+        scene_cam2_pip,
         scene_soon,
         scene_iracing,
         scene_monitor,
@@ -1409,7 +1654,7 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
         "scaling_off_x": 0.0,
         "scaling_off_y": 0.0,
         "modules": {
-            "scripts-tool": [],
+            "scripts-tool": config_autostart_scripts(),
             "auto-scene-switcher": {
                 "interval": 300,
                 "non_matching_scene": "",
@@ -1445,13 +1690,470 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
     return out
 
 
+def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
+    """Marcato recording pack at 2560×1440 with brand overlays (ADR-007).
+
+    Overlay HTML stays designed at 1920×1080; Browser Sources are scaled by
+    4/3 onto the 2K canvas so graphics match the stream pack.
+    """
+    t0 = time.perf_counter()
+    overlays_dir = Path(overlays) if overlays else ROOT / "overlays-marcato"
+    roles = monitor_roles()
+    for label in ("left", "center", "right"):
+        mon = roles.get(label)
+        if mon:
+            log.info(
+                "rec2k monitor %s: %s %dx%d @%d,%d",
+                label,
+                mon.get("device") or mon.get("monitor_id") or "?",
+                mon["w"],
+                mon["h"],
+                mon["x"],
+                mon["y"],
+            )
+        else:
+            log.warning("rec2k monitor %s not detected — pick display in OBS", label)
+
+    design_w, design_h = 1920.0, 1080.0
+    scale_2k = REC_2K_W / design_w  # 4/3
+
+    with canvas_context(REC_2K_W, REC_2K_H, canvas_uuid=CANVAS_UUID_2K):
+        desktop = source_base(
+            "Desktop Audio",
+            "wasapi_output_capture",
+            {"device_id": "default"},
+            mixers=1,
+        )
+        mic = source_base(
+            "Mic/Aux",
+            "wasapi_input_capture",
+            {"device_id": MIC_ID},
+            mixers=2,
+        )
+        cam = dshow_cam("StreamCam", STREAMCAM_ID)
+        cam2 = dshow_cam("Cam 2", USBCAM_ID)
+        cam_bd_face = cam_carbon_backdrop(
+            "Cam Backdrop Face", width=360, height=202, marcato=True
+        )
+        cam_bd_2 = cam_carbon_backdrop(
+            "Cam Backdrop 2", width=320, height=180, marcato=True
+        )
+        mon_center = source_base(
+            "Monitor Centrale",
+            "monitor_capture",
+            monitor_capture_settings(roles["center"]),
+        )
+        game = source_base("Game Capture", "game_capture", iracing_capture_settings())
+
+        def browser(name: str, html: str, *, query: str = "") -> dict:
+            path = overlays_dir / html
+            url = file_url(path)
+            if query:
+                url = f"{url}?{query}"
+            return source_base(
+                name,
+                "browser_source",
+                {
+                    "url": url,
+                    "width": int(design_w),
+                    "height": int(design_h),
+                    "fps": 30,
+                    "shutdown": True,
+                    "restart_when_active": True,
+                    "webpage_control_level": 1,
+                },
+            )
+
+        ov_live = browser("Overlay Live Chrome", "live-chrome.html")
+        ov_broadcast = source_base(
+            "Overlay Broadcast Chrome",
+            "browser_source",
+            {
+                "url": overlay_http_url(overlays_dir, "broadcast-chrome.html"),
+                "width": int(design_w),
+                "height": int(design_h),
+                "fps": 30,
+                "shutdown": True,
+                "restart_when_active": True,
+                "webpage_control_level": 1,
+            },
+        )
+        ov_triple_live = browser(
+            "Overlay Triple Frame Live",
+            "triple-frame.html",
+            query="cam=1&badge=LIVE",
+        )
+        ov_cam_frame = browser("Overlay Cam Frame", "cam-frame.html")
+        ov_cam_frame_2 = browser("Overlay Cam 2 Frame", "cam-frame-2.html")
+
+        def overlay_fs(src: dict, item_id: int, *, locked: bool = True) -> dict:
+            """Place a 1920×1080 browser so it fills the 2K canvas."""
+            return scene_item(
+                src["name"],
+                src["uuid"],
+                item_id,
+                pos=(0.0, 0.0),
+                scale=(scale_2k, scale_2k),
+                locked=locked,
+                scale_ref=(design_w, design_h),
+            )
+
+        # Build Cam PIP nests in 1080 design space, then scale onto 2K canvas
+        cam_w1080, cam_h1080 = 360.0, 202.0
+        cam_x1080, cam_y1080 = 36.0, 1080.0 - 36.0 - cam_h1080
+        cam2_w1080, cam2_h1080 = 320.0, 180.0
+        cam2_x1080 = 1920.0 - 36.0 - cam2_w1080
+        cam2_y1080 = 1080.0 - 36.0 - cam2_h1080
+        with canvas_context(1920, 1080):
+            scene_cam_pip = make_scene(
+                "Cam PIP",
+                [
+                    scene_item(
+                        cam_bd_face["name"],
+                        cam_bd_face["uuid"],
+                        1,
+                        pos=(cam_x1080, cam_y1080),
+                        scale=(1.0, 1.0),
+                        scale_ref=(cam_w1080, cam_h1080),
+                        locked=True,
+                    ),
+                    scene_item(
+                        cam["name"],
+                        cam["uuid"],
+                        2,
+                        pos=(cam_x1080, cam_y1080),
+                        scale=(cam_w1080 / 1920.0, cam_w1080 / 1920.0),
+                        scale_ref=(1920.0, 1080.0),
+                    ),
+                    scene_item(
+                        ov_cam_frame["name"],
+                        ov_cam_frame["uuid"],
+                        3,
+                        pos=(0.0, 0.0),
+                        scale=(1.0, 1.0),
+                        locked=True,
+                        scale_ref=(1920.0, 1080.0),
+                    ),
+                ],
+            )
+            scene_cam2_pip = make_scene(
+                "Cam 2 PIP",
+                [
+                    scene_item(
+                        cam_bd_2["name"],
+                        cam_bd_2["uuid"],
+                        1,
+                        pos=(cam2_x1080, cam2_y1080),
+                        scale=(1.0, 1.0),
+                        scale_ref=(cam2_w1080, cam2_h1080),
+                        locked=True,
+                    ),
+                    scene_item(
+                        cam2["name"],
+                        cam2["uuid"],
+                        2,
+                        pos=(cam2_x1080, cam2_y1080),
+                        scale=(cam2_w1080 / 1920.0, cam2_w1080 / 1920.0),
+                        scale_ref=(1920.0, 1080.0),
+                    ),
+                    scene_item(
+                        ov_cam_frame_2["name"],
+                        ov_cam_frame_2["uuid"],
+                        3,
+                        pos=(0.0, 0.0),
+                        scale=(1.0, 1.0),
+                        locked=True,
+                        scale_ref=(1920.0, 1080.0),
+                    ),
+                ],
+            )
+
+        def cam_pip_item(item_id: int, *, visible: bool = True) -> dict:
+            return scene_item(
+                scene_cam_pip["name"],
+                scene_cam_pip["uuid"],
+                item_id,
+                pos=(0.0, 0.0),
+                scale=(scale_2k, scale_2k),
+                scale_ref=(design_w, design_h),
+                visible=visible,
+            )
+
+        def cam2_pip_item(item_id: int, *, visible: bool = True) -> dict:
+            return scene_item(
+                scene_cam2_pip["name"],
+                scene_cam2_pip["uuid"],
+                item_id,
+                pos=(0.0, 0.0),
+                scale=(scale_2k, scale_2k),
+                scale_ref=(design_w, design_h),
+                visible=visible,
+            )
+
+        # Design-space triple cam slot (1080 pack) → scaled to 2K
+        triple_cam_x_1080 = (
+            (design_w - _TRIPLE_INNER_W) / 2.0 + _TRIPLE_INNER_W - _TRIPLE_CAM_W
+        )
+        triple_band_1080 = (design_h - _TRIPLE_SAFE_H) / 2.0
+        triple_cam_y_1080 = (
+            design_h
+            - triple_band_1080
+            + max(0.0, (triple_band_1080 - _TRIPLE_CAM_H) / 2.0)
+        )
+
+        def cam_triple_item(item_id: int, *, visible: bool = True) -> dict:
+            # Face cam only in triple band; Cam 2 stays optional PIP
+            cam_w = _TRIPLE_CAM_W * scale_2k
+            return scene_item(
+                cam["name"],
+                cam["uuid"],
+                item_id,
+                pos=(triple_cam_x_1080 * scale_2k, triple_cam_y_1080 * scale_2k),
+                scale=(cam_w / 1920.0, cam_w / 1920.0),
+                scale_ref=(1920.0, 1080.0),
+                visible=visible,
+            )
+
+        def game_triple_live_item(item_id: int) -> dict:
+            band_h = _TRIPLE_SAFE_H * scale_2k
+            band_y = triple_band_1080 * scale_2k
+            item = scene_item(
+                game["name"],
+                game["uuid"],
+                item_id,
+                pos=(0.0, band_y),
+                scale=(1.0, 1.0),
+                scale_ref=(float(CANVAS_W), float(CANVAS_H)),
+                bounds=(float(CANVAS_W), band_h),
+                bounds_type=_BOUNDS_SCALE_OUTER,
+            )
+            item["bounds_crop"] = True
+            return item
+
+        # Clean recording (no graphics)
+        scene_rec_single = make_scene(
+            "Rec Singolo",
+            [
+                layout_single_monitor(
+                    mon_center["name"],
+                    mon_center["uuid"],
+                    1,
+                    roles["center"],
+                    visible=False,
+                    locked=True,
+                ),
+                scene_item(
+                    game["name"],
+                    game["uuid"],
+                    2,
+                    pos=(0.0, 0.0),
+                    scale=(1.0, 1.0),
+                    locked=True,
+                    scale_ref=(float(CANVAS_W), float(CANVAS_H)),
+                    bounds=(float(CANVAS_W), float(CANVAS_H)),
+                    bounds_type=_BOUNDS_SCALE_OUTER,
+                ),
+            ],
+        )
+        scene_rec_single["settings"]["items"][1]["bounds_crop"] = True
+        scene_rec_triple = make_scene(
+            "Rec Triplo",
+            [
+                scene_item(
+                    game["name"],
+                    game["uuid"],
+                    1,
+                    pos=(0.0, 0.0),
+                    scale=(1.0, 1.0),
+                    locked=True,
+                    scale_ref=(float(CANVAS_W), float(CANVAS_H)),
+                    bounds=(float(CANVAS_W), float(CANVAS_H)),
+                    bounds_type=_BOUNDS_SCALE_OUTER,
+                ),
+            ],
+        )
+        scene_rec_triple["settings"]["items"][0]["bounds_crop"] = True
+
+        # With brand graphics + optional StreamCam (eye).
+        # Lua sync: StreamCam hidden → overlay ?cam=0 → lower-third bottom-left.
+        # Game Capture primary; Monitor Centrale as eye-toggle fallback.
+        scene_rec_single_live = make_scene(
+            "Rec Singolo Live",
+            [
+                layout_single_monitor(
+                    mon_center["name"],
+                    mon_center["uuid"],
+                    1,
+                    roles["center"],
+                    visible=False,
+                ),
+                scene_item(
+                    game["name"],
+                    game["uuid"],
+                    2,
+                    pos=(0.0, 0.0),
+                    scale=(1.0, 1.0),
+                    scale_ref=(float(CANVAS_W), float(CANVAS_H)),
+                    bounds=(float(CANVAS_W), float(CANVAS_H)),
+                    bounds_type=_BOUNDS_SCALE_OUTER,
+                ),
+                overlay_fs(ov_live, 3),
+                scene_item(
+                    ov_broadcast["name"],
+                    ov_broadcast["uuid"],
+                    4,
+                    pos=(0.0, 0.0),
+                    scale=(scale_2k, scale_2k),
+                    locked=True,
+                    visible=False,
+                    scale_ref=(design_w, design_h),
+                ),
+                cam_pip_item(5, visible=True),
+                cam2_pip_item(6, visible=True),
+            ],
+        )
+        scene_rec_single_live["settings"]["items"][1]["bounds_crop"] = True
+        scene_rec_triple_live = make_scene(
+            "Rec Triplo Live",
+            [
+                game_triple_live_item(1),
+                overlay_fs(ov_triple_live, 2),
+                scene_item(
+                    ov_broadcast["name"],
+                    ov_broadcast["uuid"],
+                    3,
+                    pos=(0.0, 0.0),
+                    scale=(scale_2k, scale_2k),
+                    locked=True,
+                    visible=False,
+                    scale_ref=(design_w, design_h),
+                ),
+                cam_triple_item(4, visible=True),
+                cam2_pip_item(5, visible=True),
+            ],
+        )
+
+        sources = [
+            cam,
+            cam2,
+            cam_bd_face,
+            cam_bd_2,
+            mon_center,
+            game,
+            ov_live,
+            ov_broadcast,
+            ov_triple_live,
+            ov_cam_frame,
+            ov_cam_frame_2,
+            scene_cam_pip,
+            scene_cam2_pip,
+            scene_rec_single,
+            scene_rec_triple,
+            scene_rec_single_live,
+            scene_rec_triple_live,
+        ]
+        collection = {
+            "name": "S.Marcato Rec 2K",
+            "DesktopAudioDevice1": desktop,
+            "AuxAudioDevice1": mic,
+            "sources": sources,
+            "groups": [],
+            "scene_order": [
+                {"name": "Rec Singolo"},
+                {"name": "Rec Triplo"},
+                {"name": "Rec Singolo Live"},
+                {"name": "Rec Triplo Live"},
+            ],
+            "current_scene": "Rec Singolo Live",
+            "current_program_scene": "Rec Singolo Live",
+            "canvases": [],
+            "current_transition": "Dissolvenza",
+            "transition_duration": 300,
+            "transitions": [],
+            "quick_transitions": [
+                {
+                    "name": "Taglio",
+                    "duration": 0,
+                    "hotkeys": [],
+                    "id": 1,
+                    "fade_to_black": False,
+                },
+                {
+                    "name": "Dissolvenza",
+                    "duration": 300,
+                    "hotkeys": [],
+                    "id": 2,
+                    "fade_to_black": False,
+                },
+            ],
+            "saved_projectors": [],
+            "preview_locked": False,
+            "scaling_enabled": False,
+            "scaling_level": 0,
+            "scaling_off_x": 0.0,
+            "scaling_off_y": 0.0,
+            "modules": {
+                "scripts-tool": config_autostart_scripts(),
+                "auto-scene-switcher": {
+                    "interval": 300,
+                    "non_matching_scene": "",
+                    "switch_if_not_matching": False,
+                    "active": False,
+                    "switches": [],
+                },
+            },
+            "resolution": {"x": CANVAS_W, "y": CANVAS_H},
+            "version": 2,
+        }
+
+        out = OBS_DIR / "S_Marcato_Rec_2K.json"
+        out.write_text(json.dumps(collection, indent=4), encoding="utf-8")
+        log.info(
+            "rec 2K collection written to %s (%d sources, %dx%d, overlays scaled ×%.3f) in %.0f ms",
+            out,
+            len(collection["sources"]),
+            CANVAS_W,
+            CANVAS_H,
+            scale_2k,
+            (time.perf_counter() - t0) * 1000,
+        )
+        return out
+
+
+def install_rec_2k_profile() -> Path:
+    """Copy obs/profiles/Rec_2K into %APPDATA%/obs-studio/basic/profiles/."""
+    src = OBS_DIR / "profiles" / "Rec_2K"
+    dest = Path.home() / "AppData/Roaming/obs-studio/basic/profiles/Rec_2K"
+    if not src.is_dir():
+        raise FileNotFoundError(src)
+    dest.mkdir(parents=True, exist_ok=True)
+    for name in ("basic.ini", "recordEncoder.json", "streamEncoder.json"):
+        f = src / name
+        if f.is_file():
+            (dest / name).write_bytes(f.read_bytes())
+    # Prefer user's Videos folder when present
+    videos = Path.home() / "Videos"
+    ini = dest / "basic.ini"
+    if videos.is_dir() and ini.is_file():
+        text = ini.read_text(encoding="utf-8")
+        text = text.replace("C:\\\\Users\\\\Public\\\\Videos", str(videos).replace("\\", "\\\\"))
+        ini.write_text(text, encoding="utf-8")
+    log.info("OBS profile installed: %s", dest)
+    return dest
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate OBS scene collection and optional logo PNG.")
     parser.add_argument(
         "--profile",
         choices=("pigreco", "marcato"),
         default="pigreco",
-        help="pigreco: PiGreco_Racing.json + logo sync; marcato: S_Marcato_42.json + Replay",
+        help="pigreco: PiGreco_Racing.json + logo sync; marcato: S_Marcato_42 + Replay + Rec 2K",
+    )
+    parser.add_argument(
+        "--install-rec-2k-profile",
+        action="store_true",
+        help="Copy obs/profiles/Rec_2K into OBS AppData profiles",
     )
     args = parser.parse_args()
 
@@ -1470,6 +2172,9 @@ def main() -> None:
         outputs.append(scene.name)
         replay = build_replay_collection(overlays=ROOT / "overlays-marcato")
         outputs.append(replay.name)
+        rec2k = build_rec_2k_collection(overlays=ROOT / "overlays-marcato")
+        outputs.append(rec2k.name)
+        install_rec_2k_profile()
     else:
         log.info("start generating PiGreco OBS pack")
         ASSETS.mkdir(parents=True, exist_ok=True)
@@ -1477,6 +2182,9 @@ def main() -> None:
         logo_name = logo.name
         scene = build_collection(profile="pigreco")
         outputs.append(scene.name)
+
+    if args.install_rec_2k_profile and args.profile != "marcato":
+        install_rec_2k_profile()
 
     elapsed = (time.perf_counter() - started) * 1000
     log.info(
