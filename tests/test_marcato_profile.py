@@ -200,6 +200,7 @@ def test_marcato_replay_collection():
         assert "Overlay Broadcast Chrome" in names
     ov_bc = next(s for s in data["sources"] if s.get("name") == "Overlay Broadcast Chrome")
     assert "broadcast-chrome.html" in ov_bc.get("settings", {}).get("url", "")
+    assert ov_bc["settings"]["url"].startswith("http://127.0.0.1:8766/o/marcato/")
     # Eye off by default until bridge + telemetryEnabled
     for scene_name in ("Replay iRacing", "Rec Singolo Live", "Rec Triplo Live"):
         scene = next(s for s in data["sources"] if s.get("name") == scene_name)
@@ -259,18 +260,21 @@ def test_marcato_rec_2k_collection():
     assert "Live Race" not in names
     rec_single = next(s for s in data["sources"] if s.get("name") == "Rec Singolo")
     items = rec_single["settings"]["items"]
-    assert len(items) == 1
-    assert items[0]["name"] == "Monitor Centrale"
-    assert abs(items[0]["scale"]["x"] - 1.0) < 1e-6
+    assert [it["name"] for it in items] == ["Monitor Centrale", "Game Capture"]
+    assert items[0].get("visible") is False
+    assert items[1].get("visible") is True
 
     live = next(s for s in data["sources"] if s.get("name") == "Rec Singolo Live")
     live_names = [it.get("name") for it in live["settings"]["items"]]
     assert live_names == [
         "Monitor Centrale",
+        "Game Capture",
         "Overlay Live Chrome",
         "Overlay Broadcast Chrome",
         "StreamCam",
     ]
+    assert live["settings"]["items"][0].get("visible") is False
+    assert live["settings"]["items"][1].get("visible") is True
     ov_item = next(it for it in live["settings"]["items"] if it["name"] == "Overlay Live Chrome")
     # 1920 overlay scaled 4/3 onto 2560 canvas
     assert abs(ov_item["scale"]["x"] - (2560 / 1920)) < 1e-9

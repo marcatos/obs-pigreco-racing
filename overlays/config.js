@@ -49,7 +49,7 @@ window.PIGRECO_CONFIG = {
       "src": "assets/official/gosetups.png"
     }
   ],
-  "telemetryEnabled": false,
+  "telemetryEnabled": true,
   "telemetryWsUrl": "ws://127.0.0.1:8765",
   "broadcastLeaderboard": true,
   "broadcastRelative": true,

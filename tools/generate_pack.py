@@ -66,6 +66,20 @@ def file_url(path: Path) -> str:
     return path.resolve().as_uri()
 
 
+# OBS Browser Source + WebSocket: CEF often blocks ws:// from file:// pages.
+# Serve telecronaca HTML via the local config server instead.
+CONFIG_HTTP_BASE = "http://127.0.0.1:8766"
+
+
+def overlay_http_url(overlays_dir: Path, html: str, *, query: str = "") -> str:
+    """URL under config_server /o/<pack>/… (marcato | overlays)."""
+    pack = "marcato" if overlays_dir.name == "overlays-marcato" else "overlays"
+    url = f"{CONFIG_HTTP_BASE}/o/{pack}/{html.lstrip('/')}"
+    if query:
+        url = f"{url}?{query.lstrip('?')}"
+    return url
+
+
 def discover_monitors() -> list[dict]:
     """Return attached monitors sorted left→right with OBS monitor_id when available."""
 
@@ -837,11 +851,12 @@ def build_collection(
         "Live Singolo",
         [
             fullscreen(mon_single["name"], mon_single["uuid"], 1),
-            fullscreen(ov_live["name"], ov_live["uuid"], 2, locked=True),
+            fullscreen(game["name"], game["uuid"], 2, visible=False),
+            fullscreen(ov_live["name"], ov_live["uuid"], 3, locked=True),
             scene_item(
                 cam["name"],
                 cam["uuid"],
-                3,
+                4,
                 pos=(cam_x, cam_y),
                 scale=(cam_scale, cam_scale),
                 scale_ref=cam_ref,
@@ -879,8 +894,10 @@ def build_collection(
                 mon_center["uuid"],
                 1,
                 roles["center"],
+                visible=False,
                 locked=True,
             ),
+            fullscreen(game["name"], game["uuid"], 2, locked=True),
         ],
     )
     scene_rec_triple = make_scene(
@@ -936,12 +953,14 @@ def build_collection(
                 mon_center["uuid"],
                 1,
                 roles["center"],
+                visible=False,
             ),
-            fullscreen(ov_live["name"], ov_live["uuid"], 2, locked=True),
+            fullscreen(game["name"], game["uuid"], 2),
+            fullscreen(ov_live["name"], ov_live["uuid"], 3, locked=True),
             scene_item(
                 cam["name"],
                 cam["uuid"],
-                3,
+                4,
                 pos=(cam_x, cam_y),
                 scale=(cam_scale, cam_scale),
                 scale_ref=cam_ref,
@@ -1182,8 +1201,20 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
     ov_end = browser("Overlay Ending", "ending.html")
     # cam=0: riquadro CAM non duplicato (sta nella nested scene Cam PIP)
     ov_replay = browser("Overlay Replay Chrome", "replay-chrome.html", query="cam=0")
-    # Telecronaca (P3-02): single full-frame source; eye off by default until bridge+config
-    ov_broadcast = browser("Overlay Broadcast Chrome", "broadcast-chrome.html")
+    # Telecronaca (P3-02): HTTP URL so OBS CEF can open the telemetry WebSocket
+    ov_broadcast = source_base(
+        "Overlay Broadcast Chrome",
+        "browser_source",
+        {
+            "url": overlay_http_url(overlays_dir, "broadcast-chrome.html"),
+            "width": CANVAS_W,
+            "height": CANVAS_H,
+            "fps": 30,
+            "shutdown": True,
+            "restart_when_active": True,
+            "webpage_control_level": 1,
+        },
+    )
     ov_cam_frame = browser("Overlay Cam Frame", "cam-frame.html")
     ov_triple = browser("Overlay Triple Frame", "triple-frame.html", query="badge=REPLAY")
     ov_triple_live = browser(
@@ -1337,11 +1368,12 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
             layout_single_monitor(
                 mon_center["name"], mon_center["uuid"], 1, roles["center"]
             ),
-            fullscreen(ov_replay["name"], ov_replay["uuid"], 2, locked=True),
+            fullscreen(game["name"], game["uuid"], 2, visible=False),
+            fullscreen(ov_replay["name"], ov_replay["uuid"], 3, locked=True),
             fullscreen(
-                ov_broadcast["name"], ov_broadcast["uuid"], 3, visible=False, locked=True
+                ov_broadcast["name"], ov_broadcast["uuid"], 4, visible=False, locked=True
             ),
-            cam_pip_optional(4, visible=True),
+            cam_pip_optional(5, visible=True),
         ],
     )
     scene_video = None
@@ -1387,8 +1419,10 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
                 mon_center["uuid"],
                 1,
                 roles["center"],
+                visible=False,
                 locked=True,
             ),
+            fullscreen(game["name"], game["uuid"], 2, locked=True),
         ],
     )
     scene_rec_triple = make_scene(
@@ -1403,13 +1437,14 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
         "Rec Singolo Live",
         [
             layout_single_monitor(
-                mon_center["name"], mon_center["uuid"], 1, roles["center"]
+                mon_center["name"], mon_center["uuid"], 1, roles["center"], visible=False
             ),
-            fullscreen(ov_replay["name"], ov_replay["uuid"], 2, locked=True),
+            fullscreen(game["name"], game["uuid"], 2),
+            fullscreen(ov_replay["name"], ov_replay["uuid"], 3, locked=True),
             fullscreen(
-                ov_broadcast["name"], ov_broadcast["uuid"], 3, visible=False, locked=True
+                ov_broadcast["name"], ov_broadcast["uuid"], 4, visible=False, locked=True
             ),
-            cam_pip_optional(4, visible=True),
+            cam_pip_optional(5, visible=True),
         ],
     )
     scene_rec_triple_live = make_scene(
@@ -1618,7 +1653,19 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
             )
 
         ov_live = browser("Overlay Live Chrome", "live-chrome.html")
-        ov_broadcast = browser("Overlay Broadcast Chrome", "broadcast-chrome.html")
+        ov_broadcast = source_base(
+            "Overlay Broadcast Chrome",
+            "browser_source",
+            {
+                "url": overlay_http_url(overlays_dir, "broadcast-chrome.html"),
+                "width": int(design_w),
+                "height": int(design_h),
+                "fps": 30,
+                "shutdown": True,
+                "restart_when_active": True,
+                "webpage_control_level": 1,
+            },
+        )
         ov_triple_live = browser(
             "Overlay Triple Frame Live",
             "triple-frame.html",
@@ -1698,10 +1745,23 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
                     mon_center["uuid"],
                     1,
                     roles["center"],
+                    visible=False,
                     locked=True,
+                ),
+                scene_item(
+                    game["name"],
+                    game["uuid"],
+                    2,
+                    pos=(0.0, 0.0),
+                    scale=(1.0, 1.0),
+                    locked=True,
+                    scale_ref=(float(CANVAS_W), float(CANVAS_H)),
+                    bounds=(float(CANVAS_W), float(CANVAS_H)),
+                    bounds_type=_BOUNDS_SCALE_OUTER,
                 ),
             ],
         )
+        scene_rec_single["settings"]["items"][1]["bounds_crop"] = True
         scene_rec_triple = make_scene(
             "Rec Triplo",
             [
@@ -1722,6 +1782,7 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
 
         # With brand graphics + optional StreamCam (eye).
         # Lua sync: StreamCam hidden → overlay ?cam=0 → lower-third bottom-left.
+        # Game Capture primary; Monitor Centrale as eye-toggle fallback.
         scene_rec_single_live = make_scene(
             "Rec Singolo Live",
             [
@@ -1730,21 +1791,33 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
                     mon_center["uuid"],
                     1,
                     roles["center"],
+                    visible=False,
                 ),
-                overlay_fs(ov_live, 2),
+                scene_item(
+                    game["name"],
+                    game["uuid"],
+                    2,
+                    pos=(0.0, 0.0),
+                    scale=(1.0, 1.0),
+                    scale_ref=(float(CANVAS_W), float(CANVAS_H)),
+                    bounds=(float(CANVAS_W), float(CANVAS_H)),
+                    bounds_type=_BOUNDS_SCALE_OUTER,
+                ),
+                overlay_fs(ov_live, 3),
                 scene_item(
                     ov_broadcast["name"],
                     ov_broadcast["uuid"],
-                    3,
+                    4,
                     pos=(0.0, 0.0),
                     scale=(scale_2k, scale_2k),
                     locked=True,
                     visible=False,
                     scale_ref=(design_w, design_h),
                 ),
-                cam_pip_item(4, visible=True),
+                cam_pip_item(5, visible=True),
             ],
         )
+        scene_rec_single_live["settings"]["items"][1]["bounds_crop"] = True
         scene_rec_triple_live = make_scene(
             "Rec Triplo Live",
             [

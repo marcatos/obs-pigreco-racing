@@ -13,6 +13,38 @@
   display: none !important;
 }
 
+/* Always-visible status chip so file:// / WS failures are obvious in OBS */
+.bc-status {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9;
+  padding: 0.25rem 0.7rem;
+  font-family: var(--font-display);
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text);
+  background: color-mix(in srgb, var(--panel, #111) 92%, transparent);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.14));
+  border-top: 2px solid var(--accent, #00c400);
+  pointer-events: none;
+}
+
+.broadcast-root[data-state="live"] .bc-status {
+  opacity: 0;
+  transition: opacity 400ms ease;
+}
+
+.broadcast-root[data-state="connecting"] .bc-status,
+.broadcast-root[data-state="reconnecting"] .bc-status,
+.broadcast-root[data-state="idle"] .bc-status,
+.broadcast-root[data-state="error"] .bc-status,
+.broadcast-root[data-state="unsupported"] .bc-status {
+  opacity: 1;
+}
+
 .broadcast-root[data-state="connecting"] .bc-leaderboard,
 .broadcast-root[data-state="reconnecting"] .bc-leaderboard,
 .broadcast-root[data-state="idle"] .bc-focus {

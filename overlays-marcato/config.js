@@ -33,7 +33,7 @@ window.PIGRECO_CONFIG = {
   "sponsorsEnabled": false,
   "sponsorLabel": "",
   "sponsors": [],
-  "telemetryEnabled": false,
+  "telemetryEnabled": true,
   "telemetryWsUrl": "ws://127.0.0.1:8765",
   "broadcastLeaderboard": true,
   "broadcastRelative": true,

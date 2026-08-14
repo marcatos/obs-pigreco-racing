@@ -5,8 +5,11 @@ S.Marcato — Registrazione 2K (2560×1440)
 
 Scene
 - Rec Singolo / Rec Triplo     clean (niente grafiche)
-- Rec Singolo Live             monitor + chrome S.Marcato + cam
+- Rec Singolo Live             Game Capture (+ Monitor occhio off) + chrome + cam
 - Rec Triplo Live              iRacing + bande brand + cam
+
+Su Rec Singolo / Rec Singolo Live: **Game Capture** e' attivo di default;
+**Monitor Centrale** resta in lista (occhio) come fallback desktop.
 
 Cam PIP (opzionale)
 - Nella lista Sources, occhio su **StreamCam** per mostrare/nascondere la webcam.
@@ -24,6 +27,8 @@ Per lo stream: torna al profilo 1080 + collezione S.Marcato 42 / Replay.
 
 Telecronaca (opzionale)
 - Source **Overlay Broadcast Chrome** sulle scene Rec * Live (occhio off di default).
-- Bridge esterno: python adapters/telemetry/iracing_bridge.py
-- Attiva telemetryEnabled nel pannello config.
+- URL source (obbligatoria): http://127.0.0.1:8766/o/marcato/broadcast-chrome.html
+  (serve Start-ConfigPanel / config server; non usare file://)
+- Bridge: Start-Telemetry.bat iracing
+- telemetryEnabled nel pannello config (?profile=marcato)
 - Guida: docs/TELEMETRY_BROADCAST.md

@@ -3,7 +3,7 @@
     "DesktopAudioDevice1": {
         "prev_ver": 536936450,
         "name": "Desktop Audio",
-        "uuid": "91bd3561-8c1f-476b-a831-b8ba2db97aa0",
+        "uuid": "e0978d50-0e4f-456e-be12-b2d4f07d2000",
         "id": "wasapi_output_capture",
         "versioned_id": "wasapi_output_capture",
         "settings": {
@@ -29,7 +29,7 @@
     "AuxAudioDevice1": {
         "prev_ver": 536936450,
         "name": "Mic/Aux",
-        "uuid": "d24ceae3-abe3-4ffa-9a20-4904a638d9fa",
+        "uuid": "b7747c30-92cb-40e5-b7fb-b392afaede96",
         "id": "wasapi_input_capture",
         "versioned_id": "wasapi_input_capture",
         "settings": {
@@ -56,7 +56,7 @@
         {
             "prev_ver": 536936450,
             "name": "StreamCam",
-            "uuid": "8669a656-6f40-4314-8dc9-e143c3fdfb35",
+            "uuid": "f7ea93c4-0c58-454b-b1d2-a68c52c1aa30",
             "id": "dshow_input",
             "versioned_id": "dshow_input",
             "settings": {
@@ -84,7 +84,7 @@
         {
             "prev_ver": 536936450,
             "name": "Monitor Centrale",
-            "uuid": "f8daf1ba-5dbd-43d8-9e58-1f17585ddd5d",
+            "uuid": "7d9b3558-3d0d-448a-a80b-928ac9ac3073",
             "id": "monitor_capture",
             "versioned_id": "monitor_capture",
             "settings": {
@@ -112,7 +112,7 @@
         {
             "prev_ver": 536936450,
             "name": "Game Capture",
-            "uuid": "2d4567e6-45e3-4b66-966b-9c31f3cdf82f",
+            "uuid": "7a7da41b-e0fa-4d14-8609-30cdf001f373",
             "id": "game_capture",
             "versioned_id": "game_capture",
             "settings": {
@@ -142,7 +142,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Live Chrome",
-            "uuid": "7725e0a6-917c-4b30-ade4-2fb4cacff19a",
+            "uuid": "f2563e29-0007-483f-87bb-a235d9b293ad",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -174,11 +174,11 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Broadcast Chrome",
-            "uuid": "0a92fd34-6d51-4ccb-8302-358d2cee98ec",
+            "uuid": "da79ae60-6ef9-49cd-8162-db32118bdd33",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
-                "url": "file:///C:/Users/simot/Documents/Projects/obs-pigreco-racing/overlays-marcato/broadcast-chrome.html",
+                "url": "http://127.0.0.1:8766/o/marcato/broadcast-chrome.html",
                 "width": 1920,
                 "height": 1080,
                 "fps": 30,
@@ -206,7 +206,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Triple Frame Live",
-            "uuid": "2dee46a1-784a-41ff-9e0e-09888c78761c",
+            "uuid": "a6f58c7e-13d6-49b0-a80f-31d4d1710577",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -238,17 +238,17 @@
         {
             "prev_ver": 536936450,
             "name": "Rec Singolo",
-            "uuid": "707840e1-a1e0-47f0-89f4-b4ef5d070e73",
+            "uuid": "dca2f781-d6f3-477e-815e-3919b3c423b7",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
-                "id_counter": 1,
+                "id_counter": 2,
                 "custom_size": false,
                 "items": [
                     {
                         "name": "Monitor Centrale",
-                        "source_uuid": "f8daf1ba-5dbd-43d8-9e58-1f17585ddd5d",
-                        "visible": true,
+                        "source_uuid": "7d9b3558-3d0d-448a-a80b-928ac9ac3073",
+                        "visible": false,
                         "locked": true,
                         "rot": 0.0,
                         "scale_ref": {
@@ -299,6 +299,61 @@
                             "duration": 300
                         },
                         "private_settings": {}
+                    },
+                    {
+                        "name": "Game Capture",
+                        "source_uuid": "7a7da41b-e0fa-4d14-8609-30cdf001f373",
+                        "visible": true,
+                        "locked": true,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 2560.0,
+                            "y": 1440.0
+                        },
+                        "align": 5,
+                        "bounds_type": 3,
+                        "bounds_align": 0,
+                        "bounds_crop": true,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 2,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 2560.0,
+                            "y": 1440.0
+                        },
+                        "bounds_rel": {
+                            "x": 3.5555555555555554,
+                            "y": 2.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
                     }
                 ]
             },
@@ -316,7 +371,9 @@
             "hotkeys": {
                 "OBSBasic.SelectScene": [],
                 "libobs.show_scene_item.1": [],
-                "libobs.hide_scene_item.1": []
+                "libobs.hide_scene_item.1": [],
+                "libobs.show_scene_item.2": [],
+                "libobs.hide_scene_item.2": []
             },
             "deinterlace_mode": 0,
             "deinterlace_field_order": 0,
@@ -327,7 +384,7 @@
         {
             "prev_ver": 536936450,
             "name": "Rec Triplo",
-            "uuid": "5bcdf8be-2a4a-4180-86fa-81d65c2923b0",
+            "uuid": "50be1bf0-c516-4ecb-9d7c-1bd4e32d0d2d",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -336,7 +393,7 @@
                 "items": [
                     {
                         "name": "Game Capture",
-                        "source_uuid": "2d4567e6-45e3-4b66-966b-9c31f3cdf82f",
+                        "source_uuid": "7a7da41b-e0fa-4d14-8609-30cdf001f373",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -416,17 +473,17 @@
         {
             "prev_ver": 536936450,
             "name": "Rec Singolo Live",
-            "uuid": "1a2adcc1-15df-4eb4-bcc8-3fb0b814efce",
+            "uuid": "4a1bbf7f-f1a4-415f-a47d-ec2495253703",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
-                "id_counter": 4,
+                "id_counter": 5,
                 "custom_size": false,
                 "items": [
                     {
                         "name": "Monitor Centrale",
-                        "source_uuid": "f8daf1ba-5dbd-43d8-9e58-1f17585ddd5d",
-                        "visible": true,
+                        "source_uuid": "7d9b3558-3d0d-448a-a80b-928ac9ac3073",
+                        "visible": false,
                         "locked": false,
                         "rot": 0.0,
                         "scale_ref": {
@@ -479,19 +536,19 @@
                         "private_settings": {}
                     },
                     {
-                        "name": "Overlay Live Chrome",
-                        "source_uuid": "7725e0a6-917c-4b30-ade4-2fb4cacff19a",
+                        "name": "Game Capture",
+                        "source_uuid": "7a7da41b-e0fa-4d14-8609-30cdf001f373",
                         "visible": true,
-                        "locked": true,
+                        "locked": false,
                         "rot": 0.0,
                         "scale_ref": {
-                            "x": 1920.0,
-                            "y": 1080.0
+                            "x": 2560.0,
+                            "y": 1440.0
                         },
                         "align": 5,
-                        "bounds_type": 0,
+                        "bounds_type": 3,
                         "bounds_align": 0,
-                        "bounds_crop": false,
+                        "bounds_crop": true,
                         "crop_left": 0,
                         "crop_top": 0,
                         "crop_right": 0,
@@ -507,20 +564,20 @@
                             "y": -1.0
                         },
                         "scale": {
-                            "x": 1.3333333333333333,
-                            "y": 1.3333333333333333
+                            "x": 1.0,
+                            "y": 1.0
                         },
                         "scale_rel": {
                             "x": 1.0,
                             "y": 1.0
                         },
                         "bounds": {
-                            "x": 0.0,
-                            "y": 0.0
+                            "x": 2560.0,
+                            "y": 1440.0
                         },
                         "bounds_rel": {
-                            "x": 0.0,
-                            "y": 0.0
+                            "x": 3.5555555555555554,
+                            "y": 2.0
                         },
                         "scale_filter": "disable",
                         "blend_method": "default",
@@ -534,9 +591,9 @@
                         "private_settings": {}
                     },
                     {
-                        "name": "Overlay Broadcast Chrome",
-                        "source_uuid": "0a92fd34-6d51-4ccb-8302-358d2cee98ec",
-                        "visible": false,
+                        "name": "Overlay Live Chrome",
+                        "source_uuid": "f2563e29-0007-483f-87bb-a235d9b293ad",
+                        "visible": true,
                         "locked": true,
                         "rot": 0.0,
                         "scale_ref": {
@@ -589,8 +646,63 @@
                         "private_settings": {}
                     },
                     {
+                        "name": "Overlay Broadcast Chrome",
+                        "source_uuid": "da79ae60-6ef9-49cd-8162-db32118bdd33",
+                        "visible": false,
+                        "locked": true,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 4,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.3333333333333333,
+                            "y": 1.3333333333333333
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
                         "name": "StreamCam",
-                        "source_uuid": "8669a656-6f40-4314-8dc9-e143c3fdfb35",
+                        "source_uuid": "f7ea93c4-0c58-454b-b1d2-a68c52c1aa30",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -606,7 +718,7 @@
                         "crop_top": 0,
                         "crop_right": 0,
                         "crop_bottom": 0,
-                        "id": 4,
+                        "id": 5,
                         "group_item_backup": false,
                         "pos": {
                             "x": 48.0,
@@ -665,7 +777,9 @@
                 "libobs.show_scene_item.3": [],
                 "libobs.hide_scene_item.3": [],
                 "libobs.show_scene_item.4": [],
-                "libobs.hide_scene_item.4": []
+                "libobs.hide_scene_item.4": [],
+                "libobs.show_scene_item.5": [],
+                "libobs.hide_scene_item.5": []
             },
             "deinterlace_mode": 0,
             "deinterlace_field_order": 0,
@@ -676,7 +790,7 @@
         {
             "prev_ver": 536936450,
             "name": "Rec Triplo Live",
-            "uuid": "322def20-bf2b-4b7f-b730-bb58495e5c48",
+            "uuid": "3841b67d-3d4d-49c1-9a76-af99fd88394a",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -685,7 +799,7 @@
                 "items": [
                     {
                         "name": "Game Capture",
-                        "source_uuid": "2d4567e6-45e3-4b66-966b-9c31f3cdf82f",
+                        "source_uuid": "7a7da41b-e0fa-4d14-8609-30cdf001f373",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -740,7 +854,7 @@
                     },
                     {
                         "name": "Overlay Triple Frame Live",
-                        "source_uuid": "2dee46a1-784a-41ff-9e0e-09888c78761c",
+                        "source_uuid": "a6f58c7e-13d6-49b0-a80f-31d4d1710577",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -795,7 +909,7 @@
                     },
                     {
                         "name": "Overlay Broadcast Chrome",
-                        "source_uuid": "0a92fd34-6d51-4ccb-8302-358d2cee98ec",
+                        "source_uuid": "da79ae60-6ef9-49cd-8162-db32118bdd33",
                         "visible": false,
                         "locked": true,
                         "rot": 0.0,
@@ -850,7 +964,7 @@
                     },
                     {
                         "name": "StreamCam",
-                        "source_uuid": "8669a656-6f40-4314-8dc9-e143c3fdfb35",
+                        "source_uuid": "f7ea93c4-0c58-454b-b1d2-a68c52c1aa30",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,

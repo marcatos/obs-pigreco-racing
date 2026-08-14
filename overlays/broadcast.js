@@ -34,6 +34,13 @@
   const elRel = root.querySelector("[data-bc-rel-rows]");
   const elFocus = root.querySelector("[data-bc-focus]");
   const elBanner = root.querySelector("[data-bc-flag-banner]");
+  const elStatus = root.querySelector("[data-bc-status]");
+
+  function setStatus(text) {
+    if (elStatus) elStatus.textContent = text;
+  }
+
+  setStatus("CONNECTING " + url);
 
   function fmtMs(ms) {
     if (ms == null || !Number.isFinite(Number(ms))) return "—";
@@ -186,12 +193,15 @@
   function connect() {
     if (typeof WebSocket === "undefined") {
       root.dataset.state = "unsupported";
+      setStatus("WEBSOCKET UNSUPPORTED");
       return;
     }
     try {
+      setStatus("CONNECTING " + url);
       socket = new WebSocket(url);
     } catch (_) {
       root.dataset.state = "error";
+      setStatus("WS ERROR");
       scheduleReconnect();
       return;
     }
@@ -199,6 +209,7 @@
     socket.addEventListener("open", function () {
       retryMs = 1000;
       root.dataset.state = "live";
+      setStatus("LIVE");
     });
 
     socket.addEventListener("message", function (ev) {
@@ -210,18 +221,23 @@
       }
       if (!msg || typeof msg !== "object") return;
       if (msg.type === "telemetry.tick") {
+        root.dataset.state = "live";
+        setStatus("LIVE");
         render(msg);
       } else if (msg.type === "telemetry.status" && msg.connected === false) {
         root.dataset.state = "idle";
+        setStatus("SIM DISCONNECTED");
       }
     });
 
     socket.addEventListener("close", function () {
       root.dataset.state = "reconnecting";
+      setStatus("RECONNECTING…");
       scheduleReconnect();
     });
 
     socket.addEventListener("error", function () {
+      setStatus("WS ERROR — use http:// URL not file://");
       try {
         socket.close();
       } catch (_) {

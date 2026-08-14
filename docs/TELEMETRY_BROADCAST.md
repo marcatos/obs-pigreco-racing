@@ -46,7 +46,14 @@ Do **not** autostart the bridge from OBS scripting (console flash / fragile Pyth
 | S.Marcato Replay | Replay *, Rec * Live | Overlay Broadcast Chrome (eye **off** by default) |
 | S.Marcato Rec 2K | Rec * Live | same (scaled ×4/3) |
 
-One full-frame Browser Source (`broadcast-chrome.html`) — not five separate widgets.
+**URL obbligatoria** (non `file://` — CEF/OBS spesso non apre il WebSocket da file locali):
+
+```
+http://127.0.0.1:8766/o/marcato/broadcast-chrome.html
+```
+
+Serve il **config server** acceso (`Start-ConfigPanel.bat` o script Lua in OBS).  
+One full-frame Browser Source — not five separate widgets.
 
 ## Config keys
 
