@@ -116,11 +116,14 @@ def test_marcato_collection_urls():
     assert "overlays/starting-soon.html" not in text.replace("\\\\", "/")
 
 
-def test_marcato_collection_uses_move_transition():
+def test_marcato_collection_uses_dissolvenza_transition():
     path = ROOT / "obs" / "S_Marcato_42.json"
     data = json.loads(path.read_text(encoding="utf-8"))
-    assert data.get("current_transition") == "S.Marcato Move"
-    assert data.get("transition_duration") == 650
+    assert data.get("current_transition") == "Dissolvenza"
+    assert data.get("transition_duration") == 900
+    fades = [t for t in data.get("transitions", []) if t.get("id") == "fade_transition"]
+    assert len(fades) == 1
+    assert fades[0]["name"] == "Dissolvenza"
     moves = [t for t in data.get("transitions", []) if t.get("id") == "move_transition"]
     assert len(moves) == 1
     assert moves[0]["name"] == "S.Marcato Move"
@@ -129,6 +132,11 @@ def test_marcato_collection_uses_move_transition():
     assert settings.get("name_number_match") is True
     assert settings.get("position_in") == (1 << 1) | (1 << 2)  # EDGE|LEFT
     assert settings.get("position_out") == (1 << 1) | (1 << 3)  # EDGE|RIGHT
+    by_name = {s.get("name"): s for s in data.get("sources", []) if s.get("id") == "scene"}
+    for scene_name in ("Live", "Ending"):
+        ps = by_name[scene_name].get("private_settings") or {}
+        assert ps.get("transition") == "S.Marcato Stinger"
+        assert ps.get("transition_duration") == 850
 
 
 def test_pigreco_collection_uses_move_transition():
