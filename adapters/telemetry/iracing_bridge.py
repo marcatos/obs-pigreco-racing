@@ -30,6 +30,7 @@ HERE = Path(__file__).resolve().parent
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
+from domain_enrich import apply_pos_change, delta_best_ms  # noqa: E402
 from domain_standings import build_relatives, standings_from_cars  # noqa: E402
 
 SCHEMA_VERSION = 1
@@ -40,6 +41,7 @@ SERVER_NAME = "pigreco-telemetry-iracing"
 DEFAULT_JSON_PATH = HERE / "telemetry.json"
 
 log = logging.getLogger("pigreco.telemetry.iracing")
+_prev_pos_by_car: dict = {}
 
 # SessionFlags bits (subset)
 _FLAG_CHECKERED = 0x00000001
@@ -89,6 +91,22 @@ def _flag_name(session_flags: int | None) -> str:
     return "none"
 
 
+# iRacing uses 32767 (INT16 max) for "unlimited / N/A" remaining laps
+_LAPS_REMAIN_SENTINEL = 32000
+
+
+def _sanitize_laps_remain(val: Any) -> int | None:
+    if val is None:
+        return None
+    try:
+        n = int(val)
+    except (TypeError, ValueError):
+        return None
+    if n < 0 or n >= _LAPS_REMAIN_SENTINEL:
+        return None
+    return n
+
+
 def _session_kind(session_type: str | None) -> str:
     if not session_type:
         return "unknown"
@@ -112,6 +130,15 @@ def _safe_get(ir: Any, key: str, default: Any = None) -> Any:
         return default
 
 
+def _num_or_none(v: Any) -> float | None:
+    try:
+        if v is None:
+            return None
+        return float(v)
+    except (TypeError, ValueError):
+        return None
+
+
 def _driver_map(ir: Any) -> dict[int, dict[str, Any]]:
     out: dict[int, dict[str, Any]] = {}
     try:
@@ -129,18 +156,29 @@ def _driver_map(ir: Any) -> dict[int, dict[str, Any]]:
         if d.get("CarIsPaceCar") or d.get("CarIsAI") and d.get("UserName") == "Pace Car":
             if d.get("CarIsPaceCar"):
                 continue
+        irating_raw = d.get("IRating")
+        if irating_raw is None:
+            irating_raw = d.get("iRating")
+        irating = None
+        if irating_raw is not None:
+            try:
+                irating = int(irating_raw)
+            except (TypeError, ValueError):
+                irating = None
         out[idx] = {
             "carIdx": idx,
             "name": d.get("UserName") or d.get("AbbrevName") or "",
             "carNumber": str(d.get("CarNumber") or d.get("CarNumberRaw") or ""),
             "class": d.get("CarClassShortName") or d.get("CarClassStr") or None,
             "carName": d.get("CarScreenName") or d.get("CarPath") or None,
+            "iRating": irating,
         }
     return out
 
 
 def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
     """Return a telemetry.tick dict, or None if not connected / no data."""
+    global _prev_pos_by_car
     if not getattr(ir, "is_initialized", False) or not getattr(ir, "is_connected", False):
         return None
 
@@ -162,9 +200,20 @@ def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
         class_pos = _safe_get(ir, "CarIdxClassPosition", []) or []
         last_laps = _safe_get(ir, "CarIdxLastLapTime", []) or []
         best_laps = _safe_get(ir, "CarIdxBestLapTime", []) or []
+        pit_flags = _safe_get(ir, "CarIdxOnPitRoad", []) or []
 
         drivers = _driver_map(ir)
         n = max(len(laps), len(dists), len(positions))
+        pit_by_idx: dict[int, bool] = {}
+        for i, flag in enumerate(pit_flags):
+            try:
+                pit_by_idx[i] = bool(flag)
+            except (TypeError, ValueError):
+                continue
+        if focus_idx not in pit_by_idx:
+            on_pit = _safe_get(ir, "OnPitRoad", None)
+            if on_pit is not None:
+                pit_by_idx[focus_idx] = bool(on_pit)
         cars: list[dict[str, Any]] = []
         official_valid = 0
         for i in range(n):
@@ -239,6 +288,14 @@ def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
             use_official_pos=use_official,
             est_lap_ms=est_lap,
         )
+        standings, _prev_pos_by_car = apply_pos_change(standings, _prev_pos_by_car)
+        for r in standings:
+            idx = r.get("carIdx")
+            if idx in pit_by_idx:
+                r["inPit"] = pit_by_idx[idx]
+            info = drivers.get(idx) if idx is not None else None
+            if info is not None and "iRating" in info:
+                r["iRating"] = info.get("iRating")
         relatives = build_relatives(standings, focus_car_idx=focus_idx, window=2)
 
         focus_row = next((r for r in standings if r.get("carIdx") == focus_idx), None)
@@ -335,20 +392,38 @@ def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
             except (TypeError, ValueError):
                 pass
 
+        session_kind = _session_kind(session_type)
+        flag = _flag_name(session_flags)
+        # Replay / quiet SDK often reports 0 flags — treat active sessions as green
+        if flag == "none" and session_kind in ("race", "practice", "quali", "cooldown"):
+            flag = "green"
+
+        last_ms = focus_row.get("lastLapMs") if focus_row else None
+        best_ms = focus_row.get("bestLapMs") if focus_row else None
+        track_temp = _safe_get(ir, "TrackTemp", None)
+        if track_temp is None:
+            track_temp = _safe_get(ir, "TrackTempCrew", None)
+
         return _envelope(
             "telemetry.tick",
-            session=_session_kind(session_type),
+            session=session_kind,
             sessionTimeMs=session_time_ms,
             position=focus_row.get("pos") if focus_row else None,
             positionOf=len(standings) or None,
             gapAheadMs=gap_ahead,
             gapBehindMs=gap_behind,
-            lastLapMs=focus_row.get("lastLapMs") if focus_row else None,
-            bestLapMs=focus_row.get("bestLapMs") if focus_row else None,
+            lastLapMs=last_ms,
+            bestLapMs=best_ms,
+            deltaBestMs=delta_best_ms(last_ms, best_ms),
+            inPit=pit_by_idx.get(focus_idx),
+            iRating=focus_info.get("iRating"),
+            airTempC=_num_or_none(_safe_get(ir, "AirTemp", None)),
+            trackTempC=_num_or_none(track_temp),
+            sof=None,
             currentLapMs=None,
             lap=lap_focus if lap_focus is not None else race_laps,
             lapsTotal=None,
-            flag=_flag_name(session_flags),
+            flag=flag,
             trackName=track_name,
             carName=focus_info.get("carName"),
             speedKph=speed_kph,
@@ -362,7 +437,7 @@ def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
             focusCarNumber=focus_info.get("carNumber")
             or (focus_row.get("carNumber") if focus_row else None),
             focusClassPosition=class_p or (focus_row.get("pos") if focus_row else None),
-            sessionLapsRemain=int(laps_remain) if isinstance(laps_remain, (int, float)) and laps_remain >= 0 else None,
+            sessionLapsRemain=_sanitize_laps_remain(laps_remain),
             sessionTimeRemainMs=session_remain_ms,
             standings=standings,
             relatives=relatives,
@@ -399,8 +474,50 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument("--hz", type=float, default=DEFAULT_HZ)
     p.add_argument("--also-file", action="store_true", help="Also write telemetry.json")
     p.add_argument("--json-path", type=Path, default=DEFAULT_JSON_PATH)
+    p.add_argument(
+        "--ibt",
+        action="store_true",
+        help=(
+            "Ask iRacing to record native .ibt disk telemetry "
+            "(Documents/iRacing/telemetry). Optional; off by default."
+        ),
+    )
+    p.add_argument(
+        "--ibt-dir",
+        type=Path,
+        default=None,
+        help="Override folder to log for IBT output (sim still writes to its default)",
+    )
     p.add_argument("--log-level", default="INFO")
     return p.parse_args(argv)
+
+
+def default_ibt_dir() -> Path:
+    docs = Path.home() / "Documents" / "iRacing" / "telemetry"
+    return docs
+
+
+def ibt_start(ir: Any, irsdk_mod: Any, *, ibt_dir: Path) -> bool:
+    """Broadcast TelemCommand.start so the sim writes a native .ibt file."""
+    try:
+        ir.telem_command(irsdk_mod.TelemCommandMode.start)
+        log.info(
+            "IBT recording START requested — files land under %s "
+            "(sim records while in-car; replay/spectator may skip)",
+            ibt_dir,
+        )
+        return True
+    except Exception as exc:  # noqa: BLE001
+        log.warning("IBT start failed: %s", exc)
+        return False
+
+
+def ibt_stop(ir: Any, irsdk_mod: Any) -> None:
+    try:
+        ir.telem_command(irsdk_mod.TelemCommandMode.stop)
+        log.info("IBT recording STOP requested")
+    except Exception as exc:  # noqa: BLE001
+        log.warning("IBT stop failed: %s", exc)
 
 
 def _try_import_irsdk():
@@ -484,13 +601,18 @@ async def async_main(args: argparse.Namespace) -> int:
     started = time.perf_counter()
     ticks = 0
     connected_logged = False
+    ibt_armed = False
+    ibt_dir = (args.ibt_dir or default_ibt_dir()).expanduser().resolve()
 
     log.info(
-        "iRacing bridge starting ws://%s:%d hz=%.1f",
+        "iRacing bridge starting ws://%s:%d hz=%.1f ibt=%s",
         args.host,
         args.port,
         args.hz,
+        bool(args.ibt),
     )
+    if args.ibt:
+        log.info("IBT folder (sim-managed): %s", ibt_dir)
 
     async with serve(handler, args.host, args.port):
         while not stop.is_set():
@@ -499,6 +621,9 @@ async def async_main(args: argparse.Namespace) -> int:
                 if not ir.startup():
                     if connected_logged:
                         log.warning("iRacing disconnected")
+                        if ibt_armed:
+                            ibt_stop(ir, irsdk)
+                            ibt_armed = False
                         connected_logged = False
                         status = _envelope(
                             "telemetry.status",
@@ -518,8 +643,16 @@ async def async_main(args: argparse.Namespace) -> int:
                     continue
 
             if not connected_logged:
-                log.info("iRacing connected (replay=%s)", bool(_safe_get(ir, "IsReplayPlaying", False)))
+                is_replay = bool(_safe_get(ir, "IsReplayPlaying", False))
+                log.info("iRacing connected (replay=%s)", is_replay)
                 connected_logged = True
+                if args.ibt and not ibt_armed:
+                    if is_replay:
+                        log.warning(
+                            "IBT: replay session — disk telem often empty; "
+                            "prefer live in-car for Motec/IBT files"
+                        )
+                    ibt_armed = ibt_start(ir, irsdk, ibt_dir=ibt_dir)
 
             tick = build_tick_from_ir(ir)
             if tick is None:
@@ -545,12 +678,16 @@ async def async_main(args: argparse.Namespace) -> int:
             elapsed_ms = (time.perf_counter() - t0) * 1000
             if ticks == 1 or ticks % max(1, int(args.hz * 5)) == 0:
                 log.info(
-                    "tick #%d clients=%d pos=%s field=%s replay=%s build=%.1fms",
+                    "tick #%d clients=%d pos=%s field=%s replay=%s "
+                    "delta=%s pit=%s ir=%s build=%.1fms",
                     ticks,
                     len(clients),
                     tick.get("position"),
                     tick.get("positionOf"),
                     tick.get("isReplay"),
+                    tick.get("deltaBestMs"),
+                    tick.get("inPit"),
+                    tick.get("iRating"),
                     elapsed_ms,
                 )
 
@@ -558,6 +695,10 @@ async def async_main(args: argparse.Namespace) -> int:
                 await asyncio.wait_for(stop.wait(), timeout=interval)
             except asyncio.TimeoutError:
                 pass
+
+    if ibt_armed:
+        ibt_stop(ir, irsdk)
+        ibt_armed = False
 
     total_s = time.perf_counter() - started
     log.info(

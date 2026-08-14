@@ -81,6 +81,16 @@ def test_standings_from_distance_replay_order():
     assert any(r["rel"] == 0 for r in rel)
 
 
+def test_sanitize_laps_remain_sentinel():
+    from iracing_bridge import _sanitize_laps_remain
+
+    assert _sanitize_laps_remain(32767) is None
+    assert _sanitize_laps_remain(32000) is None
+    assert _sanitize_laps_remain(12) == 12
+    assert _sanitize_laps_remain(-1) is None
+    assert _sanitize_laps_remain(None) is None
+
+
 def test_build_tick_enrichment_fields():
     tick = build_tick(5.0)
     assert "deltaBestMs" in tick
