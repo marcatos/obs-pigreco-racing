@@ -43,7 +43,71 @@ DEFAULT_JSON_PATH = HERE / "telemetry.json"
 
 log = logging.getLogger("pigreco.telemetry.iracing")
 _prev_pos_by_car: dict = {}
+_last_focus_car_idx: Any = None
+_last_session_time_ms: int | None = None
 detector = EventDetector(sensitivity="normal")
+SESSION_BACKJUMP_MS = 1000
+
+
+def continuity_broke(
+    prev_focus: Any,
+    prev_session_ms: Any,
+    focus: Any,
+    session_ms: Any,
+    *,
+    backjump_ms: int = SESSION_BACKJUMP_MS,
+) -> bool:
+    """True on camera cut or a meaningful session-time rewind (replay seek)."""
+    if prev_focus is not None and focus is not None and focus != prev_focus:
+        return True
+    if (
+        isinstance(prev_session_ms, (int, float))
+        and isinstance(session_ms, (int, float))
+        and (prev_session_ms - session_ms) >= backjump_ms
+    ):
+        return True
+    return False
+
+
+def reset_continuity() -> None:
+    """Clear event + pos-change memory (disconnect / invalid tick)."""
+    global _prev_pos_by_car, _last_focus_car_idx, _last_session_time_ms
+    had_state = (
+        detector._prev is not None
+        or bool(_prev_pos_by_car)
+        or _last_focus_car_idx is not None
+    )
+    detector.reset()
+    _prev_pos_by_car = {}
+    _last_focus_car_idx = None
+    _last_session_time_ms = None
+    if had_state:
+        log.info("continuity reset detector and pos-change map")
+
+
+def note_tick_continuity(*, focus_car_idx: Any, session_time_ms: Any) -> bool:
+    """Reset detector + pos map on camera cut or session rewind. Returns True if reset."""
+    global _prev_pos_by_car, _last_focus_car_idx, _last_session_time_ms
+    broke = continuity_broke(
+        _last_focus_car_idx,
+        _last_session_time_ms,
+        focus_car_idx,
+        session_time_ms,
+    )
+    if broke:
+        detector.reset()
+        _prev_pos_by_car = {}
+        log.info(
+            "continuity reset focusCarIdx %s→%s sessionTimeMs %s→%s",
+            _last_focus_car_idx,
+            focus_car_idx,
+            _last_session_time_ms,
+            session_time_ms,
+        )
+    _last_focus_car_idx = focus_car_idx
+    if isinstance(session_time_ms, (int, float)):
+        _last_session_time_ms = int(session_time_ms)
+    return broke
 
 # SessionFlags bits (subset)
 _FLAG_CHECKERED = 0x00000001
@@ -275,6 +339,15 @@ def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
                 }
             )
 
+        session_time = _safe_get(ir, "SessionTime", None)
+        session_time_ms = None
+        if session_time is not None:
+            try:
+                session_time_ms = int(float(session_time) * 1000)
+            except (TypeError, ValueError):
+                pass
+        note_tick_continuity(focus_car_idx=focus_idx, session_time_ms=session_time_ms)
+
         # Prefer official positions only when enough cars have them and not in replay
         use_official = (not is_replay) and official_valid >= max(2, len(cars) // 2)
         est_lap = 90000.0
@@ -318,7 +391,6 @@ def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
             else int(standings[focus_i + 1].get("intervalMs") or 0)
         )
 
-        session_time = _safe_get(ir, "SessionTime", None)
         session_remain = _safe_get(ir, "SessionTimeRemain", None)
         laps_remain = _safe_get(ir, "SessionLapsRemainEx", None)
         if laps_remain is None:
@@ -370,12 +442,6 @@ def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
             except (TypeError, ValueError):
                 pass
 
-        session_time_ms = None
-        if session_time is not None:
-            try:
-                session_time_ms = int(float(session_time) * 1000)
-            except (TypeError, ValueError):
-                pass
         session_remain_ms = None
         if session_remain is not None:
             try:
@@ -630,6 +696,7 @@ async def async_main(args: argparse.Namespace) -> int:
                 if not ir.startup():
                     if connected_logged:
                         log.warning("iRacing disconnected")
+                        reset_continuity()
                         if ibt_armed:
                             ibt_stop(ir, irsdk)
                             ibt_armed = False
@@ -665,6 +732,7 @@ async def async_main(args: argparse.Namespace) -> int:
 
             tick = build_tick_from_ir(ir)
             if tick is None:
+                reset_continuity()
                 try:
                     await asyncio.wait_for(stop.wait(), timeout=interval)
                 except asyncio.TimeoutError:

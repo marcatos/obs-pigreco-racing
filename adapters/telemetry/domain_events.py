@@ -29,6 +29,12 @@ class EventDetector:
         self._sens_name = key
         self._cfg = SENSITIVITY[key]
 
+    def reset(self) -> None:
+        """Drop consecutive-tick state. Keep sensitivity / config."""
+        self._prev = None
+        self._battle_streak = 0
+        self._last_emit_ms = {}
+
     def feed(self, tick: dict[str, Any], *, now_ms: int | None = None) -> list[dict[str, Any]]:
         ts = int(now_ms if now_ms is not None else tick.get("ts") or 0)
         out: list[dict[str, Any]] = []
@@ -140,15 +146,18 @@ class EventDetector:
             if e:
                 found.append(e)
 
-        ppit = bool(prev.get("inPit"))
-        cpit = bool(tick.get("inPit"))
-        if cpit and not ppit:
-            e = self._emit("pit", ts, {"state": "enter"}, debounce_key="pit:enter")
-            if e:
-                found.append(e)
-        elif ppit and not cpit:
-            e = self._emit("pit", ts, {"state": "exit"}, debounce_key="pit:exit")
-            if e:
-                found.append(e)
+        ppit = prev.get("inPit")
+        cpit = tick.get("inPit")
+        if ppit is not None and cpit is not None:
+            was_pit = bool(ppit)
+            now_pit = bool(cpit)
+            if now_pit and not was_pit:
+                e = self._emit("pit", ts, {"state": "enter"}, debounce_key="pit:enter")
+                if e:
+                    found.append(e)
+            elif was_pit and not now_pit:
+                e = self._emit("pit", ts, {"state": "exit"}, debounce_key="pit:exit")
+                if e:
+                    found.append(e)
 
         return found

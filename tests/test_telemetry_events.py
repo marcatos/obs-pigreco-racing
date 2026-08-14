@@ -120,3 +120,94 @@ def test_mock_and_bridge_accept_sensitivity_flag():
     assert bridge_default.sensitivity == "normal"
     bridge_calm = bridge_parse(["--sensitivity", "calm"])
     assert bridge_calm.sensitivity == "calm"
+
+
+def test_reset_clears_stale_prev_no_spurious_events():
+    d = EventDetector(sensitivity="hype")
+    d.feed(_tick(flag="green", position=5, ts=1))
+    ev = d.feed(_tick(flag="yellow", position=4, ts=2))
+    assert any(e["kind"] == "flag_change" for e in ev)
+    assert any(e["kind"] == "overtake" for e in ev)
+    d.reset()
+    assert d._sens_name == "hype"
+    # Same flag/pos as last tick must not fire from leftover _prev
+    assert d.feed(_tick(flag="yellow", position=4, ts=100)) == []
+    ev2 = d.feed(_tick(flag="green", position=3, ts=101))
+    assert any(e["kind"] == "flag_change" for e in ev2)
+    assert any(e["kind"] == "overtake" for e in ev2)
+
+
+def test_reset_clears_battle_streak_and_debounce():
+    d = EventDetector(sensitivity="hype")  # battle_ticks=3
+    d.feed(_tick(gapAheadMs=400, ts=1))
+    d.feed(_tick(gapAheadMs=400, ts=2))
+    d.reset()
+    assert d.feed(_tick(gapAheadMs=400, ts=3)) == []
+    d.feed(_tick(flag="green", ts=10))
+    d.feed(_tick(flag="yellow", ts=11))
+    d.reset()
+    d.feed(_tick(flag="green", ts=12))
+    ev = d.feed(_tick(flag="yellow", ts=13))
+    assert any(e["kind"] == "flag_change" for e in ev)
+
+
+def test_in_pit_none_is_unknown_no_edge():
+    d = EventDetector()
+    d.feed(_tick(inPit=True, ts=50))
+    assert not any(e["kind"] == "pit" for e in d.feed(_tick(inPit=None, ts=51)))
+    assert not any(e["kind"] == "pit" for e in d.feed(_tick(inPit=True, ts=52)))
+    d.feed(_tick(inPit=False, ts=53))
+    ev = d.feed(_tick(inPit=True, ts=54))
+    assert any(e["kind"] == "pit" and e["payload"]["state"] == "enter" for e in ev)
+
+
+def test_continuity_broke_on_focus_change_and_rewind():
+    from iracing_bridge import SESSION_BACKJUMP_MS, continuity_broke
+
+    assert continuity_broke(3, 1000, 7, 1100) is True
+    assert continuity_broke(3, 1000, 3, 1100) is False
+    assert continuity_broke(None, None, 3, 1000) is False
+    rewind = 5000 - SESSION_BACKJUMP_MS
+    assert continuity_broke(3, 5000, 3, rewind) is True
+    assert continuity_broke(3, 5000, 3, 4900) is False
+
+
+def test_reset_continuity_clears_detector_and_pos_map():
+    import iracing_bridge as br
+
+    br.detector.feed(_tick(flag="green", position=5, ts=1))
+    br._prev_pos_by_car = {1: 3}
+    br._last_focus_car_idx = 9
+    br._last_session_time_ms = 12_000
+    br.reset_continuity()
+    try:
+        assert br.detector._prev is None
+        assert br._prev_pos_by_car == {}
+        assert br._last_focus_car_idx is None
+        assert br._last_session_time_ms is None
+        assert br.detector.feed(_tick(flag="green", position=5, ts=2)) == []
+    finally:
+        br.reset_continuity()
+
+
+def test_note_tick_continuity_resets_on_camera_cut():
+    import iracing_bridge as br
+
+    br.reset_continuity()
+    try:
+        br.detector.feed(_tick(flag="green", position=5, ts=1, focusCarIdx=3))
+        br._prev_pos_by_car = {3: 5}
+        br.note_tick_continuity(focus_car_idx=3, session_time_ms=1000)
+        assert br.note_tick_continuity(focus_car_idx=8, session_time_ms=1100) is True
+        assert br.detector._prev is None
+        assert br._prev_pos_by_car == {}
+        assert br.detector.feed(_tick(flag="green", position=2, ts=3, focusCarIdx=8)) == []
+    finally:
+        br.reset_continuity()
+
+
+def test_bridge_wires_continuity_reset_on_disconnect():
+    src = (ROOT / "adapters" / "telemetry" / "iracing_bridge.py").read_text(encoding="utf-8")
+    assert "reset_continuity()" in src
+    assert "note_tick_continuity(" in src
+    assert "tick is None" in src or "if tick is None" in src
