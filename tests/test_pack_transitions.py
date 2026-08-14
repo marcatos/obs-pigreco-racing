@@ -34,3 +34,15 @@ def test_apply_scene_transition_override_sets_private_settings():
     )
     assert scene["private_settings"]["transition"] == "S.Marcato Stinger"
     assert scene["private_settings"]["transition_duration"] == 850
+
+
+def test_override_helper_idempotent():
+    scene = gp.make_scene("Ending", [])
+    gp.apply_scene_transition_override(
+        scene, transition_name="S.Marcato Stinger", duration_ms=850
+    )
+    gp.apply_scene_transition_override(
+        scene, transition_name="S.Marcato Stinger", duration_ms=850
+    )
+    assert scene["private_settings"]["transition"] == "S.Marcato Stinger"
+    assert scene["private_settings"]["transition_duration"] == 850

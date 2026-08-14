@@ -1375,7 +1375,7 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
                 "local_file": str(path.resolve()),
                 "looping": True,
                 "restart_on_activate": True,
-                "close_when_inactive": True,
+                "close_when_inactive": False,
                 "clear_on_media_end": False,
                 "hw_decode": False,
                 "speed_percent": 100,
@@ -1599,6 +1599,13 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
         ],
     )
 
+    apply_scene_transition_override(
+        scene_live, transition_name="S.Marcato Stinger", duration_ms=850
+    )
+    apply_scene_transition_override(
+        scene_end, transition_name="S.Marcato Stinger", duration_ms=850
+    )
+
     music_sources = [s for s in (mus_soon, mus_lobby, mus_brb, mus_end) if s is not None]
     if music_sources:
         log.info("live music beds: %s", ", ".join(s["name"] for s in music_sources))
@@ -1679,13 +1686,38 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
     collection["transitions"] = transitions
     collection["current_transition"] = current_tr
     collection["transition_duration"] = tr_dur
-    collection["quick_transitions"] = [
-        {"name": "Taglio", "duration": 0, "hotkeys": [], "id": 1, "fade_to_black": False},
-        {"name": current_tr, "duration": tr_dur, "hotkeys": [], "id": 2, "fade_to_black": False},
-        {"name": "Swipe Racing", "duration": 420, "hotkeys": [], "id": 3, "fade_to_black": False},
-        {"name": "Flash Carbon", "duration": 280, "hotkeys": [], "id": 4, "fade_to_black": False},
-        {"name": "Dissolvenza", "duration": 350, "hotkeys": [], "id": 5, "fade_to_black": False},
+    transition_names = {t["name"] for t in transitions}
+    quick_transitions = [
+        {
+            "name": "Dissolvenza",
+            "duration": tr_dur,
+            "hotkeys": [],
+            "id": 1,
+            "fade_to_black": False,
+        },
     ]
+    next_id = 2
+    if "S.Marcato Stinger" in transition_names:
+        quick_transitions.append(
+            {
+                "name": "S.Marcato Stinger",
+                "duration": 850,
+                "hotkeys": [],
+                "id": next_id,
+                "fade_to_black": False,
+            }
+        )
+        next_id += 1
+    quick_transitions.append(
+        {
+            "name": "Taglio",
+            "duration": 0,
+            "hotkeys": [],
+            "id": next_id,
+            "fade_to_black": False,
+        }
+    )
+    collection["quick_transitions"] = quick_transitions
     log.info("default transition=%s (%d ms), %d transitions", current_tr, tr_dur, len(transitions))
 
     out = OBS_DIR / "S_Marcato_42.json"
@@ -1857,7 +1889,7 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
                 "local_file": str(path.resolve()),
                 "looping": True,
                 "restart_on_activate": True,
-                "close_when_inactive": True,
+                "close_when_inactive": False,
                 "clear_on_media_end": False,
                 "hw_decode": False,
                 "speed_percent": 100,
