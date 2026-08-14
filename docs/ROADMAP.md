@@ -45,6 +45,7 @@ Update this file when claiming or finishing an ID.
 | P3-03 | Minimap / track map | later | |
 | P3-04 | Auto scene on flags | later | obs-websocket |
 | P3-05 | Audio buses + VOD track guide | ready | docs + OBS profile notes |
+| P3-06 | Broadcast director + tick enrichment | in_progress | spec 2026-08-14; hybrid auto/manual moments |
 
 ## Phase 4 — Team distribution
 
@@ -57,7 +58,7 @@ Update this file when claiming or finishing an ID.
 
 ## Suggested next agent claims
 
-1. `P1-04` Dual cam layout (second dshow + hotkey)  
+1. `P3-06` Broadcast director + tick enrichment (in progress)  
 2. `P2-03` hotkey map + Stream Deck  
 3. `P3-03` minimap (later) / `P3-05` audio buses + VOD track guide  
 4. Showcase PNG for broadcast chrome when widgets are stable on stream  
