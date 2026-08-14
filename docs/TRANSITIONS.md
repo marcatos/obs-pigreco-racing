@@ -1,6 +1,11 @@
 # Transizioni scena OBS
 
-Il cambio scena di default usa **Move Transition** (plugin Exeldro): le source presenti in entrambe le scene (es. `StreamCam`) si morfano in posizione/scala; quelle che spariscono escono animate; quelle nuove entrano animate (~650 ms).
+Il default dipende dal profilo collection:
+
+- **S.Marcato 42:** **Dissolvenza 900 ms** — crossfade audio-aware su tutto il mix (bed, Desktop, mic).
+- **PiGreco Racing:** **PiGreco Move** (plugin Exeldro, ~650 ms) — morph posizione/scala sulle source matched; appearing/disappearing animate.
+
+Move (Exeldro) resta disponibile su entrambi i profili come transizione opzionale; vedi preset sotto.
 
 ## Prerequisito: plugin Move
 
@@ -13,14 +18,23 @@ Senza il plugin, OBS non caricherà la transizione Move nella collection.
 
 ## S.Marcato 42
 
+Default collection transition: **Dissolvenza 900 ms** — full mix crossfade (beds, Desktop, mic dissolve together; no hard audio cut mid-fade).
+
 | Transizione | Tipo | Note |
 |-------------|------|------|
-| **S.Marcato Move** (default) | Move | Matched morph; appear da sinistra; disappear a destra |
-| S.Marcato Stinger | Stinger WebM | Alternativa brand (dual-blade + whoosh) |
+| **Dissolvenza** (default) | Fade | 900 ms; audio-aware crossfade |
+| **S.Marcato Stinger** | Stinger WebM | Override **→ Live** and **→ Ending** (dual-blade + Opus whoosh) |
+| S.Marcato Move | Move | Opzionale (matched morph racing preset) |
 | Swipe Racing | Swipe | |
 | Slide Racing | Slide | |
 | Flash Carbon | Fade to color | Flash sul carbon |
-| Dissolvenza / Taglio | Built-in | |
+| Taglio | Cut | Emergency / quick hard-cut |
+
+**Quick transitions** (dock Transizioni): Dissolvenza · Stinger · Taglio.
+
+Scene **transition overrides** (set by `generate_pack.py --profile marcato`): switching **to Live** or **to Ending** uses **S.Marcato Stinger** instead of Dissolvenza.
+
+> **Monitoring:** judge crossfades from **stream or recording**, not headphones alone — OBS “Monitor only” may not mirror the full mix fade.
 
 Asset stinger: `overlays-marcato/stinger/marcato-stinger.webm`  
 Rigenera stinger: `python tools/generate_stinger.py --profile marcato --with-whoosh`
@@ -51,7 +65,7 @@ python tools/generate_pack.py --profile marcato
 # chiudi OBS, copia obs\S_Marcato_42.json in %APPDATA%\obs-studio\basic\scenes\
 ```
 
-In OBS: dock **Transizioni scene** → deve risultare selezionato **S.Marcato Move** (o PiGreco Move). Prova Starting Soon → Live Race: la cam deve spostarsi tra le due layout; overlay e game entrano/escono.
+In OBS: dock **Transizioni scene** → **Dissolvenza** (900 ms) per Marcato; **PiGreco Move** per PiGreco. Prova Starting Soon → Lobby → Live: beds crossfade on Dissolvenza; Live/Ending use Stinger + whoosh.
 
 ### Alternativa stinger
 

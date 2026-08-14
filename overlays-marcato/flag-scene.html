@@ -3,58 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Flag Scene — S.Marcato</title>
-  <link rel="stylesheet" href="assets/theme.css" />
-  <style>
-    html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; }
-    .flag-stage {
-      width: 1920px; height: 1080px;
-      display: flex; align-items: center; justify-content: center;
-      flex-direction: column; gap: 28px;
-      background: #08080a;
-    }
-    .flag-stage[data-flag="yellow"] { background: #1a1600; }
-    .flag-stage[data-flag="red"] { background: #1a0608; }
-    .flag-stage[data-flag="checkered"] {
-      background:
-        repeating-conic-gradient(#0a0a0c 0% 25%, #e8e8ea 0% 50%) 0 0 / 96px 96px;
-    }
-    .flag-bar {
-      width: 70%; height: 22px;
-      background: var(--accent, #c41e3a);
-    }
-    .flag-stage[data-flag="yellow"] .flag-bar { background: #f5d90a; }
-    .flag-stage[data-flag="red"] .flag-bar { background: #e5484d; }
-    .flag-stage[data-flag="checkered"] .flag-bar { background: #fff; }
-    .flag-label {
-      font-size: 96px; font-weight: 800; letter-spacing: 0.18em;
-      color: #fff; text-transform: uppercase;
-      text-shadow: 0 4px 24px rgba(0,0,0,0.55);
-    }
-    .flag-sub {
-      font-size: 22px; letter-spacing: 0.28em;
-      color: #b8bcc2;
-      text-transform: uppercase;
-    }
-  </style>
+  <title>Flag FX — S.Marcato</title>
+  <link rel="stylesheet" href="assets/flag-fx.css" />
 </head>
 <body>
-  <div class="flag-stage" data-flag-stage>
-    <div class="flag-bar" aria-hidden="true"></div>
-    <div class="flag-label" data-flag-label>FLAG</div>
-    <div class="flag-sub">S.MARCATO 42</div>
-    <div class="flag-bar" aria-hidden="true"></div>
+  <div class="flag-fx" data-flag-fx data-brand="S.Marcato 42" data-flag="none">
+    <div class="flag-fx-sweep" aria-hidden="true"></div>
+    <div class="flag-fx-rail top" aria-hidden="true"><div class="flag-fx-rail-inner"></div></div>
+    <div class="flag-fx-rail bottom" aria-hidden="true"><div class="flag-fx-rail-inner"></div></div>
+    <div class="flag-fx-side left" aria-hidden="true"></div>
+    <div class="flag-fx-side right" aria-hidden="true"></div>
+    <div class="flag-fx-badge">
+      <p class="flag-fx-label" data-flag-fx-label>FLAG</p>
+      <p class="flag-fx-sub" data-flag-fx-sub>S.MARCATO 42</p>
+    </div>
   </div>
-  <script>
-    (function () {
-      var q = new URLSearchParams(location.search);
-      var flag = (q.get("flag") || "yellow").toLowerCase();
-      if (["yellow", "red", "checkered"].indexOf(flag) < 0) flag = "yellow";
-      var stage = document.querySelector("[data-flag-stage]");
-      var label = document.querySelector("[data-flag-label]");
-      if (stage) stage.setAttribute("data-flag", flag);
-      if (label) label.textContent = flag === "checkered" ? "CHECKERED" : flag.toUpperCase();
-    })();
-  </script>
+  <script src="config.js"></script>
+  <script src="flag-anim.js"></script>
 </body>
 </html>

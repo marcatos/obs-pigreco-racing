@@ -6,6 +6,9 @@ import contextlib
 import ctypes
 import json
 import logging
+import os
+import re
+import subprocess
 import time
 import uuid
 from ctypes import wintypes
@@ -41,6 +44,9 @@ USBCAM_ID = (
 MIC_ID = "{0.0.1.00000000}.{0679eb69-e8f9-4599-80e1-eef13c5d18e6}"
 # OBS window capture id: title:class:exe
 IRACING_WINDOW = "iRacing.com Simulator:SimWinClass:iRacingSim64DX11.exe"
+# Lobby / menus — re-pick in OBS if Qt class string drifts after an iRacing update
+IRACING_UI_WINDOW = "iRacing.com:Qt5152QWindowIcon:iRacingUI.exe"
+MIC_PREFER_SUBSTR = ("focusrite", "2i2", "scarlett")
 PREV_VER = 536936450
 CANVAS_UUID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
 # Recording-only 2K canvas (ADR-007)
@@ -265,6 +271,83 @@ def iracing_capture_settings() -> dict:
     }
 
 
+def iracing_ui_capture_settings() -> dict:
+    """Window capture for iRacing UI (garage / menus) — Lobby scene."""
+    return {
+        "capture_mode": "window",
+        "window": IRACING_UI_WINDOW,
+        "capture_cursor": False,
+        "capture_audio": False,
+        "priority": 2,
+    }
+
+
+def resolve_mic_device_id(*, fallback: str = MIC_ID) -> str:
+    """Prefer Focusrite / 2i2 WASAPI id when discoverable; else env / fallback.
+
+    Override: env ``MARCATO_MIC_ID`` / ``PIGRECO_MIC_ID``, or gitignored
+    ``obs/mic.device.json`` with ``{"device_id": "..."}``.
+    """
+    for key in ("MARCATO_MIC_ID", "PIGRECO_MIC_ID"):
+        env = (os.environ.get(key) or "").strip()
+        if env:
+            log.info("mic device_id from env %s", key)
+            return env
+
+    mic_file = OBS_DIR / "mic.device.json"
+    if mic_file.is_file():
+        try:
+            data = json.loads(mic_file.read_text(encoding="utf-8"))
+            did = str((data or {}).get("device_id") or "").strip()
+            if did:
+                log.info("mic device_id from %s", mic_file.name)
+                return did
+        except (OSError, json.JSONDecodeError) as exc:
+            log.warning("mic.device.json unreadable: %s", exc)
+
+    # Best-effort: registry FriendlyName → OBS-style WASAPI id (HKLM + HKCU)
+    try:
+        ps = r"""
+$ErrorActionPreference='SilentlyContinue'
+$roots = @(
+  'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\MMDevices\Audio\Capture',
+  'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\MMDevices\Audio\Capture'
+)
+foreach ($root in $roots) {
+  if (-not (Test-Path $root)) { continue }
+  Get-ChildItem $root | ForEach-Object {
+    $p = $_.PSChildName
+    $n = (Get-ItemProperty $_.PSPath -Name FriendlyName -EA SilentlyContinue).FriendlyName
+    if ($n) { Write-Output ($p + '|' + $n) }
+  }
+}
+"""
+        proc = subprocess.run(
+            ["powershell", "-NoProfile", "-Command", ps],
+            capture_output=True,
+            text=True,
+            timeout=12,
+            check=False,
+        )
+        if proc.returncode == 0 and proc.stdout:
+            for line in proc.stdout.splitlines():
+                if "|" not in line:
+                    continue
+                guid, name = line.split("|", 1)
+                name_l = name.lower()
+                if any(s in name_l for s in MIC_PREFER_SUBSTR):
+                    g = guid.strip().strip("{}")
+                    if re.fullmatch(r"[0-9a-fA-F-]{36}", g):
+                        device_id = "{0.0.1.00000000}.{" + g.lower() + "}"
+                        log.info("mic matched '%s' → %s", name.strip(), device_id)
+                        return device_id
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        log.debug("mic discovery skipped: %s", exc)
+
+    log.info("mic device_id fallback=%s (set MARCATO_MIC_ID if wrong)", fallback)
+    return fallback
+
+
 # Middle band reserved for game (matches .triple-safe in theme.css).
 # Taller than 360 so gameplay isn't a thin strip; Scale Outer crops edges (zoom).
 _TRIPLE_SAFE_H = 480.0
@@ -383,6 +466,7 @@ def source_base(
     *,
     mixers: int = 0,
     volume: float = 1.0,
+    muted: bool = False,
     filters: list[dict] | None = None,
 ) -> dict:
     out = {
@@ -398,7 +482,7 @@ def source_base(
         "volume": volume,
         "balance": 0.5,
         "enabled": True,
-        "muted": False,
+        "muted": bool(muted),
         "push-to-mute": False,
         "push-to-mute-delay": 0,
         "push-to-talk": False,
@@ -621,7 +705,10 @@ def move_transition_settings() -> dict:
 
 
 def build_transitions(*, overlays_dir: Path, profile: str) -> tuple[list[dict], str, int]:
-    """Return (transitions, current_name, duration_ms). Default: Move Transition."""
+    """Return (transitions, current_name, duration_ms).
+
+    Marcato default: Dissolvenza 900 ms; PiGreco default: branded Move transition.
+    """
     if profile == "marcato":
         stinger_path = ROOT / "overlays-marcato" / "stinger" / "marcato-stinger.webm"
         stinger_name = "S.Marcato Stinger"
@@ -658,11 +745,8 @@ def build_transitions(*, overlays_dir: Path, profile: str) -> tuple[list[dict], 
         {"color": 0x08080A if profile == "marcato" else 0x080A0C},
     )
 
-    # Move first + default; stinger kept as branded alternative
+    # Move first; stinger kept as branded alternative
     transitions = [move, cut, fade, swipe, slide, flash]
-    current = move_name
-    duration = _MOVE_DURATION_MS
-    log.info("move transition default: %s (%d ms)", move_name, duration)
 
     if stinger_path.is_file():
         # tp_type 0 = milliseconds; ~50% of ~850ms stinger
@@ -679,7 +763,7 @@ def build_transitions(*, overlays_dir: Path, profile: str) -> tuple[list[dict], 
                 "track_matte_enabled": False,
                 "preload": True,
             },
-            volume=1.0,
+            volume=0.45,
         )
         transitions.insert(1, stinger)
         log.info("stinger transition ready (alternate): %s", stinger_path.name)
@@ -689,6 +773,15 @@ def build_transitions(*, overlays_dir: Path, profile: str) -> tuple[list[dict], 
             stinger_path,
             profile,
         )
+
+    if profile == "marcato":
+        current = "Dissolvenza"
+        duration = 900
+        log.info("marcato default transition: Dissolvenza (%d ms)", duration)
+    else:
+        current = move_name
+        duration = _MOVE_DURATION_MS
+        log.info("move transition default: %s (%d ms)", move_name, duration)
 
     return transitions, current, duration
 
@@ -727,6 +820,18 @@ def make_scene(name: str, items: list[dict]) -> dict:
         "canvas_uuid": CANVAS_UUID,
         "private_settings": {},
     }
+
+
+def apply_scene_transition_override(
+    scene: dict,
+    *,
+    transition_name: str,
+    duration_ms: int,
+) -> None:
+    """OBS stores per-scene overrides in private_settings (websocket SetSceneSceneTransitionOverride)."""
+    ps = scene.setdefault("private_settings", {})
+    ps["transition"] = transition_name
+    ps["transition_duration"] = int(duration_ms)
 
 
 def build_collection(
@@ -1168,6 +1273,467 @@ def build_collection(
     return out
 
 
+def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
+    """Slim S.Marcato 42: Starting Soon / Live / Lobby / BRB / Ending (+ Flag FX on Live)."""
+    t0 = time.perf_counter()
+    overlays_dir = overlays or (ROOT / "overlays-marcato")
+    OBS_DIR.mkdir(parents=True, exist_ok=True)
+    mic_id = resolve_mic_device_id()
+
+    desktop = source_base(
+        "Audio Desktop",
+        "wasapi_output_capture",
+        {"device_id": "default"},
+        mixers=255,
+        volume=0.50,
+    )
+    mic = source_base(
+        "Microfono",
+        "wasapi_input_capture",
+        {"device_id": mic_id},
+        mixers=255,
+        volume=0.90,
+    )
+    cam = dshow_cam("StreamCam", STREAMCAM_ID)
+    cam2 = dshow_cam("Cam 2", USBCAM_ID)
+    cam_bd_face = cam_carbon_backdrop(
+        "Cam Backdrop Face", width=360, height=202, marcato=True
+    )
+    cam_bd_2 = cam_carbon_backdrop(
+        "Cam Backdrop 2", width=320, height=180, marcato=True
+    )
+
+    roles = monitor_roles()
+    for role, mon in roles.items():
+        if mon:
+            log.info(
+                "monitor %s: %s %dx%d @%d,%d",
+                role,
+                mon.get("device"),
+                mon["w"],
+                mon["h"],
+                mon["x"],
+                mon["y"],
+            )
+        else:
+            log.warning("monitor %s not detected — pick display in OBS", role)
+
+    mon_center = source_base(
+        "Monitor Centro",
+        "monitor_capture",
+        monitor_capture_settings(roles["center"]),
+    )
+    ui_capture = source_base(
+        "iRacing UI Capture",
+        "game_capture",
+        iracing_ui_capture_settings(),
+        mixers=0,
+    )
+
+    def browser(name: str, html: str, *, query: str = "") -> dict:
+        url = file_url(overlays_dir / html)
+        if query:
+            url = f"{url}?{query.lstrip('?')}"
+        return source_base(
+            name,
+            "browser_source",
+            {
+                "url": url,
+                "width": CANVAS_W,
+                "height": CANVAS_H,
+                "fps": 30,
+                "shutdown": True,
+                "restart_when_active": True,
+                "webpage_control_level": 1,
+            },
+        )
+
+    ov_soon = browser("Overlay Starting Soon", "starting-soon.html")
+    ov_brb = browser("Overlay BRB", "brb.html")
+    ov_end = browser("Overlay Ending", "ending.html")
+    # cam=0: CAM frame lives in nested Cam PIP (same as Replay)
+    ov_live = browser("Overlay Live Chrome", "live-chrome.html", query="cam=0")
+    ov_broadcast = http_browser_source(
+        "Overlay Broadcast Chrome", overlays_dir, "broadcast-chrome.html"
+    )
+    ov_track_map = http_browser_source(
+        "Overlay Track Map", overlays_dir, "track-map.html"
+    )
+    # Transparent telemetry-driven FX on Live (not full-screen color panels)
+    ov_flag_fx = http_browser_source(
+        "Overlay Flag FX", overlays_dir, "flag-scene.html"
+    )
+    ov_cam_frame = browser("Overlay Cam Frame", "cam-frame.html")
+    ov_cam_frame_2 = browser("Overlay Cam 2 Frame", "cam-frame-2.html")
+
+    def music(name: str, filename: str, *, volume: float = 0.28) -> dict | None:
+        path = AUDIO_DIR / filename
+        if not path.is_file():
+            log.warning("music missing, skip %s (%s)", name, path)
+            return None
+        return source_base(
+            name,
+            "ffmpeg_source",
+            {
+                "local_file": str(path.resolve()),
+                "looping": True,
+                "restart_on_activate": True,
+                "close_when_inactive": False,
+                "clear_on_media_end": False,
+                "hw_decode": False,
+                "speed_percent": 100,
+                "is_local_file": True,
+            },
+            mixers=255,
+            volume=volume,
+        )
+
+    mus_soon = music("Music Starting Soon", "starting-soon.mp3", volume=0.30)
+    mus_lobby = music("Music Lobby", "lobby.mp3", volume=0.24)
+    mus_brb = music("Music BRB", "brb.mp3", volume=0.26)
+    mus_end = music("Music Ending", "ending.mp3", volume=0.28)
+
+    def audio_bed_item(src: dict | None, item_id: int) -> list[dict]:
+        if src is None:
+            return []
+        return [
+            scene_item(
+                src["name"],
+                src["uuid"],
+                item_id,
+                pos=(-40.0, -40.0),
+                scale=(0.001, 0.001),
+                visible=True,
+                locked=True,
+                scale_ref=(1920.0, 1080.0),
+            )
+        ]
+
+    def mic_live_item(item_id: int) -> dict:
+        """Mic only on Live — tiny locked item so the source stays in the mixer."""
+        return scene_item(
+            mic["name"],
+            mic["uuid"],
+            item_id,
+            pos=(-60.0, -60.0),
+            scale=(0.001, 0.001),
+            visible=True,
+            locked=True,
+            scale_ref=(1920.0, 1080.0),
+        )
+
+    cam_w, cam_h = 360.0, 202.0
+    cam_scale = cam_w / 1920.0
+    cam_x, cam_y = 36.0, CANVAS_H - 36.0 - cam_h
+    cam_ref = (1920.0, 1080.0)
+    cam2_w, cam2_h = 320.0, 180.0
+    cam2_scale = cam2_w / 1920.0
+    cam2_x, cam2_y = CANVAS_W - 36.0 - cam2_w, CANVAS_H - 36.0 - cam2_h
+    cam_sm_w = 280.0
+    cam_sm_scale = cam_sm_w / 1920.0
+    cam_sm_h = 1080.0 * cam_sm_scale
+    cam_sm_x = (CANVAS_W - cam_sm_w) / 2.0
+    cam_sm_y = CANVAS_H - 56.0 - cam_sm_h
+
+    def fullscreen(
+        name: str,
+        source_uuid: str,
+        item_id: int,
+        *,
+        visible: bool = True,
+        locked: bool = False,
+    ) -> dict:
+        return scene_item(
+            name,
+            source_uuid,
+            item_id,
+            pos=(0.0, 0.0),
+            scale=(1.0, 1.0),
+            visible=visible,
+            locked=locked,
+            scale_ref=(float(CANVAS_W), float(CANVAS_H)),
+        )
+
+    scene_cam_pip = make_scene(
+        "Cam PIP",
+        [
+            scene_item(
+                cam_bd_face["name"],
+                cam_bd_face["uuid"],
+                1,
+                pos=(cam_x, cam_y),
+                scale=(1.0, 1.0),
+                scale_ref=(cam_w, cam_h),
+                locked=True,
+            ),
+            scene_item(
+                cam["name"],
+                cam["uuid"],
+                2,
+                pos=(cam_x, cam_y),
+                scale=(cam_scale, cam_scale),
+                scale_ref=cam_ref,
+            ),
+            fullscreen(ov_cam_frame["name"], ov_cam_frame["uuid"], 3, locked=True),
+        ],
+    )
+    scene_cam2_pip = make_scene(
+        "Cam 2 PIP",
+        [
+            scene_item(
+                cam_bd_2["name"],
+                cam_bd_2["uuid"],
+                1,
+                pos=(cam2_x, cam2_y),
+                scale=(1.0, 1.0),
+                scale_ref=(cam2_w, cam2_h),
+                locked=True,
+            ),
+            scene_item(
+                cam2["name"],
+                cam2["uuid"],
+                2,
+                pos=(cam2_x, cam2_y),
+                scale=(cam2_scale, cam2_scale),
+                scale_ref=cam_ref,
+            ),
+            fullscreen(ov_cam_frame_2["name"], ov_cam_frame_2["uuid"], 3, locked=True),
+        ],
+    )
+
+    def cam_pip_item(item_id: int, *, visible: bool = True) -> dict:
+        return scene_item(
+            scene_cam_pip["name"],
+            scene_cam_pip["uuid"],
+            item_id,
+            pos=(0.0, 0.0),
+            scale=(1.0, 1.0),
+            visible=visible,
+            scale_ref=(float(CANVAS_W), float(CANVAS_H)),
+        )
+
+    def cam2_pip_item(item_id: int, *, visible: bool = True) -> dict:
+        return scene_item(
+            scene_cam2_pip["name"],
+            scene_cam2_pip["uuid"],
+            item_id,
+            pos=(0.0, 0.0),
+            scale=(1.0, 1.0),
+            visible=visible,
+            scale_ref=(float(CANVAS_W), float(CANVAS_H)),
+        )
+
+    def telecronaca_items(start_id: int) -> list[dict]:
+        """Broadcast chrome ON; track map eye-off (often embedded in chrome)."""
+        return [
+            fullscreen(
+                ov_broadcast["name"], ov_broadcast["uuid"], start_id, visible=True
+            ),
+            fullscreen(
+                ov_track_map["name"],
+                ov_track_map["uuid"],
+                start_id + 1,
+                visible=False,
+            ),
+        ]
+
+    scene_soon = make_scene(
+        "Starting Soon",
+        [
+            fullscreen(ov_soon["name"], ov_soon["uuid"], 1, locked=True),
+            scene_item(
+                cam["name"],
+                cam["uuid"],
+                2,
+                pos=(cam_sm_x, cam_sm_y),
+                scale=(cam_sm_scale, cam_sm_scale),
+                scale_ref=cam_ref,
+            ),
+            *audio_bed_item(mus_soon, 3),
+        ],
+    )
+    scene_live = make_scene(
+        "Live",
+        [
+            layout_single_monitor(
+                mon_center["name"],
+                mon_center["uuid"],
+                1,
+                roles["center"],
+            ),
+            fullscreen(ov_live["name"], ov_live["uuid"], 2, locked=True),
+            *telecronaca_items(3),
+            cam_pip_item(5),
+            cam2_pip_item(6, visible=False),
+            mic_live_item(7),
+            # Transparent animated flag FX (telemetry-driven; center FOV stays clear)
+            fullscreen(ov_flag_fx["name"], ov_flag_fx["uuid"], 8, locked=True),
+        ],
+    )
+    scene_lobby = make_scene(
+        "Lobby",
+        [
+            fullscreen(ui_capture["name"], ui_capture["uuid"], 1),
+            fullscreen(ov_live["name"], ov_live["uuid"], 2, locked=True),
+            cam_pip_item(3),
+            *audio_bed_item(mus_lobby, 4),
+        ],
+    )
+    scene_brb = make_scene(
+        "BRB",
+        [
+            fullscreen(ov_brb["name"], ov_brb["uuid"], 1, locked=True),
+            scene_item(
+                cam["name"],
+                cam["uuid"],
+                2,
+                pos=(cam_sm_x, cam_sm_y),
+                scale=(cam_sm_scale, cam_sm_scale),
+                scale_ref=cam_ref,
+            ),
+            *audio_bed_item(mus_brb, 3),
+        ],
+    )
+    scene_end = make_scene(
+        "Ending",
+        [
+            fullscreen(ov_end["name"], ov_end["uuid"], 1, locked=True),
+            *audio_bed_item(mus_end, 2),
+        ],
+    )
+
+    apply_scene_transition_override(
+        scene_live, transition_name="S.Marcato Stinger", duration_ms=850
+    )
+    apply_scene_transition_override(
+        scene_end, transition_name="S.Marcato Stinger", duration_ms=850
+    )
+
+    music_sources = [s for s in (mus_soon, mus_lobby, mus_brb, mus_end) if s is not None]
+    if music_sources:
+        log.info("live music beds: %s", ", ".join(s["name"] for s in music_sources))
+
+    sources = [
+        desktop,
+        mic,
+        cam,
+        cam2,
+        cam_bd_face,
+        cam_bd_2,
+        mon_center,
+        ui_capture,
+        ov_soon,
+        ov_brb,
+        ov_end,
+        ov_live,
+        ov_broadcast,
+        ov_track_map,
+        ov_flag_fx,
+        ov_cam_frame,
+        ov_cam_frame_2,
+        *music_sources,
+        scene_cam_pip,
+        scene_cam2_pip,
+        scene_soon,
+        scene_live,
+        scene_lobby,
+        scene_brb,
+        scene_end,
+    ]
+
+    scene_order = [
+        {"name": "Starting Soon"},
+        {"name": "Live"},
+        {"name": "Lobby"},
+        {"name": "BRB"},
+        {"name": "Ending"},
+    ]
+
+    collection = {
+        "name": "S.Marcato 42",
+        "DesktopAudioDevice1": desktop,
+        # No AuxAudioDevice1 — mic is a scene source on Live only (not Start/BRB/Ending/Lobby)
+        "sources": [s for s in sources if s["name"] != "Audio Desktop"],
+        "groups": [],
+        "scene_order": scene_order,
+        "current_scene": "Starting Soon",
+        "current_program_scene": "Starting Soon",
+        "canvases": [],
+        "current_transition": "Dissolvenza",
+        "transition_duration": 300,
+        "transitions": [],
+        "quick_transitions": [],
+        "saved_projectors": [],
+        "preview_locked": False,
+        "scaling_enabled": False,
+        "scaling_level": 0,
+        "scaling_off_x": 0.0,
+        "scaling_off_y": 0.0,
+        "modules": {
+            "scripts-tool": config_autostart_scripts(),
+            "auto-scene-switcher": {
+                "interval": 300,
+                "non_matching_scene": "",
+                "switch_if_not_matching": False,
+                "active": False,
+                "switches": [],
+            },
+        },
+        "resolution": {"x": CANVAS_W, "y": CANVAS_H},
+        "version": 2,
+    }
+
+    transitions, current_tr, tr_dur = build_transitions(
+        overlays_dir=overlays_dir, profile="marcato"
+    )
+    collection["transitions"] = transitions
+    collection["current_transition"] = current_tr
+    collection["transition_duration"] = tr_dur
+    transition_names = {t["name"] for t in transitions}
+    quick_transitions = [
+        {
+            "name": "Dissolvenza",
+            "duration": tr_dur,
+            "hotkeys": [],
+            "id": 1,
+            "fade_to_black": False,
+        },
+    ]
+    next_id = 2
+    if "S.Marcato Stinger" in transition_names:
+        quick_transitions.append(
+            {
+                "name": "S.Marcato Stinger",
+                "duration": 850,
+                "hotkeys": [],
+                "id": next_id,
+                "fade_to_black": False,
+            }
+        )
+        next_id += 1
+    quick_transitions.append(
+        {
+            "name": "Taglio",
+            "duration": 0,
+            "hotkeys": [],
+            "id": next_id,
+            "fade_to_black": False,
+        }
+    )
+    collection["quick_transitions"] = quick_transitions
+    log.info("default transition=%s (%d ms), %d transitions", current_tr, tr_dur, len(transitions))
+
+    out = OBS_DIR / "S_Marcato_42.json"
+    out.write_text(json.dumps(collection, indent=4), encoding="utf-8")
+    log.info(
+        "slim live collection written to %s (%d sources) in %.0f ms",
+        out,
+        len(collection["sources"]),
+        (time.perf_counter() - t0) * 1000,
+    )
+    return out
+
+
 def build_replay_collection(*, overlays: Path | None = None) -> Path:
     """Marcato collection for streaming an iRacing replay (or a video file) live."""
     t0 = time.perf_counter()
@@ -1289,6 +1855,11 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
     ov_track_map = http_browser_source(
         "Overlay Track Map", overlays_dir, "track-map.html"
     )
+    # Telemetry-driven FX on live/replay scenes (center FOV stays clear)
+    ov_flag_fx = http_browser_source(
+        "Overlay Flag FX", overlays_dir, "flag-scene.html"
+    )
+    # Forced-flag variants for optional Flag * aux scenes (gameplay underneath)
     ov_flag_yellow = http_browser_source(
         "Overlay Flag Yellow", overlays_dir, "flag-scene.html", query="flag=yellow"
     )
@@ -1321,7 +1892,7 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
                 "local_file": str(path.resolve()),
                 "looping": True,
                 "restart_on_activate": True,
-                "close_when_inactive": True,
+                "close_when_inactive": False,
                 "clear_on_media_end": False,
                 "hw_decode": False,
                 "speed_percent": 100,
@@ -1512,6 +2083,7 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
             *telecronaca_overlay_items(4),
             cam_pip_optional(6, visible=True),
             cam2_pip_optional(7, visible=True),
+            fullscreen(ov_flag_fx["name"], ov_flag_fx["uuid"], 8, locked=True),
         ],
     )
     scene_monitor = make_scene(
@@ -1525,6 +2097,7 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
             *telecronaca_overlay_items(4),
             cam_pip_optional(6, visible=True),
             cam2_pip_optional(7, visible=True),
+            fullscreen(ov_flag_fx["name"], ov_flag_fx["uuid"], 8, locked=True),
         ],
     )
     scene_video = None
@@ -1537,6 +2110,7 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
                 *telecronaca_overlay_items(3),
                 cam_pip_optional(5, visible=True),
                 cam2_pip_optional(6, visible=True),
+                fullscreen(ov_flag_fx["name"], ov_flag_fx["uuid"], 7, locked=True),
             ],
         )
 
@@ -1590,6 +2164,7 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
             *telecronaca_overlay_items(4),
             cam_pip_optional(6, visible=True),
             cam2_pip_optional(7, visible=True),
+            fullscreen(ov_flag_fx["name"], ov_flag_fx["uuid"], 8, locked=True),
         ],
     )
     scene_rec_triple_live = make_scene(
@@ -1597,23 +2172,28 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
         [
             *items_replay_triple(),
             *telecronaca_overlay_items(4),
+            fullscreen(ov_flag_fx["name"], ov_flag_fx["uuid"], 6, locked=True),
         ],
     )
-    scene_flag_yellow = make_scene(
-        "Flag Yellow",
-        [fullscreen(ov_flag_yellow["name"], ov_flag_yellow["uuid"], 1, locked=True)],
-    )
-    scene_flag_red = make_scene(
-        "Flag Red",
-        [fullscreen(ov_flag_red["name"], ov_flag_red["uuid"], 1, locked=True)],
-    )
+
+    def flag_aux_items(flag_ov: dict) -> list[dict]:
+        """Aux Flag * scenes: same gameplay + telecronaca as Rec Singolo Live, FX on top."""
+        return [
+            layout_single_monitor(
+                mon_center["name"], mon_center["uuid"], 1, roles["center"], visible=False
+            ),
+            fullscreen(game["name"], game["uuid"], 2),
+            fullscreen(ov_replay["name"], ov_replay["uuid"], 3, locked=True),
+            *telecronaca_overlay_items(4),
+            cam_pip_optional(6, visible=True),
+            cam2_pip_optional(7, visible=True),
+            fullscreen(flag_ov["name"], flag_ov["uuid"], 8, locked=True),
+        ]
+
+    scene_flag_yellow = make_scene("Flag Yellow", flag_aux_items(ov_flag_yellow))
+    scene_flag_red = make_scene("Flag Red", flag_aux_items(ov_flag_red))
     scene_flag_checkered = make_scene(
-        "Flag Checkered",
-        [
-            fullscreen(
-                ov_flag_checkered["name"], ov_flag_checkered["uuid"], 1, locked=True
-            )
-        ],
+        "Flag Checkered", flag_aux_items(ov_flag_checkered)
     )
     scene_brb = make_scene(
         "BRB",
@@ -1648,6 +2228,7 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
         ov_replay,
         ov_broadcast,
         ov_track_map,
+        ov_flag_fx,
         ov_flag_yellow,
         ov_flag_red,
         ov_flag_checkered,
@@ -1734,11 +2315,38 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
     collection["transitions"] = transitions
     collection["current_transition"] = current_tr
     collection["transition_duration"] = tr_dur
-    collection["quick_transitions"] = [
-        {"name": "Taglio", "duration": 0, "hotkeys": [], "id": 1, "fade_to_black": False},
-        {"name": current_tr, "duration": tr_dur, "hotkeys": [], "id": 2, "fade_to_black": False},
-        {"name": "Dissolvenza", "duration": 350, "hotkeys": [], "id": 3, "fade_to_black": False},
+    transition_names = {t["name"] for t in transitions}
+    quick_transitions = [
+        {
+            "name": "Dissolvenza",
+            "duration": tr_dur,
+            "hotkeys": [],
+            "id": 1,
+            "fade_to_black": False,
+        },
     ]
+    next_id = 2
+    if "S.Marcato Stinger" in transition_names:
+        quick_transitions.append(
+            {
+                "name": "S.Marcato Stinger",
+                "duration": 850,
+                "hotkeys": [],
+                "id": next_id,
+                "fade_to_black": False,
+            }
+        )
+        next_id += 1
+    quick_transitions.append(
+        {
+            "name": "Taglio",
+            "duration": 0,
+            "hotkeys": [],
+            "id": next_id,
+            "fade_to_black": False,
+        }
+    )
+    collection["quick_transitions"] = quick_transitions
 
     out = OBS_DIR / "S_Marcato_Replay.json"
     out.write_text(json.dumps(collection, indent=4), encoding="utf-8")
@@ -1837,6 +2445,13 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
             "Overlay Track Map",
             overlays_dir,
             "track-map.html",
+            width=int(design_w),
+            height=int(design_h),
+        )
+        ov_flag_fx = http_browser_source(
+            "Overlay Flag FX",
+            overlays_dir,
+            "flag-scene.html",
             width=int(design_w),
             height=int(design_h),
         )
@@ -2094,6 +2709,7 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
                 *telecronaca_2k_items(4),
                 cam_pip_item(6, visible=True),
                 cam2_pip_item(7, visible=True),
+                overlay_fs(ov_flag_fx, 8, locked=True),
             ],
         )
         scene_rec_single_live["settings"]["items"][1]["bounds_crop"] = True
@@ -2105,17 +2721,43 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
                 *telecronaca_2k_items(3),
                 cam_triple_item(5, visible=True),
                 cam2_pip_item(6, visible=True),
+                overlay_fs(ov_flag_fx, 7, locked=True),
             ],
         )
-        scene_flag_yellow = make_scene(
-            "Flag Yellow", [overlay_fs(ov_flag_yellow, 1, locked=True)]
-        )
-        scene_flag_red = make_scene(
-            "Flag Red", [overlay_fs(ov_flag_red, 1, locked=True)]
-        )
+
+        def flag_aux_2k(flag_ov: dict) -> list[dict]:
+            return [
+                layout_single_monitor(
+                    mon_center["name"],
+                    mon_center["uuid"],
+                    1,
+                    roles["center"],
+                    visible=False,
+                ),
+                scene_item(
+                    game["name"],
+                    game["uuid"],
+                    2,
+                    pos=(0.0, 0.0),
+                    scale=(1.0, 1.0),
+                    scale_ref=(float(CANVAS_W), float(CANVAS_H)),
+                    bounds=(float(CANVAS_W), float(CANVAS_H)),
+                    bounds_type=_BOUNDS_SCALE_OUTER,
+                ),
+                overlay_fs(ov_live, 3),
+                *telecronaca_2k_items(4),
+                cam_pip_item(6, visible=True),
+                cam2_pip_item(7, visible=True),
+                overlay_fs(flag_ov, 8, locked=True),
+            ]
+
+        scene_flag_yellow = make_scene("Flag Yellow", flag_aux_2k(ov_flag_yellow))
+        scene_flag_red = make_scene("Flag Red", flag_aux_2k(ov_flag_red))
         scene_flag_checkered = make_scene(
-            "Flag Checkered", [overlay_fs(ov_flag_checkered, 1, locked=True)]
+            "Flag Checkered", flag_aux_2k(ov_flag_checkered)
         )
+        for sc in (scene_flag_yellow, scene_flag_red, scene_flag_checkered):
+            sc["settings"]["items"][1]["bounds_crop"] = True
 
         sources = [
             cam,
@@ -2127,6 +2769,7 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
             ov_live,
             ov_broadcast,
             ov_track_map,
+            ov_flag_fx,
             ov_flag_yellow,
             ov_flag_red,
             ov_flag_checkered,
@@ -2236,6 +2879,136 @@ def install_rec_2k_profile() -> Path:
     return dest
 
 
+def obs_scenes_dir() -> Path:
+    return Path.home() / "AppData/Roaming/obs-studio/basic/scenes"
+
+
+def obs_process_running() -> bool:
+    try:
+        proc = subprocess.run(
+            ["tasklist", "/FI", "IMAGENAME eq obs64.exe", "/FO", "CSV", "/NH"],
+            capture_output=True,
+            text=True,
+            timeout=8,
+            check=False,
+        )
+        return "obs64.exe" in (proc.stdout or "").lower()
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+
+
+def stop_obs(*, wait_s: float = 4.0) -> bool:
+    """Stop OBS if running. Returns True if it was running."""
+    if not obs_process_running():
+        return False
+    log.info("Stopping OBS so scene collections can be installed…")
+    subprocess.run(
+        ["taskkill", "/IM", "obs64.exe", "/F"],
+        capture_output=True,
+        check=False,
+    )
+    # Also 32-bit name just in case
+    subprocess.run(
+        ["taskkill", "/IM", "obs32.exe", "/F"],
+        capture_output=True,
+        check=False,
+    )
+    deadline = time.time() + wait_s
+    while time.time() < deadline and obs_process_running():
+        time.sleep(0.25)
+    if obs_process_running():
+        log.warning("OBS still running after taskkill — install may be overwritten on exit")
+        return True
+    log.info("OBS stopped")
+    return True
+
+
+def start_obs() -> None:
+    candidates = [
+        Path(os.environ.get("ProgramFiles", r"C:\Program Files"))
+        / "obs-studio"
+        / "bin"
+        / "64bit"
+        / "obs64.exe",
+        Path(os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"))
+        / "obs-studio"
+        / "bin"
+        / "64bit"
+        / "obs64.exe",
+    ]
+    for exe in candidates:
+        if exe.is_file():
+            log.info("Starting OBS: %s", exe)
+            subprocess.Popen([str(exe)], cwd=str(exe.parent))
+            return
+    log.warning("obs64.exe not found — start OBS manually")
+
+
+def install_obs_scene_collection(
+    src: Path,
+    *,
+    activate: bool = False,
+) -> Path:
+    """Copy a generated collection JSON into OBS AppData scenes/."""
+    if not src.is_file():
+        raise FileNotFoundError(src)
+    dest_dir = obs_scenes_dir()
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / src.name
+    # Backup existing once per install
+    if dest.is_file():
+        bak = dest.with_suffix(dest.suffix + ".bak")
+        bak.write_bytes(dest.read_bytes())
+    dest.write_bytes(src.read_bytes())
+    log.info("OBS scene collection installed: %s", dest)
+
+    if activate:
+        user_ini = Path.home() / "AppData/Roaming/obs-studio/user.ini"
+        if user_ini.is_file():
+            text = user_ini.read_text(encoding="utf-8")
+            # Collection display name from JSON
+            try:
+                name = json.loads(src.read_text(encoding="utf-8")).get("name") or src.stem
+            except json.JSONDecodeError:
+                name = src.stem
+            import re as _re
+
+            text2, n1 = _re.subn(
+                r"(?m)^SceneCollection=.*$",
+                f"SceneCollection={name}",
+                text,
+            )
+            text2, n2 = _re.subn(
+                r"(?m)^SceneCollectionFile=.*$",
+                f"SceneCollectionFile={src.name}",
+                text2,
+            )
+            if n1 or n2:
+                user_ini.write_text(text2, encoding="utf-8")
+                log.info("OBS user.ini active collection → %s (%s)", name, src.name)
+    return dest
+
+
+def install_marcato_collections_to_obs(
+    paths: list[Path],
+    *,
+    activate: str = "S_Marcato_42.json",
+    restart_obs: bool = True,
+) -> None:
+    """Stop OBS if needed, install Marcato JSONs, optionally restart."""
+    t0 = time.perf_counter()
+    was_running = stop_obs()
+    for p in paths:
+        install_obs_scene_collection(p, activate=(p.name == activate))
+    if restart_obs and was_running:
+        start_obs()
+    log.info(
+        "Marcato collections installed to OBS in %.0f ms (restarted=%s)",
+        (time.perf_counter() - t0) * 1000,
+        bool(was_running and restart_obs),
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate OBS scene collection and optional logo PNG.")
     parser.add_argument(
@@ -2256,19 +3029,19 @@ def main() -> None:
     outputs: list[str] = []
 
     if args.profile == "marcato":
-        log.info("start generating S.Marcato 42 OBS collection (marcato profile)")
-        scene = build_collection(
-            overlays=ROOT / "overlays-marcato",
-            collection_name="S.Marcato 42",
-            output_filename="S_Marcato_42.json",
-            profile="marcato",
-        )
+        log.info("start generating S.Marcato 42 slim live + Replay + Rec 2K")
+        scene = build_marcato_live_collection(overlays=ROOT / "overlays-marcato")
         outputs.append(scene.name)
         replay = build_replay_collection(overlays=ROOT / "overlays-marcato")
         outputs.append(replay.name)
         rec2k = build_rec_2k_collection(overlays=ROOT / "overlays-marcato")
         outputs.append(rec2k.name)
         install_rec_2k_profile()
+        install_marcato_collections_to_obs(
+            [scene, replay, rec2k],
+            activate="S_Marcato_42.json",
+            restart_obs=True,
+        )
     else:
         log.info("start generating PiGreco OBS pack")
         ASSETS.mkdir(parents=True, exist_ok=True)

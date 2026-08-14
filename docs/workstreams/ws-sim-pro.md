@@ -18,7 +18,8 @@ Land **ADR-005** contract + mock telemetry producer before any HTML binds to a s
 - P3-09 NASCAR-style field ticker — **done**
 - P3-10 Live Battle for Px panel — **done**
 - P3-11 Race best lap panel — **done**
-- P3-05 Audio bus / VOD documentation for OBS profile
+- P3-04 Flag Director — **done**; Session Director (Live↔Lobby + telem autostart) — **done** (`docs/SESSION_DIRECTOR.md`)
+- P3-05 Audio bus / VOD documentation for OBS profile — **done** (lobby + interstitial beds + mixer notes)
 
 ## Constraints
 

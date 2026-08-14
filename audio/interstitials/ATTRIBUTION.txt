@@ -1,0 +1,10 @@
+# Pixabay interstitial music — fill after download
+
+| File | Track title | Author | Pixabay URL |
+|------|-------------|--------|-------------|
+| starting-soon.mp3 | TBD | TBD | |
+| lobby.mp3 | TBD | TBD | |
+| brb.mp3 | TBD | TBD | |
+| ending.mp3 | TBD | TBD | |
+
+License: https://pixabay.com/service/license-summary/

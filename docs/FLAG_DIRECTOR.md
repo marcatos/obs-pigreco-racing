@@ -1,59 +1,47 @@
 # Flag Director (P3-04)
 
-Hands-free race direction for OBS: when telemetry reports **yellow**, **red**, or **checkered**, the director cuts to branded flag scenes and returns to your previous live scene on **green**. Overlay banners (P3-06) stay independent of scene cuts.
+> Prefer **[`SESSION_DIRECTOR.md`](SESSION_DIRECTOR.md)** for live Marcato (Live↔Lobby + flags).
 
-Pack scenes (after `python tools/generate_pack.py --profile marcato`):
+Default UX: **transparent animated Flag FX** on the Live (or Replay Live) Browser Source. Gameplay + telecronaca stay visible; no full-screen color panels.
 
-| Scene | Source |
-|-------|--------|
-| `Flag Yellow` | `flag-scene.html?flag=yellow` |
-| `Flag Red` | `flag-scene.html?flag=red` |
-| `Flag Checkered` | `flag-scene.html?flag=checkered` |
+| Mode (`flagPresentation`) | Behaviour |
+|---------------------------|-----------|
+| `overlay` (**default**) | No OBS scene cut. `Overlay Flag FX` listens to telemetry WS. |
+| `scenes` | Optional cut to Flag * aux scenes (still built with gameplay + chrome underneath). |
 
-Default home: **`Rec Singolo Live`** (matches Replay + Rec 2K packs).
+## Live pack (S.Marcato 42)
+
+Scene **Live** includes `Overlay Flag FX` → `flag-scene.html` (transparent). Yellow / red / checkered animate rails + badge; center FOV stays clear.
+
+## Replay / Rec 2K
+
+- Live-like scenes also carry `Overlay Flag FX` (telemetry-driven).
+- Optional **Flag Yellow / Red / Checkered** aux scenes = same layout as Rec Singolo Live + forced `?flag=…` FX (for VirtualDeck / `flagPresentation=scenes`).
 
 ## Prerequisites
 
-1. Telemetry running: `Start-Telemetry.bat mock` or `iracing` (or `Start-Telecronaca.bat`)
-2. Config server on `:8766` (flag HTML is served over HTTP)
-3. OBS Studio **28+** with **WebSocket server** enabled  
-   Tools → WebSocket Server Settings → Enable → port `4455` + password
-4. Reimport **S.Marcato Replay** / **Rec 2K** so Flag * scenes exist
-5. Python deps:
-
-```powershell
-pip install -r adapters/obs_flag_director/requirements.txt
-```
+1. Telemetry: `Start-Telemetry.bat` / `Start-Telecronaca.bat`
+2. Config server `:8766` (HTTP Browser Sources)
+3. OBS WebSocket — [`OBS_VIRTUALDECK.md`](OBS_VIRTUALDECK.md)
+4. `python tools/generate_pack.py --profile marcato` (reinstall collections)
 
 ## Config
 
-`Start-FlagDirector.bat` creates `config.local.json` from the example on first run.
+`adapters/obs_flag_director/config.local.json`:
 
-Edit `adapters/obs_flag_director/config.local.json`:
-
-- `obsPassword` — OBS websocket password (**never commit**)
-- `dryRun`: start `true` (logs only); set `false` for real switches
-- `homeScene`: `Rec Singolo Live` (or your preferred live scene)
-- `scenes.*` — must match OBS scene names exactly
-
-## Run
-
-```powershell
-.\Start-Telecronaca.bat mock
-# or separately:
-.\Start-FlagDirector.bat
-python adapters\obs_flag_director\director.py --dry-run
-```
+- `flagPresentation`: `overlay` (default) or `scenes`
+- `obsPassword`, `dryRun`, `homeScene` / `liveScene` / `lobbyScene`
+- `scenes.*` — only used when `flagPresentation=scenes`
 
 ## Behaviour
 
-| Flag | Action |
-|------|--------|
-| yellow / red / checkered | Switch to mapped scene |
-| green / none | Return to stacked home (or `homeScene`) |
-| blue / white / … | No scene change (v1) |
+| Flag | `overlay` | `scenes` |
+|------|-----------|----------|
+| yellow / red / checkered | FX on current Live | Switch to mapped Flag * |
+| green / none | FX off | Return to stacked home |
+| blue / white / … | No change | No change |
 
-Debounce default **1500 ms**. Overlay chrome is unchanged.
+Debounce default **1500 ms**.
 
 ## Tests
 

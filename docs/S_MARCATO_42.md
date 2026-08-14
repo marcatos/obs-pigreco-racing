@@ -33,12 +33,19 @@ Dopo aver modificato `overlays-marcato/config.values.json` a mano, salva dal **p
 3. Scegli `obs\S_Marcato_42.json` dalla cartella del repo.
 4. Se la collezione è già importata: **Scene Collection → S.Marcato 42**.
 
-Scene previste (come PiGreco): Starting Soon, Live Race, Live Singolo, **Live Triplo**, BRB, Ending — overlay da `overlays-marcato/`, canvas **1920×1080**.
+Scene previste (**live slim**): Starting Soon, **Live**, **Lobby**, BRB, Ending — overlay da `overlays-marcato/`, canvas **1920×1080**. Bandiere = **Overlay Flag FX** sulla scena Live (animazioni trasparenti sopra gameplay + telecronaca), non pannelli full-screen.
 
-- **Live\*** = streaming gara (overlay + cam)
-- **Rec Singolo / Rec Triplo** = registrazione pulita (solo gameplay, niente grafica/cam)
-- **Rec \* Live** = alias delle Live (stesso layout, nomi legacy)
-- Nessuna scena **Replay \*** qui → usa la collezione **S.Marcato Replay**
+| Scena | Uso |
+|-------|-----|
+| Starting Soon | Countdown / pre-show + musica |
+| **Live** | Monitor **centro** + live chrome + **telecronaca** (Broadcast Chrome) + cam — anche in triplo schermo |
+| **Lobby** | Capture **iRacing UI** + musica (sim aperto, niente telemetria) |
+| BRB / Ending | Pausa e chiusura + musica |
+| Flag * | Tagli bandiera (Session Director) |
+
+Registrazione clean / replay: collezioni **S.Marcato Replay** e **S.Marcato Rec 2K** (non più scene Rec* in questa collezione live).
+
+Automazione + VirtualDeck: [`SESSION_DIRECTOR.md`](SESSION_DIRECTOR.md), [`OBS_VIRTUALDECK.md`](OBS_VIRTUALDECK.md).
 
 ### Collezione **S.Marcato Replay** (stream del replay, senza upload)
 
@@ -57,9 +64,20 @@ Generata insieme al pack Marcato: `obs/S_Marcato_Replay.json`. Solo scene **Repl
 
 Guida breve: [`replays/LEGGIMI.txt`](../replays/LEGGIMI.txt). Replay di stasera tipicamente in `%USERPROFILE%\Documents\iRacing\replay\` (es. `subses87837780.rpy`).
 
-**Audio:** sulle scene interstiziali (Starting Soon / BRB / Ending) parte un loop **sintetizzato in locale** (`audio/interstitials/`, generato con `tools/generate_interstitial_music.py`) — niente librerie tipo Pixabay/SoundHelix che Twitch spesso muta. Su Live Race / Live Singolo non c’è bed musicale (resta l’audio gioco/desktop). Volume regolabile in Mixer OBS sulle fonti `Music …`.
+**Audio:** sulle scene interstiziali (Starting Soon / **Lobby** / BRB / Ending) usa loop **Pixabay** royalty-free in `audio/interstitials/` (vedi `README.md` + `Open-Pixabay-Music.bat`). Il **microfono** è attivo solo sulla scena **Live** (non su Start / Lobby / BRB / Ending). Su Live non c’è bed musicale (Desktop + mic). Volume: Mixer → `Music …` / `Microfono`.
 
-**Transizioni:** default **S.Marcato Stinger** (dual-blade carbon + mark 42 + whoosh). Dettagli e alternative: `docs/TRANSITIONS.md`.
+`python tools/generate_pack.py --profile marcato` **installa automaticamente** le collezioni in `%APPDATA%\obs-studio\basic\scenes\` (chiude/riapre OBS se era aperto).
+
+**Mic:** il generator prova a risolvere Focusrite / 2i2; override con env `MARCATO_MIC_ID` o file gitignored `obs/mic.device.json`.
+
+**Transizioni:** default **Dissolvenza 900 ms** (full mix crossfade). Override **→ Live** / **→ Ending**: **S.Marcato Stinger** + whoosh. Move resta opzionale. Dettagli: [`TRANSITIONS.md`](TRANSITIONS.md).
+
+Verifica audio (stream/registrazione):
+
+- [ ] Starting Soon → Lobby: Dissolvenza; bed A out, bed B in (no click).
+- [ ] Lobby → Live: Stinger + whoosh; Lobby bed out; Desktop + mic in.
+- [ ] Live → BRB: Dissolvenza; Desktop/mic out; BRB bed in.
+- [ ] BRB → Ending: Stinger + whoosh; Ending bed in.
 
 ### 4. Pannello config (profilo Marcato)
 
@@ -131,4 +149,5 @@ Preview in a browser:
 ## Riferimenti
 
 - Design: [`docs/superpowers/specs/2026-08-01-s-marcato-42-design.md`](superpowers/specs/2026-08-01-s-marcato-42-design.md)
+- Session Director: [`docs/superpowers/specs/2026-08-14-marcato-session-director-design.md`](superpowers/specs/2026-08-14-marcato-session-director-design.md)
 - Stinger generico: [`docs/STINGER.md`](STINGER.md)

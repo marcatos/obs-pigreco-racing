@@ -62,7 +62,8 @@ Do **not** autostart the bridge from OBS scripting (console flash / fragile Pyth
 |------------|--------|-------------------------------------------|
 | S.Marcato Replay | Replay *, Rec * Live | Overlay Broadcast Chrome (includes minimap when `trackMapEnabled`) |
 | S.Marcato Rec 2K | Rec * Live | same (scaled ×4/3) |
-| Both packs | Flag Yellow / Red / Checkered | Full-screen flag HTML (for Flag Director) |
+| Both packs | Live / Replay live scenes | Transparent Flag FX overlay (telemetry) |
+| Replay / Rec 2K | Flag Yellow / Red / Checkered (optional) | Same gameplay + telecronaca + forced flag FX |
 
 **URL obbligatorie** (non `file://` — CEF/OBS spesso non apre il WebSocket da file locali):
 

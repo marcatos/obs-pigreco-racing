@@ -57,7 +57,7 @@ flowchart TB
 adapters/
   telemetry/          # CONTRACT.md + mock_server.py + iracing_bridge.py + domain_standings.py
   streamelements/     # CSS/theme exports (planned)
-  streamdeck/         # profile exports (planned)
+  streamdeck/         # VirtualDeck / Stream Deck button maps (P2-03)
 overlays/
   broadcast-chrome.html   # telecronaca UI (P3-02)
   modules/            # optional future home for JS modules
