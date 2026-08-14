@@ -1,6 +1,11 @@
 # Transizioni scena OBS
 
-Il cambio scena di default usa **Move Transition** (plugin Exeldro): le source presenti in entrambe le scene (es. `StreamCam`) si morfano in posizione/scala; quelle che spariscono escono animate; quelle nuove entrano animate (~650 ms).
+Il default dipende dal profilo collection:
+
+- **S.Marcato 42:** **Dissolvenza 900 ms** — crossfade audio-aware su tutto il mix (bed, Desktop, mic).
+- **PiGreco Racing:** **PiGreco Move** (plugin Exeldro, ~650 ms) — morph posizione/scala sulle source matched; appearing/disappearing animate.
+
+Move (Exeldro) resta disponibile su entrambi i profili come transizione opzionale; vedi preset sotto.
 
 ## Prerequisito: plugin Move
 
