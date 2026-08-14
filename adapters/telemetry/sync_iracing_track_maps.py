@@ -40,8 +40,12 @@ PATHS_DUMP_URL = (
     "https://raw.githubusercontent.com/xikxp1/iRaceHUD/main/"
     "static/track_info_data/track_info.json"
 )
+SETTINGS_DUMP_URL = (
+    "https://raw.githubusercontent.com/xikxp1/iRaceHUD/main/"
+    "static/track_info_data/track_settings.json"
+)
 PREFERRED_LAYERS = ("active", "track", "default", "background")
-UA = "obs-pigreco-racing-track-sync/1.1"
+UA = "obs-pigreco-racing-track-sync/1.2"
 
 
 def _setup_logging(level: str) -> None:
@@ -57,19 +61,40 @@ def svg_from_active_path(d: str) -> str:
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{vb}" overflow="visible">\n'
-        f'  <path fill="none" stroke="#00C400" stroke-width="10" '
+        f'  <path fill="none" stroke="#0a0a0a" stroke-width="20" '
         f'stroke-linecap="round" stroke-linejoin="round" d="{d}"/>\n'
         "</svg>\n"
     )
 
 
-def write_meta(path: Path, *, layer: str, force: bool) -> None:
+def write_meta(
+    path: Path,
+    *,
+    layer: str,
+    force: bool,
+    offset: float = 0.0,
+    direction: int = 1,
+) -> None:
     if path.is_file() and not force:
         return
     path.write_text(
-        json.dumps({"offset": 0.0, "direction": 1, "layer": layer}, indent=2) + "\n",
+        json.dumps(
+            {
+                "offset": float(offset),
+                "direction": -1 if int(direction) < 0 else 1,
+                "layer": layer,
+            },
+            indent=2,
+        )
+        + "\n",
         encoding="utf-8",
     )
+
+
+def _http_json(url: str) -> Any:
+    req = urllib.request.Request(url, headers={"User-Agent": UA})
+    with urllib.request.urlopen(req, timeout=120) as resp:
+        return json.loads(resp.read().decode("utf-8"))
 
 
 def sync_from_paths_dump(
@@ -78,14 +103,23 @@ def sync_from_paths_dump(
     track_ids: set[str] | None,
     force: bool,
     dump_url: str,
+    settings_url: str = SETTINGS_DUMP_URL,
 ) -> dict[str, int]:
     t0 = time.perf_counter()
     log.info("Downloading track path dump (no auth) url=%s", dump_url.split("?")[0])
-    req = urllib.request.Request(dump_url, headers={"User-Agent": UA})
-    with urllib.request.urlopen(req, timeout=120) as resp:
-        catalog = json.loads(resp.read().decode("utf-8"))
+    catalog = _http_json(dump_url)
     if not isinstance(catalog, dict):
         raise RuntimeError("Unexpected track_info dump shape")
+
+    settings: dict[str, Any] = {}
+    try:
+        log.info("Downloading track settings (offset/direction) url=%s", settings_url.split("?")[0])
+        raw_settings = _http_json(settings_url)
+        if isinstance(raw_settings, dict):
+            settings = raw_settings
+            log.info("Loaded settings for %d tracks", len(settings))
+    except Exception as exc:  # noqa: BLE001
+        log.warning("track_settings download failed (%s) — using offset=0 direction=1", exc)
 
     out_dir.mkdir(parents=True, exist_ok=True)
     keys = sorted(catalog.keys(), key=lambda k: int(k) if str(k).isdigit() else 0)
@@ -98,9 +132,17 @@ def sync_from_paths_dump(
     stats = {"ok": 0, "skip": 0, "fail": 0, "total": len(keys)}
     for i, tid in enumerate(keys, start=1):
         entry = catalog.get(tid) or {}
+        cfg = settings.get(str(tid)) if isinstance(settings.get(str(tid)), dict) else {}
         d = ""
-        if isinstance(entry, dict):
+        layer = "activePath"
+        if isinstance(cfg, dict) and str(cfg.get("customTrackPath") or "").strip():
+            d = str(cfg.get("customTrackPath")).strip()
+            layer = "customTrackPath"
+        elif isinstance(entry, dict):
             d = str(entry.get("activePath") or entry.get("path") or "").strip()
+        offset = float(cfg.get("offset") or 0.0) if isinstance(cfg, dict) else 0.0
+        direction = int(cfg.get("direction") or 1) if isinstance(cfg, dict) else 1
+
         svg_path = out_dir / f"{tid}.svg"
         meta_path = out_dir / f"{tid}.meta.json"
         if not d:
@@ -108,11 +150,23 @@ def sync_from_paths_dump(
             continue
         if svg_path.is_file() and not force:
             stats["skip"] += 1
-            write_meta(meta_path, layer="activePath", force=False)
+            write_meta(
+                meta_path,
+                layer=layer,
+                force=True,  # always refresh calibration
+                offset=offset,
+                direction=direction,
+            )
         else:
             try:
                 svg_path.write_text(svg_from_active_path(d), encoding="utf-8")
-                write_meta(meta_path, layer="activePath", force=True)
+                write_meta(
+                    meta_path,
+                    layer=layer,
+                    force=True,
+                    offset=offset,
+                    direction=direction,
+                )
                 stats["ok"] += 1
             except Exception as exc:  # noqa: BLE001
                 stats["fail"] += 1
