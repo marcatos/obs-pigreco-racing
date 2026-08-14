@@ -6,6 +6,7 @@
   <title>S.Marcato 42 — Broadcast Chrome</title>
   <link rel="stylesheet" href="assets/theme.css" />
   <link rel="stylesheet" href="../overlays/assets/broadcast.css" />
+  <link rel="stylesheet" href="../overlays/assets/broadcast-map.css" />
 </head>
 <body>
   <div class="stage">
@@ -37,9 +38,17 @@
         <ul class="bc-lb-rows" data-bc-lb-rows></ul>
       </aside>
     </div>
+    <div class="track-map-root" data-track-map-root hidden aria-hidden="true">
+      <div class="tm-label" data-tm-label>TRACK</div>
+      <svg class="tm-svg" viewBox="0 0 100 100" aria-hidden="true">
+        <g class="tm-track" data-tm-track></g>
+        <g data-tm-cars></g>
+      </svg>
+    </div>
   </div>
   <script src="config.js"></script>
   <script src="../overlays/broadcast-director.js"></script>
   <script src="../overlays/broadcast.js"></script>
+  <script src="../overlays/track-map.js"></script>
 </body>
 </html>

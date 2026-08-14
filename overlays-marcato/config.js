@@ -42,7 +42,7 @@ window.PIGRECO_CONFIG = {
   "broadcastLeaderboardRows": 10,
   "broadcastDirector": "auto",
   "broadcastDirectorSensitivity": "normal",
-  "trackMapEnabled": false,
+  "trackMapEnabled": true,
   "trackMapWsUrl": "ws://127.0.0.1:8765"
 };
 
