@@ -1,5 +1,9 @@
 # OBS Config Panel (Custom Browser Dock)
 
+> **EN:** An **in-OBS Custom Browser Dock** at `http://127.0.0.1:8766/` so you change nick, session badge, countdown, BRB, ending, sponsors, and telecronaca toggles **without hand-editing overlay files**. Saves to `config.values.json` for the active profile and regenerates `config.js`. Switch PiGreco ↔ S.Marcato with `?profile=marcato` or the profile dropdown. Localhost only.
+
+Public overview: [`../README.md#config-dock--change-the-stream-without-editing-files`](../README.md#config-dock--change-the-stream-without-editing-files).
+
 ## Cosa fa
 
 Un **pannellino dentro OBS** (dock) per cambiare nick, sessione, countdown, BRB, ending, sponsor **senza editare file a mano**.

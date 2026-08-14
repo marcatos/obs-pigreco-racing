@@ -1,20 +1,20 @@
 # Documentation
 
-Guides for the **OBS PiGreco Racing** pack — local-first scene collections, branded Browser Source overlays, and optional iRacing telecronaca.
+Guides for the **OBS PiGreco Racing** pack — local-first scene collections, branded Browser Source overlays, an **in-OBS config dock**, and optional iRacing telecronaca.
 
-**Public overview (English):** [`../README.md`](../README.md)  
+**Public overview (English):** [`../README.md`](../README.md) — includes vanity sections for the [config dock](../README.md#config-dock--change-the-stream-without-editing-files) and [telecronaca](../README.md#telecronaca--local-telemetry-on-stream).  
 **Non-technical pilots (Italian):** [`../LEGGIMI.txt`](../LEGGIMI.txt) · [`../Guida_PiGreco_OBS.pdf`](../Guida_PiGreco_OBS.pdf)
 
 ---
 
 ## Start here
 
-Get on stream fast — setup, config dock, personal pack.
+Get on stream fast — setup, **config dock**, personal pack.
 
 | Doc | Summary |
 |-----|---------|
 | [`../LEGGIMI.txt`](../LEGGIMI.txt) | Italian double-click path (`Setup.bat`) |
-| [`OBS_CONFIG_PANEL.md`](OBS_CONFIG_PANEL.md) | Custom Browser Dock at `:8766` |
+| [`OBS_CONFIG_PANEL.md`](OBS_CONFIG_PANEL.md) | In-OBS dock at `:8766` — identity, session, countdown, BRB, ending, sponsors, telecronaca toggles; writes `config.values.json` |
 | [`S_MARCATO_42.md`](S_MARCATO_42.md) | Personal carbon / Rosso Corsa pack |
 | [`../Guida_PiGreco_OBS.pdf`](../Guida_PiGreco_OBS.pdf) | Illustrated team guide (Italian) |
 
@@ -35,13 +35,13 @@ Broadcast look and feel — brand tokens, transitions, cameras.
 
 ## Sim pro
 
-Optional local telemetry stack — standings, map, auto flags.
+Optional **local** telemetry stack — no cloud required. Mock or iRacing bridge → WebSocket → broadcast chrome (+ minimap); Flag Director cuts OBS on race flags.
 
 | Doc | Summary |
 |-----|---------|
-| [`TELEMETRY_BROADCAST.md`](TELEMETRY_BROADCAST.md) | iRacing / mock bridge → broadcast chrome |
+| [`TELEMETRY_BROADCAST.md`](TELEMETRY_BROADCAST.md) | Bridge, standings / relative / focus / director moments, OBS HTTP sources |
 | [`TRACK_MAP.md`](TRACK_MAP.md) | Peripheral minimap + self-learn outlines |
-| [`FLAG_DIRECTOR.md`](FLAG_DIRECTOR.md) | Auto OBS scenes on race flags |
+| [`FLAG_DIRECTOR.md`](FLAG_DIRECTOR.md) | Auto OBS scenes on yellow / red / checkered |
 | [`../adapters/telemetry/CONTRACT.md`](../adapters/telemetry/CONTRACT.md) | WebSocket tick contract |
 
 ---

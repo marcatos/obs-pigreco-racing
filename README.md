@@ -90,6 +90,66 @@ Also included: Game Capture (iRacing) + Display Capture, StreamCam PIP, Move tra
 
 ---
 
+## Config dock — change the stream without editing files
+
+The pack ships an **in-OBS Custom Browser Dock** so pilots tweak identity, session, countdown, BRB, ending, sponsors, and telecronaca toggles **without opening `config.js`**.
+
+| | |
+|--|--|
+| **URL** | `http://127.0.0.1:8766/` (PiGreco) · `?profile=marcato` for S.Marcato |
+| **Truth file** | `overlays/config.values.json` or `overlays-marcato/config.values.json` |
+| **Apply** | **Salva e applica** → regenerates `config.js` → refresh Browser Sources |
+
+**What you can drive from the dock**
+
+| Section | Controls |
+|---------|----------|
+| Identity | Username, pilot name, race number, Twitch handle, team |
+| Live session | Event title, tagline, Practice / Quali / Race badge |
+| Starting Soon | Message, countdown seconds or `goLiveAt` clock time |
+| BRB | Message, “back at HH:MM”, optional return countdown |
+| Ending | Message, Discord CTA / QR (PiGreco), follow text |
+| Sponsors | Rotator on/off, timing, JSON list (PiGreco only) |
+| Telecronaca | Broadcast overlay on/off, WS URL, widget toggles, director, track map |
+
+Autostart: Lua `obs/scripts/pigreco_config_autostart.lua` when OBS opens (localhost only). Fallback: `Start-ConfigPanel.bat`. Full setup: [`docs/OBS_CONFIG_PANEL.md`](docs/OBS_CONFIG_PANEL.md).
+
+---
+
+## Telecronaca — local telemetry on stream
+
+Optional **sim-pro** layer for replay commentary and live races: standings, focus, relatives, session/flag strip, moment chips, track minimap, and auto flag scenes — all **on your PC**, no cloud overlay service.
+
+```text
+iRacing SDK or mock  →  adapters/telemetry (WS :8765)
+                              ↓
+              Overlay Broadcast Chrome (HTTP via :8766)
+                              ↓
+         Flag Director (OBS WebSocket) when yellow/red/checkered
+```
+
+| Piece | Role |
+|-------|------|
+| **Broadcast chrome** | Peripheral HTML: classifica, relative (AHD/CAM/BHD), focus card, session/flag strip, director moment chips |
+| **Track map** | Mid-right minimap inside the same Browser Source (`trackMapEnabled`) |
+| **Flag director** | Cuts OBS to branded Flag Yellow / Red / Checkered, returns on green |
+| **Config dock** | Master switch `telemetryEnabled` (default off — no WS until you opt in) |
+
+**One-command smoke test (no iRacing):** `Start-Telecronaca.bat mock` — brings up config `:8766`, telemetry `:8765`, and Flag Director. In OBS, eye **on** **Overlay Broadcast Chrome** (must be `http://127.0.0.1:8766/o/...`, not `file://`).
+
+**Live / replay:** `Start-Telecronaca.bat iracing` (or `Start-Telemetry.bat iracing` + `Start-FlagDirector.bat`).
+
+| Guide | Covers |
+|-------|--------|
+| [`TELEMETRY_BROADCAST`](docs/TELEMETRY_BROADCAST.md) | Bridge, widgets, director modes (`auto` / `manual` / `off`) |
+| [`TRACK_MAP`](docs/TRACK_MAP.md) | Open + self-learn outlines |
+| [`FLAG_DIRECTOR`](docs/FLAG_DIRECTOR.md) | OBS scene automation on flags |
+| [`CONTRACT`](adapters/telemetry/CONTRACT.md) | WebSocket tick / event schema |
+
+Third-party tools (SimHub, Racing Overlay) can sit **beside** the pack as extra Browser Sources; brand chrome stays the primary layer.
+
+---
+
 ## Quick start (Windows)
 
 ### 1. Setup
@@ -112,7 +172,7 @@ Italian walkthrough: [`LEGGIMI.txt`](LEGGIMI.txt) · PDF: [`Guida_PiGreco_OBS.pd
 - **S.Marcato 42** — personal live race
 - **S.Marcato Replay** — iRacing replay commentary
 
-### 3. Config panel (recommended)
+### 3. Config panel + optional telecronaca
 
 On OBS open, Lua `obs/scripts/pigreco_config_autostart.lua` starts the dock server at `http://127.0.0.1:8766/`. Optional login keepalive: `tools/install_config_autostart.ps1`.
 
@@ -120,8 +180,10 @@ On OBS open, Lua `obs/scripts/pigreco_config_autostart.lua` starts the dock serv
    - PiGreco: `http://127.0.0.1:8766/`
    - Marcato: `http://127.0.0.1:8766/?profile=marcato`
 2. Fallback: double-click `Start-ConfigPanel.bat`
-3. Telecronaca (optional): `Start-Telecronaca.bat mock` (or `iracing`) — or `Start-Telemetry.bat` + `Start-FlagDirector.bat`
+3. Edit fields → **Salva e applica** → refresh Browser Sources (see [Config dock](#config-dock--change-the-stream-without-editing-files))
+4. Telecronaca (optional): `Start-Telecronaca.bat mock` (or `iracing`) — eye on **Overlay Broadcast Chrome** (see [Telecronaca](#telecronaca--local-telemetry-on-stream))
 
+Deep dive: [`OBS_CONFIG_PANEL`](docs/OBS_CONFIG_PANEL.md) · [`TELEMETRY_BROADCAST`](docs/TELEMETRY_BROADCAST.md)
 ### 4. After overlay edits
 
 Browser Source → **Refresh cache of current page** (or restart OBS).
@@ -169,11 +231,15 @@ PDF: [`Guida_PiGreco_OBS.pdf`](Guida_PiGreco_OBS.pdf)
 
 ---
 
-## Streamer config
+## Streamer config (files)
 
-**PiGreco** — `overlays/config.js` (or the dock): `username` / `pilotName` / `twitchHandle`, `teamName` / `eventTitle` / `tagline`, `sponsors` / `sponsorsEnabled`.
+Prefer the [config dock](#config-dock--change-the-stream-without-editing-files). If you edit by hand:
+
+**PiGreco** — `overlays/config.values.json` (generated `config.js`): `username` / `pilotName` / `twitchHandle`, `teamName` / `eventTitle` / `tagline`, `sponsors` / `sponsorsEnabled`, plus telecronaca keys (`telemetryEnabled`, widget toggles, `trackMapEnabled`, …).
 
 **Marcato** — `overlays-marcato/config.values.json` (same ideas, no team sponsors). Query overrides, e.g. `live-chrome.html?eventTitle=Night%20Race`.
+
+Example keys also live in `overlays/config.example.js` (keep in sync when adding fields).
 
 ---
 
@@ -184,8 +250,9 @@ Full index: **[`docs/README.md`](docs/README.md)**
 | For… | Start here |
 |------|------------|
 | Non-technical pilots (IT) | [`LEGGIMI.txt`](LEGGIMI.txt) · [`Guida_PiGreco_OBS.pdf`](Guida_PiGreco_OBS.pdf) |
+| Config dock & telecronaca | [Config dock](#config-dock--change-the-stream-without-editing-files) · [Telecronaca](#telecronaca--local-telemetry-on-stream) · [`OBS_CONFIG_PANEL`](docs/OBS_CONFIG_PANEL.md) |
 | On-stream polish | [`DESIGN_SYSTEM`](docs/DESIGN_SYSTEM.md) · [`STINGER`](docs/STINGER.md) · [`CAMERAS`](docs/CAMERAS.md) |
-| Sim pro | [`TELEMETRY_BROADCAST`](docs/TELEMETRY_BROADCAST.md) · [`TRACK_MAP`](docs/TRACK_MAP.md) · [`FLAG_DIRECTOR`](docs/FLAG_DIRECTOR.md) |
+| Sim pro deep dives | [`TELEMETRY_BROADCAST`](docs/TELEMETRY_BROADCAST.md) · [`TRACK_MAP`](docs/TRACK_MAP.md) · [`FLAG_DIRECTOR`](docs/FLAG_DIRECTOR.md) |
 | Contributors / agents | [`AGENTS.md`](AGENTS.md) · [`STRATEGY.md`](STRATEGY.md) · [`ROADMAP`](docs/ROADMAP.md) · [`ARCHITECTURE`](docs/ARCHITECTURE.md) |
 
 ---

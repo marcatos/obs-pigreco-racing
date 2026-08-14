@@ -2,6 +2,8 @@
 
 Live standings, focus car, and flag context on stream — without leaving the local machine. A **local iRacing (or mock) bridge** pushes ticks over WebSocket into brand HTML (broadcast chrome); optional SimHub / Racing Overlay can sit beside it as extra Browser Sources.
 
+**On the public README:** product-facing overview of the stack (chrome widgets, track map, flag director, one-bat launchers) lives under [Telecronaca](../README.md#telecronaca--local-telemetry-on-stream). This page is the operator deep dive.
+
 Pipeline: **local bridge** → WebSocket [`CONTRACT`](../adapters/telemetry/CONTRACT.md) → brand HTML overlay.
 
 ## Quick start (mock — no iRacing)
