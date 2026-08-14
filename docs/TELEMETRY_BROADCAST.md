@@ -108,6 +108,8 @@ Hybrid auto/manual moments on the same Browser Source. Base widgets (session, fo
 
 `telemetry.event` frames (`flag_change`, `battle`, `overtake`, `fast_lap`, `pit`, `session_end`) are emitted on the **WebSocket** after the tick that produced them. File mode (`--mode file`) stores the latest tick only — events are **not** persisted.
 
+`battle` is **edge-triggered**: one chip when the fight starts (gap stays under the sensitivity threshold for a short streak). While the gap stays close, no more `BATTLE` heroes — the relative/battle panel already shows the fight. A new chip can fire only after the gap opens again (with a bit of hysteresis so threshold jitter does not re-arm).
+
 Mock scripted windows (elapsed seconds):
 
 | Window | What you should see (`auto`) |

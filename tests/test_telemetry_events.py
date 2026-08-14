@@ -65,11 +65,24 @@ def test_debounce_suppresses_repeat_battle():
     d = EventDetector(sensitivity="hype")
     for t in range(3):
         d.feed(_tick(gapAheadMs=400, ts=100 + t))
-    # first battle likely at ts=102; immediate re-feed should debounce
+    # Sustained close fight: no second BATTLE while still in battle
     more = []
-    for t in range(3, 6):
+    for t in range(3, 40):
         more.extend(d.feed(_tick(gapAheadMs=400, ts=100 + t)))
     assert not any(e["kind"] == "battle" for e in more)
+
+
+def test_battle_rearms_after_gap_opens():
+    d = EventDetector(sensitivity="hype")
+    for t in range(3):
+        d.feed(_tick(gapAheadMs=400, ts=200 + t))
+    # Open gap beyond exit hysteresis (1.5 * 800 = 1200 for hype)
+    d.feed(_tick(gapAheadMs=2500, ts=210))
+    # Re-enter close fight
+    assert d.feed(_tick(gapAheadMs=400, ts=211)) == []
+    assert d.feed(_tick(gapAheadMs=400, ts=212)) == []
+    ev = d.feed(_tick(gapAheadMs=400, ts=213))
+    assert any(e["kind"] == "battle" for e in ev)
 
 
 def test_mock_tick_sequence_can_yield_flag_event():
