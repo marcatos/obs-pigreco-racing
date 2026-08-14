@@ -23,7 +23,7 @@ Update this file when claiming or finishing an ID.
 | P1-01 | Countdown Starting Soon | done | `goLiveAt` / `countdownSeconds` |
 | P1-02 | Badge sessione (Practice/Quali/Race) | done | pill top-center |
 | P1-03 | Stinger transition (webm/mov or HTML) | done | `overlays/stinger/` + `docs/STINGER.md` |
-| P1-04 | Dual cam layout (face + wheel) toggle | ready | second dshow + hotkey hide |
+| P1-04 | Dual cam layout (face + wheel) toggle | done | Cam PIP + Cam 2 PIP, NVIDIA greenscreen chair + carbon BG; `docs/CAMERAS.md` |
 | P1-05 | Ending ricco (Discord QR + CTA) | done | config URLs + QR PNG |
 | P1-06 | BRB smart timer “torno alle HH:MM” | done | `brbUntil` + optional countdown |
 

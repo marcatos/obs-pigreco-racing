@@ -33,6 +33,11 @@ STREAMCAM_ID = (
     r"Logitech StreamCam:\\?\usb#22vid_046d&pid_0893&mi_00#228&33ee287c&0&0000"
     r"#22{65e8773d-8f56-11d0-a3b9-00a0c9223196}\global"
 )
+# Second camera (seat / wide) on this PC — re-pick in OBS if USB port changes
+USBCAM_ID = (
+    r"USB Camera:\\?\usb#vid_0c6a&pid_646a&mi_00#9&1779791d&0&0000"
+    r"#{65e8773d-8f56-11d0-a3b9-00a0c9223196}\global"
+)
 MIC_ID = "{0.0.1.00000000}.{0679eb69-e8f9-4599-80e1-eef13c5d18e6}"
 # OBS window capture id: title:class:exe
 IRACING_WINDOW = "iRacing.com Simulator:SimWinClass:iRacingSim64DX11.exe"
@@ -346,8 +351,16 @@ def export_logo_png() -> Path:
     return out
 
 
-def source_base(name: str, source_id: str, settings: dict, *, mixers: int = 0, volume: float = 1.0) -> dict:
-    return {
+def source_base(
+    name: str,
+    source_id: str,
+    settings: dict,
+    *,
+    mixers: int = 0,
+    volume: float = 1.0,
+    filters: list[dict] | None = None,
+) -> dict:
+    out = {
         "prev_ver": PREV_VER,
         "name": name,
         "uuid": new_uuid(),
@@ -371,6 +384,60 @@ def source_base(name: str, source_id: str, settings: dict, *, mixers: int = 0, v
         "monitoring_type": 0,
         "private_settings": {},
     }
+    if filters:
+        out["filters"] = filters
+    return out
+
+
+# NVIDIA Background Removal (nv-filters.dll) — mode 2 = Quality + Chair
+# (keeps seat / mic stand; drops messy room). Requires Video Effects SDK.
+NV_GS_MODE_QUALITY_CHAIR = 2
+
+
+def nv_greenscreen_filter(
+    *,
+    name: str = "NVIDIA Background Removal",
+    mode: int = NV_GS_MODE_QUALITY_CHAIR,
+    threshold: float = 0.92,
+) -> dict:
+    return {
+        "prev_ver": PREV_VER,
+        "name": name,
+        "uuid": new_uuid(),
+        "id": "nv_greenscreen_filter",
+        "versioned_id": "nv_greenscreen_filter",
+        "settings": {
+            "mode": int(mode),
+            "threshold": float(threshold),
+            "processing_interval": 1,
+        },
+        "enabled": True,
+    }
+
+
+def cam_carbon_backdrop(name: str, *, width: int, height: int, marcato: bool) -> dict:
+    """Solid brand plate behind greenscreen cams (OBS color is 0xAABBGGRR)."""
+    # #08080A marcato / #080A0C pigreco → ABGR
+    color = 0xFF0A0808 if marcato else 0xFF0C0A08
+    return source_base(
+        name,
+        "color_source_v3",
+        {"width": int(width), "height": int(height), "color": color},
+    )
+
+
+def dshow_cam(name: str, device_id: str, *, resolution: str = "1920x1080") -> dict:
+    return source_base(
+        name,
+        "dshow_input",
+        {
+            "video_device_id": device_id,
+            "last_video_device_id": device_id,
+            "res_type": 1,
+            "resolution": resolution,
+        },
+        filters=[nv_greenscreen_filter()],
+    )
 
 
 def pos_rel(pos: tuple[float, float]) -> dict[str, float]:
@@ -662,17 +729,8 @@ def build_collection(
         mixers=255,
         volume=0.85,
     )
-    cam = source_base(
-        "StreamCam",
-        "dshow_input",
-        {
-            "video_device_id": STREAMCAM_ID,
-            "last_video_device_id": STREAMCAM_ID,
-            "res_type": 1,
-            "resolution": "1920x1080",
-        },
-        mixers=0,
-    )
+    cam = dshow_cam("StreamCam", STREAMCAM_ID)
+    cam2 = dshow_cam("Cam 2", USBCAM_ID)
     roles = monitor_roles()
     for role, mon in roles.items():
         if mon:
@@ -1108,16 +1166,14 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
         mixers=255,
         volume=0.9,
     )
-    cam = source_base(
-        "StreamCam",
-        "dshow_input",
-        {
-            "video_device_id": STREAMCAM_ID,
-            "last_video_device_id": STREAMCAM_ID,
-            "res_type": 1,
-            "resolution": "1920x1080",
-        },
-        mixers=0,
+    # P1-04 dual cam + NVIDIA greenscreen (Quality+Chair) + carbon plate
+    cam = dshow_cam("StreamCam", STREAMCAM_ID)
+    cam2 = dshow_cam("Cam 2", USBCAM_ID)
+    cam_bd_face = cam_carbon_backdrop(
+        "Cam Backdrop Face", width=360, height=202, marcato=True
+    )
+    cam_bd_2 = cam_carbon_backdrop(
+        "Cam Backdrop 2", width=320, height=180, marcato=True
     )
     roles = monitor_roles()
     for role, mon in roles.items():
@@ -1216,6 +1272,7 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
         },
     )
     ov_cam_frame = browser("Overlay Cam Frame", "cam-frame.html")
+    ov_cam_frame_2 = browser("Overlay Cam 2 Frame", "cam-frame-2.html")
     ov_triple = browser("Overlay Triple Frame", "triple-frame.html", query="badge=REPLAY")
     ov_triple_live = browser(
         "Overlay Triple Frame Live",
@@ -1268,6 +1325,9 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
     cam_scale = cam_w / 1920.0
     cam_x, cam_y = 36.0, CANVAS_H - 36.0 - cam_h
     cam_ref = (1920.0, 1080.0)
+    cam2_w, cam2_h = 320.0, 180.0
+    cam2_scale = cam2_w / 1920.0
+    cam2_x, cam2_y = CANVAS_W - 36.0 - cam2_w, CANVAS_H - 36.0 - cam2_h
     cam_sm_w = 280.0
     cam_sm_scale = cam_sm_w / 1920.0
     cam_sm_h = 1080.0 * cam_sm_scale
@@ -1314,11 +1374,19 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
             scale_ref=cam_ref,
         )
 
-    # Nested scene: StreamCam + riquadro CAM — un solo eye icon per mostrare/nascondere
+    # Nested: carbon plate + NVIDIA greenscreen cam + frame
     scene_cam_pip = make_scene(
         "Cam PIP",
         [
-            fullscreen(ov_cam_frame["name"], ov_cam_frame["uuid"], 1, locked=True),
+            scene_item(
+                cam_bd_face["name"],
+                cam_bd_face["uuid"],
+                1,
+                pos=(cam_x, cam_y),
+                scale=(1.0, 1.0),
+                scale_ref=(cam_w, cam_h),
+                locked=True,
+            ),
             scene_item(
                 cam["name"],
                 cam["uuid"],
@@ -1327,6 +1395,30 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
                 scale=(cam_scale, cam_scale),
                 scale_ref=cam_ref,
             ),
+            fullscreen(ov_cam_frame["name"], ov_cam_frame["uuid"], 3, locked=True),
+        ],
+    )
+    scene_cam2_pip = make_scene(
+        "Cam 2 PIP",
+        [
+            scene_item(
+                cam_bd_2["name"],
+                cam_bd_2["uuid"],
+                1,
+                pos=(cam2_x, cam2_y),
+                scale=(1.0, 1.0),
+                scale_ref=(cam2_w, cam2_h),
+                locked=True,
+            ),
+            scene_item(
+                cam2["name"],
+                cam2["uuid"],
+                2,
+                pos=(cam2_x, cam2_y),
+                scale=(cam2_scale, cam2_scale),
+                scale_ref=cam_ref,
+            ),
+            fullscreen(ov_cam_frame_2["name"], ov_cam_frame_2["uuid"], 3, locked=True),
         ],
     )
 
@@ -1335,6 +1427,18 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
         return scene_item(
             scene_cam_pip["name"],
             scene_cam_pip["uuid"],
+            item_id,
+            pos=(0.0, 0.0),
+            scale=(1.0, 1.0),
+            visible=visible,
+            scale_ref=(float(CANVAS_W), float(CANVAS_H)),
+        )
+
+    def cam2_pip_optional(item_id: int, *, visible: bool = True) -> dict:
+        """Optional seat/wide cam (bottom-right) with virtual carbon BG."""
+        return scene_item(
+            scene_cam2_pip["name"],
+            scene_cam2_pip["uuid"],
             item_id,
             pos=(0.0, 0.0),
             scale=(1.0, 1.0),
@@ -1360,6 +1464,7 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
                 ov_broadcast["name"], ov_broadcast["uuid"], 4, visible=False, locked=True
             ),
             cam_pip_optional(5, visible=True),
+            cam2_pip_optional(6, visible=True),
         ],
     )
     scene_monitor = make_scene(
@@ -1374,6 +1479,7 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
                 ov_broadcast["name"], ov_broadcast["uuid"], 4, visible=False, locked=True
             ),
             cam_pip_optional(5, visible=True),
+            cam2_pip_optional(6, visible=True),
         ],
     )
     scene_video = None
@@ -1391,6 +1497,7 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
                     locked=True,
                 ),
                 cam_pip_optional(4, visible=True),
+                cam2_pip_optional(5, visible=True),
             ],
         )
 
@@ -1445,6 +1552,7 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
                 ov_broadcast["name"], ov_broadcast["uuid"], 4, visible=False, locked=True
             ),
             cam_pip_optional(5, visible=True),
+            cam2_pip_optional(6, visible=True),
         ],
     )
     scene_rec_triple_live = make_scene(
@@ -1475,6 +1583,9 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
     music_sources = [s for s in (mus_soon, mus_brb, mus_end) if s is not None]
     sources = [
         cam,
+        cam2,
+        cam_bd_face,
+        cam_bd_2,
         mon_left,
         mon_center,
         mon_right,
@@ -1486,10 +1597,12 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
         ov_replay,
         ov_broadcast,
         ov_cam_frame,
+        ov_cam_frame_2,
         ov_triple,
         ov_triple_live,
         *music_sources,
         scene_cam_pip,
+        scene_cam2_pip,
         scene_soon,
         scene_iracing,
         scene_monitor,
@@ -1617,14 +1730,13 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
             {"device_id": MIC_ID},
             mixers=2,
         )
-        cam = source_base(
-            "StreamCam",
-            "dshow_input",
-            {
-                "video_device_id": STREAMCAM_ID,
-                "last_video_device_id": STREAMCAM_ID,
-                "resolution": "1920x1080",
-            },
+        cam = dshow_cam("StreamCam", STREAMCAM_ID)
+        cam2 = dshow_cam("Cam 2", USBCAM_ID)
+        cam_bd_face = cam_carbon_backdrop(
+            "Cam Backdrop Face", width=360, height=202, marcato=True
+        )
+        cam_bd_2 = cam_carbon_backdrop(
+            "Cam Backdrop 2", width=320, height=180, marcato=True
         )
         mon_center = source_base(
             "Monitor Centrale",
@@ -1671,6 +1783,8 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
             "triple-frame.html",
             query="cam=1&badge=LIVE",
         )
+        ov_cam_frame = browser("Overlay Cam Frame", "cam-frame.html")
+        ov_cam_frame_2 = browser("Overlay Cam 2 Frame", "cam-frame-2.html")
 
         def overlay_fs(src: dict, item_id: int, *, locked: bool = True) -> dict:
             """Place a 1920×1080 browser so it fills the 2K canvas."""
@@ -1684,16 +1798,95 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
                 scale_ref=(design_w, design_h),
             )
 
+        # Build Cam PIP nests in 1080 design space, then scale onto 2K canvas
+        cam_w1080, cam_h1080 = 360.0, 202.0
+        cam_x1080, cam_y1080 = 36.0, 1080.0 - 36.0 - cam_h1080
+        cam2_w1080, cam2_h1080 = 320.0, 180.0
+        cam2_x1080 = 1920.0 - 36.0 - cam2_w1080
+        cam2_y1080 = 1080.0 - 36.0 - cam2_h1080
+        with canvas_context(1920, 1080):
+            scene_cam_pip = make_scene(
+                "Cam PIP",
+                [
+                    scene_item(
+                        cam_bd_face["name"],
+                        cam_bd_face["uuid"],
+                        1,
+                        pos=(cam_x1080, cam_y1080),
+                        scale=(1.0, 1.0),
+                        scale_ref=(cam_w1080, cam_h1080),
+                        locked=True,
+                    ),
+                    scene_item(
+                        cam["name"],
+                        cam["uuid"],
+                        2,
+                        pos=(cam_x1080, cam_y1080),
+                        scale=(cam_w1080 / 1920.0, cam_w1080 / 1920.0),
+                        scale_ref=(1920.0, 1080.0),
+                    ),
+                    scene_item(
+                        ov_cam_frame["name"],
+                        ov_cam_frame["uuid"],
+                        3,
+                        pos=(0.0, 0.0),
+                        scale=(1.0, 1.0),
+                        locked=True,
+                        scale_ref=(1920.0, 1080.0),
+                    ),
+                ],
+            )
+            scene_cam2_pip = make_scene(
+                "Cam 2 PIP",
+                [
+                    scene_item(
+                        cam_bd_2["name"],
+                        cam_bd_2["uuid"],
+                        1,
+                        pos=(cam2_x1080, cam2_y1080),
+                        scale=(1.0, 1.0),
+                        scale_ref=(cam2_w1080, cam2_h1080),
+                        locked=True,
+                    ),
+                    scene_item(
+                        cam2["name"],
+                        cam2["uuid"],
+                        2,
+                        pos=(cam2_x1080, cam2_y1080),
+                        scale=(cam2_w1080 / 1920.0, cam2_w1080 / 1920.0),
+                        scale_ref=(1920.0, 1080.0),
+                    ),
+                    scene_item(
+                        ov_cam_frame_2["name"],
+                        ov_cam_frame_2["uuid"],
+                        3,
+                        pos=(0.0, 0.0),
+                        scale=(1.0, 1.0),
+                        locked=True,
+                        scale_ref=(1920.0, 1080.0),
+                    ),
+                ],
+            )
+
         def cam_pip_item(item_id: int, *, visible: bool = True) -> dict:
-            cam_w = 360.0 * scale_2k
-            cam_h = 202.0 * scale_2k
             return scene_item(
-                cam["name"],
-                cam["uuid"],
+                scene_cam_pip["name"],
+                scene_cam_pip["uuid"],
                 item_id,
-                pos=(36.0 * scale_2k, float(CANVAS_H) - 36.0 * scale_2k - cam_h),
-                scale=(cam_w / 1920.0, cam_w / 1920.0),
-                scale_ref=(1920.0, 1080.0),
+                pos=(0.0, 0.0),
+                scale=(scale_2k, scale_2k),
+                scale_ref=(design_w, design_h),
+                visible=visible,
+            )
+
+        def cam2_pip_item(item_id: int, *, visible: bool = True) -> dict:
+            return scene_item(
+                scene_cam2_pip["name"],
+                scene_cam2_pip["uuid"],
+                item_id,
+                pos=(0.0, 0.0),
+                scale=(scale_2k, scale_2k),
+                scale_ref=(design_w, design_h),
                 visible=visible,
             )
 
@@ -1709,6 +1902,7 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
         )
 
         def cam_triple_item(item_id: int, *, visible: bool = True) -> dict:
+            # Face cam only in triple band; Cam 2 stays optional PIP
             cam_w = _TRIPLE_CAM_W * scale_2k
             return scene_item(
                 cam["name"],
@@ -1815,6 +2009,7 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
                     scale_ref=(design_w, design_h),
                 ),
                 cam_pip_item(5, visible=True),
+                cam2_pip_item(6, visible=True),
             ],
         )
         scene_rec_single_live["settings"]["items"][1]["bounds_crop"] = True
@@ -1834,16 +2029,24 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
                     scale_ref=(design_w, design_h),
                 ),
                 cam_triple_item(4, visible=True),
+                cam2_pip_item(5, visible=True),
             ],
         )
 
         sources = [
             cam,
+            cam2,
+            cam_bd_face,
+            cam_bd_2,
             mon_center,
             game,
             ov_live,
             ov_broadcast,
             ov_triple_live,
+            ov_cam_frame,
+            ov_cam_frame_2,
+            scene_cam_pip,
+            scene_cam2_pip,
             scene_rec_single,
             scene_rec_triple,
             scene_rec_single_live,

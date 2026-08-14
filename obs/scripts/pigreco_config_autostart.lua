@@ -45,8 +45,9 @@ function script_description()
   return [[Avvia il server del Config Panel (127.0.0.1:8766) all'apertura di OBS
 (una sola volta, silenzioso).
 
-Sincronizza anche il layout cam: se nascondi StreamCam (occhio),
-l'overlay passa a cam=0 e il lower-third torna in basso a sinistra.]]
+Sincronizza anche il layout faccia: se nascondi Cam PIP (o StreamCam),
+l'overlay passa a cam=0 e il lower-third torna in basso a sinistra.
+Cam 2 PIP e' indipendente: occhio on/off senza toccare la faccia.]]
 end
 
 function script_defaults(settings)
@@ -81,7 +82,10 @@ function script_load(settings)
   if not sync_armed then
     sync_armed = true
     obs.timer_add(sync_cam_layout, 400)
-    obs.script_log(obs.LOG_INFO, "PiGreco cam layout sync attivo (StreamCam eye → overlay cam=)")
+    obs.script_log(
+      obs.LOG_INFO,
+      "PiGreco cam layout sync attivo (Cam PIP / StreamCam eye → overlay cam=; Cam 2 indipendente)"
+    )
   end
 end
 
@@ -233,8 +237,10 @@ function ensure_server(quiet)
 end
 
 -- ---------------------------------------------------------------------------
--- Cam PIP layout sync (no process spawn — safe timer)
--- Nascondi StreamCam → overlay ?cam=0 → lower-third in basso a sinistra
+-- Face-cam layout sync (no process spawn — safe timer)
+-- Prefer "Cam PIP" eye (nested face block). Fallback: direct "StreamCam"
+-- (e.g. Rec Triplo Live band slot).
+-- Cam 2 PIP is independent — never drives lower-third cam= query.
 -- ---------------------------------------------------------------------------
 
 local OVERLAY_NAMES = {
@@ -293,18 +299,33 @@ function sync_cam_layout()
   end
 
   local items = obs.obs_scene_enum_items(scene)
-  local cam_found = false
-  local cam_visible = false
+  local face_found = false
+  local face_visible = false
+  local stream_found = false
+  local stream_visible = false
 
   if items ~= nil then
     for _, item in ipairs(items) do
       local src = obs.obs_sceneitem_get_source(item)
       local name = obs.obs_source_get_name(src) or ""
-      if name == "StreamCam" then
-        cam_found = true
-        cam_visible = obs.obs_sceneitem_visible(item)
+      -- Face block only (Cam 2 PIP ignored on purpose)
+      if name == "Cam PIP" then
+        face_found = true
+        face_visible = obs.obs_sceneitem_visible(item)
+      elseif name == "StreamCam" then
+        stream_found = true
+        stream_visible = obs.obs_sceneitem_visible(item)
       end
     end
+  end
+
+  -- Prefer Cam PIP; else bare StreamCam (triple band / legacy)
+  local cam_found = face_found or stream_found
+  local cam_visible = false
+  if face_found then
+    cam_visible = face_visible
+  elseif stream_found then
+    cam_visible = stream_visible
   end
 
   if not cam_found then

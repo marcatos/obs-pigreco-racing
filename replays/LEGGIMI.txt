@@ -15,10 +15,11 @@ Scene
 - Rec Triplo Live      iRacing + bande brand (REPLAY) + cam in fascia
 - Rec Singolo Live     centrale + REPLAY + Cam PIP (opzionale)
 
-Cam PIP (opzionale)
-- Nelle scene Replay */Rec Singolo Live c’è la source **Cam PIP** (webcam + riquadro con label CAM).
-- Occhio in Sources: un click mostra/nasconde cam e riquadro insieme.
-- Su Rec Triplo Live la cam è lo slot in basso a destra (label CAM sulle bande).
+Cam (opzionale, indipendenti)
+- **Cam PIP** = faccia (sinistra). **Cam 2 PIP** = sedile USB (destra).
+- Occhio indipendente: una sola, entrambe, o nessuna.
+- Su Rec Triplo Live la faccia è nello slot bande; Cam 2 PIP resta a destra.
+- Guida: docs/CAMERAS.md
 
 Registrazione (pulita, senza overlay/cam)
 - Rec Singolo          monitor centrale

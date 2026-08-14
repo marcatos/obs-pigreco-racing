@@ -188,14 +188,26 @@ def test_marcato_replay_collection():
     cam_pip = next(s for s in data["sources"] if s.get("name") == "Cam PIP")
     assert cam_pip.get("id") == "scene"
     assert [it.get("name") for it in cam_pip.get("settings", {}).get("items", [])] == [
-        "Overlay Cam Frame",
+        "Cam Backdrop Face",
         "StreamCam",
+        "Overlay Cam Frame",
     ]
     assert (ROOT / "overlays-marcato" / "cam-frame.html").is_file()
+    assert (ROOT / "overlays-marcato" / "cam-frame-2.html").is_file()
+    cam2_pip = next(s for s in data["sources"] if s.get("name") == "Cam 2 PIP")
+    assert [it.get("name") for it in cam2_pip.get("settings", {}).get("items", [])] == [
+        "Cam Backdrop 2",
+        "Cam 2",
+        "Overlay Cam 2 Frame",
+    ]
+    stream = next(s for s in data["sources"] if s.get("name") == "StreamCam")
+    assert any(f.get("id") == "nv_greenscreen_filter" for f in (stream.get("filters") or []))
+    assert (stream.get("filters") or [])[0].get("settings", {}).get("mode") == 2
     for scene_name in ("Replay iRacing", "Replay Monitor", "Rec Singolo Live"):
         scene = next(s for s in data["sources"] if s.get("name") == scene_name)
         names = [it.get("name") for it in scene.get("settings", {}).get("items", [])]
         assert "Cam PIP" in names
+        assert "Cam 2 PIP" in names
         assert "StreamCam" not in names  # cam only via Cam PIP
         assert "Overlay Broadcast Chrome" in names
     ov_bc = next(s for s in data["sources"] if s.get("name") == "Overlay Broadcast Chrome")
@@ -271,7 +283,8 @@ def test_marcato_rec_2k_collection():
         "Game Capture",
         "Overlay Live Chrome",
         "Overlay Broadcast Chrome",
-        "StreamCam",
+        "Cam PIP",
+        "Cam 2 PIP",
     ]
     assert live["settings"]["items"][0].get("visible") is False
     assert live["settings"]["items"][1].get("visible") is True
@@ -290,6 +303,7 @@ def test_marcato_rec_2k_collection():
         "Overlay Triple Frame Live",
         "Overlay Broadcast Chrome",
         "StreamCam",
+        "Cam 2 PIP",
     ]
     text = path.read_text(encoding="utf-8")
     assert "overlays-marcato" in text.replace("\\\\", "/")

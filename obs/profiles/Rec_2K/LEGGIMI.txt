@@ -11,11 +11,13 @@ Scene
 Su Rec Singolo / Rec Singolo Live: **Game Capture** e' attivo di default;
 **Monitor Centrale** resta in lista (occhio) come fallback desktop.
 
-Cam PIP (opzionale)
-- Nella lista Sources, occhio su **StreamCam** per mostrare/nascondere la webcam.
-- Con cam OFF: sparisce anche il riquadro CAM e il lower-third torna
-  in basso a sinistra (niente buco vuoto).
-- Serve lo script Lua `pigreco_config_autostart.lua` (già in Scripts).
+Cam (opzionale, indipendenti)
+- Occhio su **Cam PIP** = solo faccia (sinistra).
+- Occhio su **Cam 2 PIP** = solo sedile (destra).
+- Puoi: entrambe ON, una sola, o entrambe OFF.
+- Sfondo carbon + NVIDIA Quality+Chair su entrambe.
+- Cam PIP OFF → lower-third a sinistra (Lua). Cam 2 non sposta il lower-third.
+- Guida: docs/CAMERAS.md
 
 Le grafiche sono le stesse del pack 1080, scalate sul canvas 2K.
 
