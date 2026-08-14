@@ -21,12 +21,13 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-import re
 import sys
 import time
 import urllib.request
 from pathlib import Path
 from typing import Any
+
+from domain_track_map import path_viewbox
 
 log = logging.getLogger("pigreco.telemetry.sync_track_maps")
 
@@ -40,7 +41,6 @@ PATHS_DUMP_URL = (
     "static/track_info_data/track_info.json"
 )
 PREFERRED_LAYERS = ("active", "track", "default", "background")
-NUM_RE = re.compile(r"[-+]?(?:\d*\.\d+|\d+)(?:[eE][-+]?\d+)?")
 UA = "obs-pigreco-racing-track-sync/1.1"
 
 
@@ -52,26 +52,13 @@ def _setup_logging(level: str) -> None:
     )
 
 
-def path_viewbox(d: str, *, pad: float = 40.0) -> str:
-    nums = [float(x) for x in NUM_RE.findall(d)]
-    if len(nums) < 4:
-        return "0 0 2000 1200"
-    xs = nums[0::2]
-    ys = nums[1::2]
-    min_x, max_x = min(xs), max(xs)
-    min_y, max_y = min(ys), max(ys)
-    return (
-        f"{min_x - pad:.2f} {min_y - pad:.2f} "
-        f"{(max_x - min_x) + 2 * pad:.2f} {(max_y - min_y) + 2 * pad:.2f}"
-    )
-
-
 def svg_from_active_path(d: str) -> str:
-    vb = path_viewbox(d)
+    vb = path_viewbox(d, pad=100.0)
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{vb}">\n'
-        f'  <path fill="none" stroke="#00C400" stroke-width="8" d="{d}"/>\n'
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{vb}" overflow="visible">\n'
+        f'  <path fill="none" stroke="#00C400" stroke-width="10" '
+        f'stroke-linecap="round" stroke-linejoin="round" d="{d}"/>\n'
         "</svg>\n"
     )
 
