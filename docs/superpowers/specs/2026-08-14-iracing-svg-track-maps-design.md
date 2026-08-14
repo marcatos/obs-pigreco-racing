@@ -1,7 +1,7 @@
 # Design: Official iRacing SVG track maps (P3-07)
 
 **Date:** 2026-08-14  
-**Status:** pending-review  
+**Status:** approved / implemented  
 **Roadmap:** P3-07 (supersedes geometry source for P3-03)  
 **Related:** ADR-005, `adapters/telemetry/CONTRACT.md`, `docs/TRACK_MAP.md`, prior `2026-08-14-p3-03-track-map-design.md`
 
