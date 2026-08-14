@@ -1,6 +1,8 @@
 """Pure OBS session + flag → scene mapping (no IO).
 
-Extends P3-04 flag cuts with Live ↔ Lobby based on telemetry connectivity.
+Extends P3-04 with Live ↔ Lobby. Default flag UX is transparent overlay FX
+on Live (no full-screen color cutaways). Optional ``scenes`` presentation
+still supports aux Flag * scenes that keep gameplay underneath.
 """
 
 from __future__ import annotations
@@ -11,6 +13,8 @@ from dataclasses import dataclass, field
 FLAG_SCENES = frozenset({"yellow", "red", "checkered"})
 HOME_FLAGS = frozenset({"green", "none"})
 DEFAULT_MANUAL_SCENES = frozenset({"Starting Soon", "BRB", "Ending"})
+# overlay = Browser Source FX on Live (recommended); scenes = OBS program cuts
+PRESENTATIONS = frozenset({"overlay", "scenes"})
 
 
 @dataclass
@@ -18,11 +22,12 @@ class FlagDirectorConfig:
     scenes: dict[str, str]
     home_scene: str
     debounce_ms: int = 1500
+    presentation: str = "overlay"
 
 
 @dataclass
 class SessionDirectorConfig:
-    """Flag scenes + live/lobby session automation."""
+    """Flag handling + live/lobby session automation."""
 
     scenes: dict[str, str]
     live_scene: str = "Live"
@@ -30,6 +35,7 @@ class SessionDirectorConfig:
     home_scene: str = "Live"
     flag_debounce_ms: int = 1500
     session_debounce_ms: int = 4000
+    flag_presentation: str = "overlay"
     manual_scenes: frozenset[str] = field(default_factory=lambda: DEFAULT_MANUAL_SCENES)
 
     def as_flag_config(self) -> FlagDirectorConfig:
@@ -37,6 +43,7 @@ class SessionDirectorConfig:
             scenes=dict(self.scenes),
             home_scene=self.home_scene,
             debounce_ms=self.flag_debounce_ms,
+            presentation=self.flag_presentation,
         )
 
 
@@ -49,11 +56,22 @@ class FlagDirector:
     _stacked_home: str | None = field(default=None, repr=False)
 
     def on_flag(self, flag: str, *, now_ms: int) -> str | None:
-        """Return OBS scene name to switch to, or None if no action."""
+        """Return OBS scene name to switch to, or None if no action.
+
+        With ``presentation="overlay"`` never requests a scene change — the
+        Live Browser Source listens to telemetry and animates in place.
+        """
         f = (flag or "none").strip().lower()
         if f == self._current_flag:
             return None
         if (now_ms - self._last_change_ms) < self.config.debounce_ms:
+            return None
+
+        if self.config.presentation == "overlay":
+            # Track flag for debounce / logging; FX overlay handles visuals.
+            if f in FLAG_SCENES or f in HOME_FLAGS or f:
+                self._current_flag = f
+                self._last_change_ms = now_ms
             return None
 
         target: str | None = None

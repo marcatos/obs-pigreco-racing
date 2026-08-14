@@ -13,6 +13,7 @@
   "liveScene": "Live",
   "lobbyScene": "Lobby",
   "manualScenes": ["Starting Soon", "BRB", "Ending"],
+  "flagPresentation": "overlay",
   "autoStartTelemetry": true,
   "telemetryMode": "iracing",
   "telemetryStartCooldownMs": 30000,

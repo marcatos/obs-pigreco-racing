@@ -1253,7 +1253,7 @@ def build_collection(
 
 
 def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
-    """Slim S.Marcato 42 live pack: Starting Soon / Live / Lobby / BRB / Ending / Flags."""
+    """Slim S.Marcato 42: Starting Soon / Live / Lobby / BRB / Ending (+ Flag FX on Live)."""
     t0 = time.perf_counter()
     overlays_dir = overlays or (ROOT / "overlays-marcato")
     OBS_DIR.mkdir(parents=True, exist_ok=True)
@@ -1338,17 +1338,9 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
     ov_track_map = http_browser_source(
         "Overlay Track Map", overlays_dir, "track-map.html"
     )
-    ov_flag_yellow = http_browser_source(
-        "Overlay Flag Yellow", overlays_dir, "flag-scene.html", query="flag=yellow"
-    )
-    ov_flag_red = http_browser_source(
-        "Overlay Flag Red", overlays_dir, "flag-scene.html", query="flag=red"
-    )
-    ov_flag_checkered = http_browser_source(
-        "Overlay Flag Checkered",
-        overlays_dir,
-        "flag-scene.html",
-        query="flag=checkered",
+    # Transparent telemetry-driven FX on Live (not full-screen color panels)
+    ov_flag_fx = http_browser_source(
+        "Overlay Flag FX", overlays_dir, "flag-scene.html"
     )
     ov_cam_frame = browser("Overlay Cam Frame", "cam-frame.html")
     ov_cam_frame_2 = browser("Overlay Cam 2 Frame", "cam-frame-2.html")
@@ -1553,6 +1545,8 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
             cam_pip_item(5),
             cam2_pip_item(6, visible=False),
             mic_live_item(7),
+            # Transparent animated flag FX (telemetry-driven; center FOV stays clear)
+            fullscreen(ov_flag_fx["name"], ov_flag_fx["uuid"], 8, locked=True),
         ],
     )
     scene_lobby = make_scene(
@@ -1586,22 +1580,6 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
             *audio_bed_item(mus_end, 2),
         ],
     )
-    scene_flag_yellow = make_scene(
-        "Flag Yellow",
-        [fullscreen(ov_flag_yellow["name"], ov_flag_yellow["uuid"], 1, locked=True)],
-    )
-    scene_flag_red = make_scene(
-        "Flag Red",
-        [fullscreen(ov_flag_red["name"], ov_flag_red["uuid"], 1, locked=True)],
-    )
-    scene_flag_checkered = make_scene(
-        "Flag Checkered",
-        [
-            fullscreen(
-                ov_flag_checkered["name"], ov_flag_checkered["uuid"], 1, locked=True
-            )
-        ],
-    )
 
     music_sources = [s for s in (mus_soon, mus_lobby, mus_brb, mus_end) if s is not None]
     if music_sources:
@@ -1622,9 +1600,7 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
         ov_live,
         ov_broadcast,
         ov_track_map,
-        ov_flag_yellow,
-        ov_flag_red,
-        ov_flag_checkered,
+        ov_flag_fx,
         ov_cam_frame,
         ov_cam_frame_2,
         *music_sources,
@@ -1635,9 +1611,6 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
         scene_lobby,
         scene_brb,
         scene_end,
-        scene_flag_yellow,
-        scene_flag_red,
-        scene_flag_checkered,
     ]
 
     scene_order = [
@@ -1646,9 +1619,6 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
         {"name": "Lobby"},
         {"name": "BRB"},
         {"name": "Ending"},
-        {"name": "Flag Yellow"},
-        {"name": "Flag Red"},
-        {"name": "Flag Checkered"},
     ]
 
     collection = {
@@ -1832,6 +1802,11 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
     ov_track_map = http_browser_source(
         "Overlay Track Map", overlays_dir, "track-map.html"
     )
+    # Telemetry-driven FX on live/replay scenes (center FOV stays clear)
+    ov_flag_fx = http_browser_source(
+        "Overlay Flag FX", overlays_dir, "flag-scene.html"
+    )
+    # Forced-flag variants for optional Flag * aux scenes (gameplay underneath)
     ov_flag_yellow = http_browser_source(
         "Overlay Flag Yellow", overlays_dir, "flag-scene.html", query="flag=yellow"
     )
@@ -2055,6 +2030,7 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
             *telecronaca_overlay_items(4),
             cam_pip_optional(6, visible=True),
             cam2_pip_optional(7, visible=True),
+            fullscreen(ov_flag_fx["name"], ov_flag_fx["uuid"], 8, locked=True),
         ],
     )
     scene_monitor = make_scene(
@@ -2068,6 +2044,7 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
             *telecronaca_overlay_items(4),
             cam_pip_optional(6, visible=True),
             cam2_pip_optional(7, visible=True),
+            fullscreen(ov_flag_fx["name"], ov_flag_fx["uuid"], 8, locked=True),
         ],
     )
     scene_video = None
@@ -2080,6 +2057,7 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
                 *telecronaca_overlay_items(3),
                 cam_pip_optional(5, visible=True),
                 cam2_pip_optional(6, visible=True),
+                fullscreen(ov_flag_fx["name"], ov_flag_fx["uuid"], 7, locked=True),
             ],
         )
 
@@ -2133,6 +2111,7 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
             *telecronaca_overlay_items(4),
             cam_pip_optional(6, visible=True),
             cam2_pip_optional(7, visible=True),
+            fullscreen(ov_flag_fx["name"], ov_flag_fx["uuid"], 8, locked=True),
         ],
     )
     scene_rec_triple_live = make_scene(
@@ -2140,23 +2119,28 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
         [
             *items_replay_triple(),
             *telecronaca_overlay_items(4),
+            fullscreen(ov_flag_fx["name"], ov_flag_fx["uuid"], 6, locked=True),
         ],
     )
-    scene_flag_yellow = make_scene(
-        "Flag Yellow",
-        [fullscreen(ov_flag_yellow["name"], ov_flag_yellow["uuid"], 1, locked=True)],
-    )
-    scene_flag_red = make_scene(
-        "Flag Red",
-        [fullscreen(ov_flag_red["name"], ov_flag_red["uuid"], 1, locked=True)],
-    )
+
+    def flag_aux_items(flag_ov: dict) -> list[dict]:
+        """Aux Flag * scenes: same gameplay + telecronaca as Rec Singolo Live, FX on top."""
+        return [
+            layout_single_monitor(
+                mon_center["name"], mon_center["uuid"], 1, roles["center"], visible=False
+            ),
+            fullscreen(game["name"], game["uuid"], 2),
+            fullscreen(ov_replay["name"], ov_replay["uuid"], 3, locked=True),
+            *telecronaca_overlay_items(4),
+            cam_pip_optional(6, visible=True),
+            cam2_pip_optional(7, visible=True),
+            fullscreen(flag_ov["name"], flag_ov["uuid"], 8, locked=True),
+        ]
+
+    scene_flag_yellow = make_scene("Flag Yellow", flag_aux_items(ov_flag_yellow))
+    scene_flag_red = make_scene("Flag Red", flag_aux_items(ov_flag_red))
     scene_flag_checkered = make_scene(
-        "Flag Checkered",
-        [
-            fullscreen(
-                ov_flag_checkered["name"], ov_flag_checkered["uuid"], 1, locked=True
-            )
-        ],
+        "Flag Checkered", flag_aux_items(ov_flag_checkered)
     )
     scene_brb = make_scene(
         "BRB",
@@ -2191,6 +2175,7 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
         ov_replay,
         ov_broadcast,
         ov_track_map,
+        ov_flag_fx,
         ov_flag_yellow,
         ov_flag_red,
         ov_flag_checkered,
@@ -2380,6 +2365,13 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
             "Overlay Track Map",
             overlays_dir,
             "track-map.html",
+            width=int(design_w),
+            height=int(design_h),
+        )
+        ov_flag_fx = http_browser_source(
+            "Overlay Flag FX",
+            overlays_dir,
+            "flag-scene.html",
             width=int(design_w),
             height=int(design_h),
         )
@@ -2637,6 +2629,7 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
                 *telecronaca_2k_items(4),
                 cam_pip_item(6, visible=True),
                 cam2_pip_item(7, visible=True),
+                overlay_fs(ov_flag_fx, 8, locked=True),
             ],
         )
         scene_rec_single_live["settings"]["items"][1]["bounds_crop"] = True
@@ -2648,17 +2641,43 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
                 *telecronaca_2k_items(3),
                 cam_triple_item(5, visible=True),
                 cam2_pip_item(6, visible=True),
+                overlay_fs(ov_flag_fx, 7, locked=True),
             ],
         )
-        scene_flag_yellow = make_scene(
-            "Flag Yellow", [overlay_fs(ov_flag_yellow, 1, locked=True)]
-        )
-        scene_flag_red = make_scene(
-            "Flag Red", [overlay_fs(ov_flag_red, 1, locked=True)]
-        )
+
+        def flag_aux_2k(flag_ov: dict) -> list[dict]:
+            return [
+                layout_single_monitor(
+                    mon_center["name"],
+                    mon_center["uuid"],
+                    1,
+                    roles["center"],
+                    visible=False,
+                ),
+                scene_item(
+                    game["name"],
+                    game["uuid"],
+                    2,
+                    pos=(0.0, 0.0),
+                    scale=(1.0, 1.0),
+                    scale_ref=(float(CANVAS_W), float(CANVAS_H)),
+                    bounds=(float(CANVAS_W), float(CANVAS_H)),
+                    bounds_type=_BOUNDS_SCALE_OUTER,
+                ),
+                overlay_fs(ov_live, 3),
+                *telecronaca_2k_items(4),
+                cam_pip_item(6, visible=True),
+                cam2_pip_item(7, visible=True),
+                overlay_fs(flag_ov, 8, locked=True),
+            ]
+
+        scene_flag_yellow = make_scene("Flag Yellow", flag_aux_2k(ov_flag_yellow))
+        scene_flag_red = make_scene("Flag Red", flag_aux_2k(ov_flag_red))
         scene_flag_checkered = make_scene(
-            "Flag Checkered", [overlay_fs(ov_flag_checkered, 1, locked=True)]
+            "Flag Checkered", flag_aux_2k(ov_flag_checkered)
         )
+        for sc in (scene_flag_yellow, scene_flag_red, scene_flag_checkered):
+            sc["settings"]["items"][1]["bounds_crop"] = True
 
         sources = [
             cam,
@@ -2670,6 +2689,7 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
             ov_live,
             ov_broadcast,
             ov_track_map,
+            ov_flag_fx,
             ov_flag_yellow,
             ov_flag_red,
             ov_flag_checkered,

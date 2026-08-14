@@ -41,9 +41,10 @@ Allow **inbound TCP 4455** from your LAN (Windows Defender Firewall) so the phon
 | Lobby | Switch scene |
 | BRB | Switch scene |
 | Ending | Switch scene |
-| Flag Yellow / Red / Checkered | Switch scene |
 | Start / Stop Stream | OBS stream |
 | Start / Stop Record | OBS record |
+
+Flags are **overlay FX on Live** (telemetry) — no Flag * buttons on the slim deck.
 
 Full checklist: `adapters/streamdeck/marcato-live-deck.json`.
 

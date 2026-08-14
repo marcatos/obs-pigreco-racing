@@ -4,8 +4,9 @@ Session Director (P3-04 + Live↔Lobby).
 
 Listens to PiGreco telemetry WebSocket, watches iRacing processes, optionally
 starts the telemetry bridge, and switches OBS scenes:
-  - yellow / red / checkered → Flag *
-  - green / none → stacked home (Live or Lobby)
+  - flagPresentation=overlay (default): yellow/red/checkered stay on Live;
+    Overlay Flag FX animates from telemetry (no flat color cutaways)
+  - flagPresentation=scenes: yellow/red/checkered → Flag * aux scenes
   - telemetry connected → Live
   - iRacing up without telemetry → Lobby
   - never auto-leaves Starting Soon / BRB / Ending
@@ -61,6 +62,11 @@ def load_config(path: Path) -> dict[str, Any]:
     return data
 
 
+def _flag_presentation(cfg: dict[str, Any]) -> str:
+    raw = str(cfg.get("flagPresentation") or "overlay").strip().lower()
+    return raw if raw in ("overlay", "scenes") else "overlay"
+
+
 def build_flag_director(cfg: dict[str, Any]) -> FlagDirector:
     """Backward-compatible flag-only director (tests / legacy)."""
     scenes = cfg.get("scenes") or {}
@@ -71,6 +77,7 @@ def build_flag_director(cfg: dict[str, Any]) -> FlagDirector:
             scenes={str(k).lower(): str(v) for k, v in scenes.items()},
             home_scene=str(cfg.get("homeScene") or "Live"),
             debounce_ms=int(cfg.get("debounceMs") or 1500),
+            presentation=_flag_presentation(cfg),
         )
     )
 
@@ -93,6 +100,7 @@ def build_session_director(cfg: dict[str, Any]) -> SessionDirector:
             home_scene=str(cfg.get("homeScene") or cfg.get("liveScene") or "Live"),
             flag_debounce_ms=int(cfg.get("debounceMs") or 1500),
             session_debounce_ms=int(cfg.get("sessionDebounceMs") or 4000),
+            flag_presentation=_flag_presentation(cfg),
             manual_scenes=manual_set,
         )
     )

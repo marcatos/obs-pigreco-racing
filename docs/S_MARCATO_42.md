@@ -33,7 +33,7 @@ Dopo aver modificato `overlays-marcato/config.values.json` a mano, salva dal **p
 3. Scegli `obs\S_Marcato_42.json` dalla cartella del repo.
 4. Se la collezione è già importata: **Scene Collection → S.Marcato 42**.
 
-Scene previste (**live slim**): Starting Soon, **Live**, **Lobby**, BRB, Ending, Flag Yellow / Red / Checkered — overlay da `overlays-marcato/`, canvas **1920×1080**.
+Scene previste (**live slim**): Starting Soon, **Live**, **Lobby**, BRB, Ending — overlay da `overlays-marcato/`, canvas **1920×1080**. Bandiere = **Overlay Flag FX** sulla scena Live (animazioni trasparenti sopra gameplay + telecronaca), non pannelli full-screen.
 
 | Scena | Uso |
 |-------|-----|

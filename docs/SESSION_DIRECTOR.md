@@ -2,24 +2,23 @@
 
 Hands-free OBS direction for **S.Marcato 42** slim live:
 
-| Condition | Scene |
-|-----------|--------|
+| Condition | Scene / action |
+|-----------|----------------|
 | Telemetry connected (iRacing session) | **Live** |
 | iRacing process up, telemetry stale/down | **Lobby** |
-| Flag yellow / red / checkered | **Flag *** |
-| Green / none after a flag | stacked home (`Live` or `Lobby`) |
+| Flag yellow / red / checkered | **Overlay FX on Live** (default `flagPresentation=overlay`) — no cutaway |
 | Starting Soon / BRB / Ending | **never** auto-left (VirtualDeck / manual) |
 
-Built on P3-04 Flag Director. Entry point unchanged: `Start-FlagDirector.bat` → `adapters/obs_flag_director/director.py`.
+Built on P3-04 Flag Director. Entry: `Start-FlagDirector.bat` → `adapters/obs_flag_director/director.py`.
 
 Design: [`docs/superpowers/specs/2026-08-14-marcato-session-director-design.md`](superpowers/specs/2026-08-14-marcato-session-director-design.md).  
-VirtualDeck: [`OBS_VIRTUALDECK.md`](OBS_VIRTUALDECK.md). Flag-only notes: [`FLAG_DIRECTOR.md`](FLAG_DIRECTOR.md).
+VirtualDeck: [`OBS_VIRTUALDECK.md`](OBS_VIRTUALDECK.md). Flag FX: [`FLAG_DIRECTOR.md`](FLAG_DIRECTOR.md).
 
 ## Prerequisites
 
 1. OBS Studio **28+** with **WebSocket** enabled (`:4455`) — [`OBS_VIRTUALDECK.md`](OBS_VIRTUALDECK.md)
 2. Reimport **S.Marcato 42** after `python tools/generate_pack.py --profile marcato`
-3. Config server `:8766` (telecronaca Browser Sources are HTTP)
+3. Config server `:8766` (telecronaca + Flag FX Browser Sources are HTTP)
 4. Python deps:
 
 ```powershell
@@ -36,12 +35,15 @@ Edit `adapters/obs_flag_director/config.local.json`:
 |-----|---------|
 | `obsPassword` | OBS websocket password (**never commit**) |
 | `dryRun` | `true` = log only; `false` = real switches |
+| `flagPresentation` | `overlay` (default) or `scenes` |
 | `liveScene` / `lobbyScene` / `homeScene` | Default `Live` / `Lobby` / `Live` |
 | `sessionDebounceMs` | Live↔Lobby debounce (default 4000) |
 | `autoStartTelemetry` | Start `Start-Telemetry.bat iracing` when iRacing is up |
 | `iracingProcessNames` | Process watch list |
 | `manualScenes` | Scenes the director will not auto-leave |
-| `scenes.*` | Flag scene names |
+| `scenes.*` | Flag scene names (only if `flagPresentation=scenes`) |
+
+If you already have a `config.local.json`, set `"flagPresentation": "overlay"` so the director stops cutting to missing Flag * panels.
 
 ## Run
 
@@ -58,7 +60,7 @@ python adapters\obs_flag_director\director.py --dry-run
 |--------|------|
 | Audio Desktop | Race / system (center monitor gameplay) |
 | Microfono | Focusrite 2i2 (or `MARCATO_MIC_ID` / `obs/mic.device.json`) |
-| Music Starting Soon / Lobby / BRB / Ending | Royalty-free synthesized beds — active only on those scenes |
+| Music Starting Soon / Lobby / BRB / Ending | Royalty-free beds — active only on those scenes |
 
 On **Live**, music beds are not in the scene (Desktop + Mic only).
 
@@ -74,6 +76,7 @@ python -m pytest tests/test_flag_director.py -v
 - [ ] iRacing closed → no spurious cuts while on Starting Soon
 - [ ] iRacing UI only → Lobby + music within debounce
 - [ ] Session with telemetry → Live + Monitor Centro + Broadcast Chrome
-- [ ] Flag yellow → Flag Yellow → green → Live
+- [ ] Yellow/red/checkered → animated rails/badge on Live; gameplay + HUD visible
+- [ ] Green → FX clears; stay on Live
 - [ ] Exit to UI (telem loss) → Lobby
 - [ ] Mic meters = Focusrite; Desktop carries race audio

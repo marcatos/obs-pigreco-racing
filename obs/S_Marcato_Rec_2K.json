@@ -3,7 +3,7 @@
     "DesktopAudioDevice1": {
         "prev_ver": 536936450,
         "name": "Desktop Audio",
-        "uuid": "3c3bd51d-55e7-4639-811d-46523e00e77d",
+        "uuid": "4899e8b1-99be-445f-ae56-24d59463a7c1",
         "id": "wasapi_output_capture",
         "versioned_id": "wasapi_output_capture",
         "settings": {
@@ -29,7 +29,7 @@
     "AuxAudioDevice1": {
         "prev_ver": 536936450,
         "name": "Mic/Aux",
-        "uuid": "da313ccd-12f2-4676-9c79-2f368ba45401",
+        "uuid": "97a0d68e-9365-4f2d-bf43-af24e509525a",
         "id": "wasapi_input_capture",
         "versioned_id": "wasapi_input_capture",
         "settings": {
@@ -56,7 +56,7 @@
         {
             "prev_ver": 536936450,
             "name": "StreamCam",
-            "uuid": "12db8ac6-d89f-4f21-a773-64e42806cf5c",
+            "uuid": "e577776d-91f9-4ecf-9046-733e5d12fde8",
             "id": "dshow_input",
             "versioned_id": "dshow_input",
             "settings": {
@@ -85,7 +85,7 @@
                 {
                     "prev_ver": 536936450,
                     "name": "NVIDIA Background Removal",
-                    "uuid": "e1ee5192-36da-4a30-9f16-c82bffcee919",
+                    "uuid": "16baa510-3be7-4551-973a-65bf45194e61",
                     "id": "nv_greenscreen_filter",
                     "versioned_id": "nv_greenscreen_filter",
                     "settings": {
@@ -100,7 +100,7 @@
         {
             "prev_ver": 536936450,
             "name": "Cam 2",
-            "uuid": "7694e298-4069-4a28-993f-18a72bc19e62",
+            "uuid": "605b18e4-de36-41c0-8677-3dc6b30efee5",
             "id": "dshow_input",
             "versioned_id": "dshow_input",
             "settings": {
@@ -129,7 +129,7 @@
                 {
                     "prev_ver": 536936450,
                     "name": "NVIDIA Background Removal",
-                    "uuid": "f2c437fa-439e-4cd9-8141-d196a2475f97",
+                    "uuid": "c0d0673d-d921-4459-acf1-ce738536b9bc",
                     "id": "nv_greenscreen_filter",
                     "versioned_id": "nv_greenscreen_filter",
                     "settings": {
@@ -144,7 +144,7 @@
         {
             "prev_ver": 536936450,
             "name": "Cam Backdrop Face",
-            "uuid": "6aeb50cf-81e8-4298-b985-5984654c0661",
+            "uuid": "e2e98570-9d8b-49a4-a5b5-d54999391753",
             "id": "color_source_v3",
             "versioned_id": "color_source_v3",
             "settings": {
@@ -172,7 +172,7 @@
         {
             "prev_ver": 536936450,
             "name": "Cam Backdrop 2",
-            "uuid": "60323386-b94d-4a88-bfff-8a1a9bf59626",
+            "uuid": "95ba3190-1158-41b1-92ee-692b8af4253e",
             "id": "color_source_v3",
             "versioned_id": "color_source_v3",
             "settings": {
@@ -200,7 +200,7 @@
         {
             "prev_ver": 536936450,
             "name": "Monitor Centrale",
-            "uuid": "fdc3784d-47e4-4663-8578-33f9e830c62e",
+            "uuid": "ff20655d-c62a-4444-a8e9-810bb0119c07",
             "id": "monitor_capture",
             "versioned_id": "monitor_capture",
             "settings": {
@@ -228,7 +228,7 @@
         {
             "prev_ver": 536936450,
             "name": "Game Capture",
-            "uuid": "7a979779-9329-4501-ac95-908914c61c03",
+            "uuid": "6cbb8b9c-b6bc-418c-b797-cb89dd8313cc",
             "id": "game_capture",
             "versioned_id": "game_capture",
             "settings": {
@@ -258,7 +258,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Live Chrome",
-            "uuid": "acf00644-ac89-49bb-97e3-c90aafd21c09",
+            "uuid": "6c62584c-c380-4889-8ba6-89716b8e5b5d",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -290,7 +290,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Broadcast Chrome",
-            "uuid": "19e86985-2bee-4ba9-ad89-2197e2e97404",
+            "uuid": "084f2c95-7b4c-442c-bb8c-8f1914e6d7f8",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -322,7 +322,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Track Map",
-            "uuid": "03b607ab-c61b-4190-a2a8-f509bcea3a1c",
+            "uuid": "66bc0474-ecdb-48b2-bc1d-ac569d2494e7",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -353,8 +353,40 @@
         },
         {
             "prev_ver": 536936450,
+            "name": "Overlay Flag FX",
+            "uuid": "64ccf3fa-4e0a-41ed-81b6-8a4070a6b50a",
+            "id": "browser_source",
+            "versioned_id": "browser_source",
+            "settings": {
+                "url": "http://127.0.0.1:8766/o/marcato/flag-scene.html",
+                "width": 1920,
+                "height": 1080,
+                "fps": 30,
+                "shutdown": true,
+                "restart_when_active": true,
+                "webpage_control_level": 1
+            },
+            "mixers": 0,
+            "sync": 0,
+            "flags": 0,
+            "volume": 1.0,
+            "balance": 0.5,
+            "enabled": true,
+            "muted": false,
+            "push-to-mute": false,
+            "push-to-mute-delay": 0,
+            "push-to-talk": false,
+            "push-to-talk-delay": 0,
+            "hotkeys": {},
+            "deinterlace_mode": 0,
+            "deinterlace_field_order": 0,
+            "monitoring_type": 0,
+            "private_settings": {}
+        },
+        {
+            "prev_ver": 536936450,
             "name": "Overlay Flag Yellow",
-            "uuid": "120e80dd-2b34-470f-925a-08c839443d3c",
+            "uuid": "d6172646-bb9e-44ad-8129-db012b6aa5c5",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -386,7 +418,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Flag Red",
-            "uuid": "4f35d660-a748-456b-9599-f751acc58bb2",
+            "uuid": "9fa787f0-575c-480d-ac23-188d3636ff65",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -418,7 +450,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Flag Checkered",
-            "uuid": "bb880551-8309-4f83-8c5f-de73d3e14d35",
+            "uuid": "fc155bc6-bda5-48ca-8c15-b69a72453a3d",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -450,7 +482,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Triple Frame Live",
-            "uuid": "3d359b8e-334b-4db1-8034-a7484151d9c5",
+            "uuid": "ec881fa1-664f-4297-9da6-9ad4beb7329e",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -482,7 +514,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Cam Frame",
-            "uuid": "090fbe30-2664-4f2c-9e50-c05342b456b4",
+            "uuid": "f1215350-a617-4bda-abd3-719d6da4fd7f",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -514,7 +546,7 @@
         {
             "prev_ver": 536936450,
             "name": "Overlay Cam 2 Frame",
-            "uuid": "15f03552-e720-4b49-b47c-eaeab955ff82",
+            "uuid": "0d05087a-0549-443b-a6de-ccc4b62d6697",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
@@ -546,7 +578,7 @@
         {
             "prev_ver": 536936450,
             "name": "Cam PIP",
-            "uuid": "7f2f6076-89ef-4715-a2a0-f9c6fc9e1ffd",
+            "uuid": "6476b86f-4219-436a-82ee-5c8ca6d83abe",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -555,7 +587,7 @@
                 "items": [
                     {
                         "name": "Cam Backdrop Face",
-                        "source_uuid": "6aeb50cf-81e8-4298-b985-5984654c0661",
+                        "source_uuid": "e2e98570-9d8b-49a4-a5b5-d54999391753",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -610,7 +642,7 @@
                     },
                     {
                         "name": "StreamCam",
-                        "source_uuid": "12db8ac6-d89f-4f21-a773-64e42806cf5c",
+                        "source_uuid": "e577776d-91f9-4ecf-9046-733e5d12fde8",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -665,7 +697,7 @@
                     },
                     {
                         "name": "Overlay Cam Frame",
-                        "source_uuid": "090fbe30-2664-4f2c-9e50-c05342b456b4",
+                        "source_uuid": "f1215350-a617-4bda-abd3-719d6da4fd7f",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -749,7 +781,7 @@
         {
             "prev_ver": 536936450,
             "name": "Cam 2 PIP",
-            "uuid": "e4627d09-4a9d-4ade-8599-129f9c4e5a10",
+            "uuid": "459fdff3-697a-4efb-9253-3fe7ded323bd",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -758,7 +790,7 @@
                 "items": [
                     {
                         "name": "Cam Backdrop 2",
-                        "source_uuid": "60323386-b94d-4a88-bfff-8a1a9bf59626",
+                        "source_uuid": "95ba3190-1158-41b1-92ee-692b8af4253e",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -813,7 +845,7 @@
                     },
                     {
                         "name": "Cam 2",
-                        "source_uuid": "7694e298-4069-4a28-993f-18a72bc19e62",
+                        "source_uuid": "605b18e4-de36-41c0-8677-3dc6b30efee5",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -868,7 +900,7 @@
                     },
                     {
                         "name": "Overlay Cam 2 Frame",
-                        "source_uuid": "15f03552-e720-4b49-b47c-eaeab955ff82",
+                        "source_uuid": "0d05087a-0549-443b-a6de-ccc4b62d6697",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -952,7 +984,7 @@
         {
             "prev_ver": 536936450,
             "name": "Rec Singolo",
-            "uuid": "79971dca-9b8e-4245-8d2a-3fe45fcf934c",
+            "uuid": "b441c7b3-bd15-4ff9-9c11-7a0e23c61907",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -961,7 +993,7 @@
                 "items": [
                     {
                         "name": "Monitor Centrale",
-                        "source_uuid": "fdc3784d-47e4-4663-8578-33f9e830c62e",
+                        "source_uuid": "ff20655d-c62a-4444-a8e9-810bb0119c07",
                         "visible": false,
                         "locked": true,
                         "rot": 0.0,
@@ -1016,7 +1048,7 @@
                     },
                     {
                         "name": "Game Capture",
-                        "source_uuid": "7a979779-9329-4501-ac95-908914c61c03",
+                        "source_uuid": "6cbb8b9c-b6bc-418c-b797-cb89dd8313cc",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -1098,7 +1130,7 @@
         {
             "prev_ver": 536936450,
             "name": "Rec Triplo",
-            "uuid": "fc6ad3c5-e65f-4908-8b48-e43f912fc22e",
+            "uuid": "a9e8de1b-60be-4f5a-872d-3f6124b00300",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -1107,7 +1139,7 @@
                 "items": [
                     {
                         "name": "Game Capture",
-                        "source_uuid": "7a979779-9329-4501-ac95-908914c61c03",
+                        "source_uuid": "6cbb8b9c-b6bc-418c-b797-cb89dd8313cc",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -1187,16 +1219,16 @@
         {
             "prev_ver": 536936450,
             "name": "Rec Singolo Live",
-            "uuid": "e021958b-118a-4817-8da3-cc2abb90d661",
+            "uuid": "6f36bb5a-7f7e-4b6f-ba50-cbe899765fe5",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
-                "id_counter": 7,
+                "id_counter": 8,
                 "custom_size": false,
                 "items": [
                     {
                         "name": "Monitor Centrale",
-                        "source_uuid": "fdc3784d-47e4-4663-8578-33f9e830c62e",
+                        "source_uuid": "ff20655d-c62a-4444-a8e9-810bb0119c07",
                         "visible": false,
                         "locked": false,
                         "rot": 0.0,
@@ -1251,7 +1283,7 @@
                     },
                     {
                         "name": "Game Capture",
-                        "source_uuid": "7a979779-9329-4501-ac95-908914c61c03",
+                        "source_uuid": "6cbb8b9c-b6bc-418c-b797-cb89dd8313cc",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -1306,7 +1338,7 @@
                     },
                     {
                         "name": "Overlay Live Chrome",
-                        "source_uuid": "acf00644-ac89-49bb-97e3-c90aafd21c09",
+                        "source_uuid": "6c62584c-c380-4889-8ba6-89716b8e5b5d",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -1361,7 +1393,7 @@
                     },
                     {
                         "name": "Overlay Broadcast Chrome",
-                        "source_uuid": "19e86985-2bee-4ba9-ad89-2197e2e97404",
+                        "source_uuid": "084f2c95-7b4c-442c-bb8c-8f1914e6d7f8",
                         "visible": false,
                         "locked": true,
                         "rot": 0.0,
@@ -1416,7 +1448,7 @@
                     },
                     {
                         "name": "Overlay Track Map",
-                        "source_uuid": "03b607ab-c61b-4190-a2a8-f509bcea3a1c",
+                        "source_uuid": "66bc0474-ecdb-48b2-bc1d-ac569d2494e7",
                         "visible": false,
                         "locked": true,
                         "rot": 0.0,
@@ -1471,7 +1503,7 @@
                     },
                     {
                         "name": "Cam PIP",
-                        "source_uuid": "7f2f6076-89ef-4715-a2a0-f9c6fc9e1ffd",
+                        "source_uuid": "6476b86f-4219-436a-82ee-5c8ca6d83abe",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -1526,9 +1558,497 @@
                     },
                     {
                         "name": "Cam 2 PIP",
-                        "source_uuid": "e4627d09-4a9d-4ade-8599-129f9c4e5a10",
+                        "source_uuid": "459fdff3-697a-4efb-9253-3fe7ded323bd",
                         "visible": true,
                         "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 7,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.3333333333333333,
+                            "y": 1.3333333333333333
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Overlay Flag FX",
+                        "source_uuid": "64ccf3fa-4e0a-41ed-81b6-8a4070a6b50a",
+                        "visible": true,
+                        "locked": true,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 8,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.3333333333333333,
+                            "y": 1.3333333333333333
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    }
+                ]
+            },
+            "mixers": 0,
+            "sync": 0,
+            "flags": 0,
+            "volume": 1.0,
+            "balance": 0.5,
+            "enabled": true,
+            "muted": false,
+            "push-to-mute": false,
+            "push-to-mute-delay": 0,
+            "push-to-talk": false,
+            "push-to-talk-delay": 0,
+            "hotkeys": {
+                "OBSBasic.SelectScene": [],
+                "libobs.show_scene_item.1": [],
+                "libobs.hide_scene_item.1": [],
+                "libobs.show_scene_item.2": [],
+                "libobs.hide_scene_item.2": [],
+                "libobs.show_scene_item.3": [],
+                "libobs.hide_scene_item.3": [],
+                "libobs.show_scene_item.4": [],
+                "libobs.hide_scene_item.4": [],
+                "libobs.show_scene_item.5": [],
+                "libobs.hide_scene_item.5": [],
+                "libobs.show_scene_item.6": [],
+                "libobs.hide_scene_item.6": [],
+                "libobs.show_scene_item.7": [],
+                "libobs.hide_scene_item.7": [],
+                "libobs.show_scene_item.8": [],
+                "libobs.hide_scene_item.8": []
+            },
+            "deinterlace_mode": 0,
+            "deinterlace_field_order": 0,
+            "monitoring_type": 0,
+            "canvas_uuid": "c3d4e5f6-a7b8-9012-cdef-1234567890ab",
+            "private_settings": {}
+        },
+        {
+            "prev_ver": 536936450,
+            "name": "Rec Triplo Live",
+            "uuid": "725b7083-4ea3-4831-9e12-21022417d39c",
+            "id": "scene",
+            "versioned_id": "scene",
+            "settings": {
+                "id_counter": 7,
+                "custom_size": false,
+                "items": [
+                    {
+                        "name": "Game Capture",
+                        "source_uuid": "6cbb8b9c-b6bc-418c-b797-cb89dd8313cc",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 2560.0,
+                            "y": 1440.0
+                        },
+                        "align": 5,
+                        "bounds_type": 3,
+                        "bounds_align": 0,
+                        "bounds_crop": true,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 1,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 400.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -0.4444444444444444
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 2560.0,
+                            "y": 640.0
+                        },
+                        "bounds_rel": {
+                            "x": 3.5555555555555554,
+                            "y": 0.8888888888888888
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Overlay Triple Frame Live",
+                        "source_uuid": "ec881fa1-664f-4297-9da6-9ad4beb7329e",
+                        "visible": true,
+                        "locked": true,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 2,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.3333333333333333,
+                            "y": 1.3333333333333333
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Overlay Broadcast Chrome",
+                        "source_uuid": "084f2c95-7b4c-442c-bb8c-8f1914e6d7f8",
+                        "visible": false,
+                        "locked": true,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 3,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.3333333333333333,
+                            "y": 1.3333333333333333
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Overlay Track Map",
+                        "source_uuid": "66bc0474-ecdb-48b2-bc1d-ac569d2494e7",
+                        "visible": false,
+                        "locked": true,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 4,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.3333333333333333,
+                            "y": 1.3333333333333333
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "StreamCam",
+                        "source_uuid": "e577776d-91f9-4ecf-9046-733e5d12fde8",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 5,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 1973.3333333333333,
+                            "y": 1120.0
+                        },
+                        "pos_rel": {
+                            "x": 0.9629629629629629,
+                            "y": 0.5555555555555556
+                        },
+                        "scale": {
+                            "x": 0.2222222222222222,
+                            "y": 0.2222222222222222
+                        },
+                        "scale_rel": {
+                            "x": 0.16666666666666666,
+                            "y": 0.16666666666666666
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Cam 2 PIP",
+                        "source_uuid": "459fdff3-697a-4efb-9253-3fe7ded323bd",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 6,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.3333333333333333,
+                            "y": 1.3333333333333333
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Overlay Flag FX",
+                        "source_uuid": "64ccf3fa-4e0a-41ed-81b6-8a4070a6b50a",
+                        "visible": true,
+                        "locked": true,
                         "rot": 0.0,
                         "scale_ref": {
                             "x": 1920.0,
@@ -1617,17 +2137,72 @@
         },
         {
             "prev_ver": 536936450,
-            "name": "Rec Triplo Live",
-            "uuid": "33c6ccb1-f3dc-473b-abd1-07dd01ea86af",
+            "name": "Flag Yellow",
+            "uuid": "c281bad3-387f-4cb4-930a-01d187d6eb73",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
-                "id_counter": 6,
+                "id_counter": 8,
                 "custom_size": false,
                 "items": [
                     {
+                        "name": "Monitor Centrale",
+                        "source_uuid": "ff20655d-c62a-4444-a8e9-810bb0119c07",
+                        "visible": false,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 2560.0,
+                            "y": 1440.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 1,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
                         "name": "Game Capture",
-                        "source_uuid": "7a979779-9329-4501-ac95-908914c61c03",
+                        "source_uuid": "6cbb8b9c-b6bc-418c-b797-cb89dd8313cc",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -1643,61 +2218,6 @@
                         "crop_top": 0,
                         "crop_right": 0,
                         "crop_bottom": 0,
-                        "id": 1,
-                        "group_item_backup": false,
-                        "pos": {
-                            "x": 0.0,
-                            "y": 400.0
-                        },
-                        "pos_rel": {
-                            "x": -1.7777777777777777,
-                            "y": -0.4444444444444444
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0
-                        },
-                        "scale_rel": {
-                            "x": 1.0,
-                            "y": 1.0
-                        },
-                        "bounds": {
-                            "x": 2560.0,
-                            "y": 640.0
-                        },
-                        "bounds_rel": {
-                            "x": 3.5555555555555554,
-                            "y": 0.8888888888888888
-                        },
-                        "scale_filter": "disable",
-                        "blend_method": "default",
-                        "blend_type": "normal",
-                        "show_transition": {
-                            "duration": 300
-                        },
-                        "hide_transition": {
-                            "duration": 300
-                        },
-                        "private_settings": {}
-                    },
-                    {
-                        "name": "Overlay Triple Frame Live",
-                        "source_uuid": "3d359b8e-334b-4db1-8034-a7484151d9c5",
-                        "visible": true,
-                        "locked": true,
-                        "rot": 0.0,
-                        "scale_ref": {
-                            "x": 1920.0,
-                            "y": 1080.0
-                        },
-                        "align": 5,
-                        "bounds_type": 0,
-                        "bounds_align": 0,
-                        "bounds_crop": false,
-                        "crop_left": 0,
-                        "crop_top": 0,
-                        "crop_right": 0,
-                        "crop_bottom": 0,
                         "id": 2,
                         "group_item_backup": false,
                         "pos": {
@@ -1709,20 +2229,20 @@
                             "y": -1.0
                         },
                         "scale": {
-                            "x": 1.3333333333333333,
-                            "y": 1.3333333333333333
+                            "x": 1.0,
+                            "y": 1.0
                         },
                         "scale_rel": {
                             "x": 1.0,
                             "y": 1.0
                         },
                         "bounds": {
-                            "x": 0.0,
-                            "y": 0.0
+                            "x": 2560.0,
+                            "y": 1440.0
                         },
                         "bounds_rel": {
-                            "x": 0.0,
-                            "y": 0.0
+                            "x": 3.5555555555555554,
+                            "y": 2.0
                         },
                         "scale_filter": "disable",
                         "blend_method": "default",
@@ -1736,9 +2256,9 @@
                         "private_settings": {}
                     },
                     {
-                        "name": "Overlay Broadcast Chrome",
-                        "source_uuid": "19e86985-2bee-4ba9-ad89-2197e2e97404",
-                        "visible": false,
+                        "name": "Overlay Live Chrome",
+                        "source_uuid": "6c62584c-c380-4889-8ba6-89716b8e5b5d",
+                        "visible": true,
                         "locked": true,
                         "rot": 0.0,
                         "scale_ref": {
@@ -1791,8 +2311,8 @@
                         "private_settings": {}
                     },
                     {
-                        "name": "Overlay Track Map",
-                        "source_uuid": "03b607ab-c61b-4190-a2a8-f509bcea3a1c",
+                        "name": "Overlay Broadcast Chrome",
+                        "source_uuid": "084f2c95-7b4c-442c-bb8c-8f1914e6d7f8",
                         "visible": false,
                         "locked": true,
                         "rot": 0.0,
@@ -1846,10 +2366,10 @@
                         "private_settings": {}
                     },
                     {
-                        "name": "StreamCam",
-                        "source_uuid": "12db8ac6-d89f-4f21-a773-64e42806cf5c",
-                        "visible": true,
-                        "locked": false,
+                        "name": "Overlay Track Map",
+                        "source_uuid": "66bc0474-ecdb-48b2-bc1d-ac569d2494e7",
+                        "visible": false,
+                        "locked": true,
                         "rot": 0.0,
                         "scale_ref": {
                             "x": 1920.0,
@@ -1866,20 +2386,75 @@
                         "id": 5,
                         "group_item_backup": false,
                         "pos": {
-                            "x": 1973.3333333333333,
-                            "y": 1120.0
+                            "x": 0.0,
+                            "y": 0.0
                         },
                         "pos_rel": {
-                            "x": 0.9629629629629629,
-                            "y": 0.5555555555555556
+                            "x": -1.7777777777777777,
+                            "y": -1.0
                         },
                         "scale": {
-                            "x": 0.2222222222222222,
-                            "y": 0.2222222222222222
+                            "x": 1.3333333333333333,
+                            "y": 1.3333333333333333
                         },
                         "scale_rel": {
-                            "x": 0.16666666666666666,
-                            "y": 0.16666666666666666
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Cam PIP",
+                        "source_uuid": "6476b86f-4219-436a-82ee-5c8ca6d83abe",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 6,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.3333333333333333,
+                            "y": 1.3333333333333333
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
                         },
                         "bounds": {
                             "x": 0.0,
@@ -1902,7 +2477,7 @@
                     },
                     {
                         "name": "Cam 2 PIP",
-                        "source_uuid": "e4627d09-4a9d-4ade-8599-129f9c4e5a10",
+                        "source_uuid": "459fdff3-697a-4efb-9253-3fe7ded323bd",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -1918,7 +2493,62 @@
                         "crop_top": 0,
                         "crop_right": 0,
                         "crop_bottom": 0,
-                        "id": 6,
+                        "id": 7,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.3333333333333333,
+                            "y": 1.3333333333333333
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Overlay Flag Yellow",
+                        "source_uuid": "d6172646-bb9e-44ad-8129-db012b6aa5c5",
+                        "visible": true,
+                        "locked": true,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 8,
                         "group_item_backup": false,
                         "pos": {
                             "x": 0.0,
@@ -1981,96 +2611,11 @@
                 "libobs.show_scene_item.5": [],
                 "libobs.hide_scene_item.5": [],
                 "libobs.show_scene_item.6": [],
-                "libobs.hide_scene_item.6": []
-            },
-            "deinterlace_mode": 0,
-            "deinterlace_field_order": 0,
-            "monitoring_type": 0,
-            "canvas_uuid": "c3d4e5f6-a7b8-9012-cdef-1234567890ab",
-            "private_settings": {}
-        },
-        {
-            "prev_ver": 536936450,
-            "name": "Flag Yellow",
-            "uuid": "048ca849-c49a-42bb-9cfb-9e30b5c6b86f",
-            "id": "scene",
-            "versioned_id": "scene",
-            "settings": {
-                "id_counter": 1,
-                "custom_size": false,
-                "items": [
-                    {
-                        "name": "Overlay Flag Yellow",
-                        "source_uuid": "120e80dd-2b34-470f-925a-08c839443d3c",
-                        "visible": true,
-                        "locked": true,
-                        "rot": 0.0,
-                        "scale_ref": {
-                            "x": 1920.0,
-                            "y": 1080.0
-                        },
-                        "align": 5,
-                        "bounds_type": 0,
-                        "bounds_align": 0,
-                        "bounds_crop": false,
-                        "crop_left": 0,
-                        "crop_top": 0,
-                        "crop_right": 0,
-                        "crop_bottom": 0,
-                        "id": 1,
-                        "group_item_backup": false,
-                        "pos": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "pos_rel": {
-                            "x": -1.7777777777777777,
-                            "y": -1.0
-                        },
-                        "scale": {
-                            "x": 1.3333333333333333,
-                            "y": 1.3333333333333333
-                        },
-                        "scale_rel": {
-                            "x": 1.0,
-                            "y": 1.0
-                        },
-                        "bounds": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "bounds_rel": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "scale_filter": "disable",
-                        "blend_method": "default",
-                        "blend_type": "normal",
-                        "show_transition": {
-                            "duration": 300
-                        },
-                        "hide_transition": {
-                            "duration": 300
-                        },
-                        "private_settings": {}
-                    }
-                ]
-            },
-            "mixers": 0,
-            "sync": 0,
-            "flags": 0,
-            "volume": 1.0,
-            "balance": 0.5,
-            "enabled": true,
-            "muted": false,
-            "push-to-mute": false,
-            "push-to-mute-delay": 0,
-            "push-to-talk": false,
-            "push-to-talk-delay": 0,
-            "hotkeys": {
-                "OBSBasic.SelectScene": [],
-                "libobs.show_scene_item.1": [],
-                "libobs.hide_scene_item.1": []
+                "libobs.hide_scene_item.6": [],
+                "libobs.show_scene_item.7": [],
+                "libobs.hide_scene_item.7": [],
+                "libobs.show_scene_item.8": [],
+                "libobs.hide_scene_item.8": []
             },
             "deinterlace_mode": 0,
             "deinterlace_field_order": 0,
@@ -2081,16 +2626,126 @@
         {
             "prev_ver": 536936450,
             "name": "Flag Red",
-            "uuid": "0157d3a1-d8dc-4dea-8103-63446226a40b",
+            "uuid": "1ba71310-d5c7-4aea-8996-ebc5270d4af4",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
-                "id_counter": 1,
+                "id_counter": 8,
                 "custom_size": false,
                 "items": [
                     {
-                        "name": "Overlay Flag Red",
-                        "source_uuid": "4f35d660-a748-456b-9599-f751acc58bb2",
+                        "name": "Monitor Centrale",
+                        "source_uuid": "ff20655d-c62a-4444-a8e9-810bb0119c07",
+                        "visible": false,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 2560.0,
+                            "y": 1440.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 1,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Game Capture",
+                        "source_uuid": "6cbb8b9c-b6bc-418c-b797-cb89dd8313cc",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 2560.0,
+                            "y": 1440.0
+                        },
+                        "align": 5,
+                        "bounds_type": 3,
+                        "bounds_align": 0,
+                        "bounds_crop": true,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 2,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 2560.0,
+                            "y": 1440.0
+                        },
+                        "bounds_rel": {
+                            "x": 3.5555555555555554,
+                            "y": 2.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Overlay Live Chrome",
+                        "source_uuid": "6c62584c-c380-4889-8ba6-89716b8e5b5d",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -2106,7 +2761,282 @@
                         "crop_top": 0,
                         "crop_right": 0,
                         "crop_bottom": 0,
-                        "id": 1,
+                        "id": 3,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.3333333333333333,
+                            "y": 1.3333333333333333
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Overlay Broadcast Chrome",
+                        "source_uuid": "084f2c95-7b4c-442c-bb8c-8f1914e6d7f8",
+                        "visible": false,
+                        "locked": true,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 4,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.3333333333333333,
+                            "y": 1.3333333333333333
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Overlay Track Map",
+                        "source_uuid": "66bc0474-ecdb-48b2-bc1d-ac569d2494e7",
+                        "visible": false,
+                        "locked": true,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 5,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.3333333333333333,
+                            "y": 1.3333333333333333
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Cam PIP",
+                        "source_uuid": "6476b86f-4219-436a-82ee-5c8ca6d83abe",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 6,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.3333333333333333,
+                            "y": 1.3333333333333333
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Cam 2 PIP",
+                        "source_uuid": "459fdff3-697a-4efb-9253-3fe7ded323bd",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 7,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.3333333333333333,
+                            "y": 1.3333333333333333
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Overlay Flag Red",
+                        "source_uuid": "9fa787f0-575c-480d-ac23-188d3636ff65",
+                        "visible": true,
+                        "locked": true,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 8,
                         "group_item_backup": false,
                         "pos": {
                             "x": 0.0,
@@ -2159,7 +3089,21 @@
             "hotkeys": {
                 "OBSBasic.SelectScene": [],
                 "libobs.show_scene_item.1": [],
-                "libobs.hide_scene_item.1": []
+                "libobs.hide_scene_item.1": [],
+                "libobs.show_scene_item.2": [],
+                "libobs.hide_scene_item.2": [],
+                "libobs.show_scene_item.3": [],
+                "libobs.hide_scene_item.3": [],
+                "libobs.show_scene_item.4": [],
+                "libobs.hide_scene_item.4": [],
+                "libobs.show_scene_item.5": [],
+                "libobs.hide_scene_item.5": [],
+                "libobs.show_scene_item.6": [],
+                "libobs.hide_scene_item.6": [],
+                "libobs.show_scene_item.7": [],
+                "libobs.hide_scene_item.7": [],
+                "libobs.show_scene_item.8": [],
+                "libobs.hide_scene_item.8": []
             },
             "deinterlace_mode": 0,
             "deinterlace_field_order": 0,
@@ -2170,16 +3114,126 @@
         {
             "prev_ver": 536936450,
             "name": "Flag Checkered",
-            "uuid": "893d2629-ac26-45a5-833d-c225381d3659",
+            "uuid": "c46670c9-4678-4050-99ce-5dbf4fcac0b4",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
-                "id_counter": 1,
+                "id_counter": 8,
                 "custom_size": false,
                 "items": [
                     {
-                        "name": "Overlay Flag Checkered",
-                        "source_uuid": "bb880551-8309-4f83-8c5f-de73d3e14d35",
+                        "name": "Monitor Centrale",
+                        "source_uuid": "ff20655d-c62a-4444-a8e9-810bb0119c07",
+                        "visible": false,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 2560.0,
+                            "y": 1440.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 1,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Game Capture",
+                        "source_uuid": "6cbb8b9c-b6bc-418c-b797-cb89dd8313cc",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 2560.0,
+                            "y": 1440.0
+                        },
+                        "align": 5,
+                        "bounds_type": 3,
+                        "bounds_align": 0,
+                        "bounds_crop": true,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 2,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 2560.0,
+                            "y": 1440.0
+                        },
+                        "bounds_rel": {
+                            "x": 3.5555555555555554,
+                            "y": 2.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Overlay Live Chrome",
+                        "source_uuid": "6c62584c-c380-4889-8ba6-89716b8e5b5d",
                         "visible": true,
                         "locked": true,
                         "rot": 0.0,
@@ -2195,7 +3249,282 @@
                         "crop_top": 0,
                         "crop_right": 0,
                         "crop_bottom": 0,
-                        "id": 1,
+                        "id": 3,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.3333333333333333,
+                            "y": 1.3333333333333333
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Overlay Broadcast Chrome",
+                        "source_uuid": "084f2c95-7b4c-442c-bb8c-8f1914e6d7f8",
+                        "visible": false,
+                        "locked": true,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 4,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.3333333333333333,
+                            "y": 1.3333333333333333
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Overlay Track Map",
+                        "source_uuid": "66bc0474-ecdb-48b2-bc1d-ac569d2494e7",
+                        "visible": false,
+                        "locked": true,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 5,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.3333333333333333,
+                            "y": 1.3333333333333333
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Cam PIP",
+                        "source_uuid": "6476b86f-4219-436a-82ee-5c8ca6d83abe",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 6,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.3333333333333333,
+                            "y": 1.3333333333333333
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Cam 2 PIP",
+                        "source_uuid": "459fdff3-697a-4efb-9253-3fe7ded323bd",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 7,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777777777777,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.3333333333333333,
+                            "y": 1.3333333333333333
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Overlay Flag Checkered",
+                        "source_uuid": "fc155bc6-bda5-48ca-8c15-b69a72453a3d",
+                        "visible": true,
+                        "locked": true,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 8,
                         "group_item_backup": false,
                         "pos": {
                             "x": 0.0,
@@ -2248,7 +3577,21 @@
             "hotkeys": {
                 "OBSBasic.SelectScene": [],
                 "libobs.show_scene_item.1": [],
-                "libobs.hide_scene_item.1": []
+                "libobs.hide_scene_item.1": [],
+                "libobs.show_scene_item.2": [],
+                "libobs.hide_scene_item.2": [],
+                "libobs.show_scene_item.3": [],
+                "libobs.hide_scene_item.3": [],
+                "libobs.show_scene_item.4": [],
+                "libobs.hide_scene_item.4": [],
+                "libobs.show_scene_item.5": [],
+                "libobs.hide_scene_item.5": [],
+                "libobs.show_scene_item.6": [],
+                "libobs.hide_scene_item.6": [],
+                "libobs.show_scene_item.7": [],
+                "libobs.hide_scene_item.7": [],
+                "libobs.show_scene_item.8": [],
+                "libobs.hide_scene_item.8": []
             },
             "deinterlace_mode": 0,
             "deinterlace_field_order": 0,
