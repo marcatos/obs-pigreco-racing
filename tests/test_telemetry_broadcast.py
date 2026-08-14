@@ -79,3 +79,14 @@ def test_standings_from_distance_replay_order():
     assert rows[0]["pos"] == 1
     rel = build_relatives(rows, focus_car_idx=5, window=1)
     assert any(r["rel"] == 0 for r in rel)
+
+
+def test_build_tick_enrichment_fields():
+    tick = build_tick(5.0)
+    assert "deltaBestMs" in tick
+    assert tick["deltaBestMs"] == tick["lastLapMs"] - tick["bestLapMs"]
+    assert isinstance(tick.get("inPit"), bool)
+    assert tick["standings"][0].get("posChange") in (-1, 0, 1, None)
+    # second call should populate posChange from prev
+    tick2 = build_tick(6.0)
+    assert any(r.get("posChange") is not None for r in tick2["standings"])

@@ -104,6 +104,8 @@ def mock_standings(elapsed_s: float, *, focus_pos: int, field: int = 12) -> list
                 "class": "GT3",
                 "carIdx": car_idx,
                 "isFocus": is_focus,
+                "inPit": False,
+                "iRating": 1700 + pos * 10,
             }
         )
     return rows

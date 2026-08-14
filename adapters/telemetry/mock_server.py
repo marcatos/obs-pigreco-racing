@@ -26,6 +26,7 @@ HERE = Path(__file__).resolve().parent
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
+from domain_enrich import apply_pos_change, delta_best_ms  # noqa: E402
 from domain_standings import build_relatives, mock_standings  # noqa: E402
 
 SCHEMA_VERSION = 1
@@ -37,6 +38,7 @@ SERVER_NAME = "pigreco-telemetry-mock"
 DEFAULT_JSON_PATH = HERE / "telemetry.json"
 
 log = logging.getLogger("pigreco.telemetry.mock")
+_prev_pos_by_car: dict = {}
 
 
 @dataclass(frozen=True)
@@ -65,12 +67,14 @@ def _envelope(msg_type: str, **fields: Any) -> dict[str, Any]:
 
 def build_tick(elapsed_s: float) -> dict[str, Any]:
     """Deterministic fake race snapshot for overlay smoke tests."""
+    global _prev_pos_by_car
     # Soft oscillation so gaps / speed look alive without randomness noise.
     wave = math.sin(elapsed_s * 0.35)
     lap_progress = (elapsed_s % 95.0) / 95.0
     position = 3 if wave > -0.6 else 4
     field = 12
     standings = mock_standings(elapsed_s, focus_pos=position, field=field)
+    standings, _prev_pos_by_car = apply_pos_change(standings, _prev_pos_by_car)
     focus = next((r for r in standings if r.get("isFocus")), standings[0])
     focus_i = next(i for i, r in enumerate(standings) if r.get("isFocus"))
     gap_ahead = 0 if focus_i == 0 else int(standings[focus_i].get("intervalMs") or 0)
@@ -102,6 +106,13 @@ def build_tick(elapsed_s: float) -> dict[str, Any]:
         gapBehindMs=gap_behind,
         lastLapMs=last_lap,
         bestLapMs=best_lap,
+        # P3-06 enrichment
+        deltaBestMs=delta_best_ms(last_lap, best_lap),
+        inPit=False,
+        iRating=1850,
+        airTempC=24.0,
+        trackTempC=32.0,
+        sof=2100,
         currentLapMs=int(lap_progress * last_lap),
         lap=lap,
         lapsTotal=laps_total,

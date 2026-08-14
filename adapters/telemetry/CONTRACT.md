@@ -88,6 +88,34 @@ Periodic snapshot.
 | `standings` | array | Leaderboard rows (see below) |
 | `relatives` | array | Short ahead/behind list around focus |
 
+#### Optional P3-06 enrichment (ignore if absent)
+
+Additive director fields. Consumers must ignore unknown keys.
+
+**Focus / car**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `deltaBestMs` | number \| null | `lastLapMs - bestLapMs` (negative = faster than best) |
+| `iRating` | number \| null | Focus driver iRating when the source provides it |
+| `inPit` | boolean \| null | Focus car is in pit |
+
+**Session**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `airTempC` | number \| null | Air temperature (°C) if the SDK is reliable |
+| `trackTempC` | number \| null | Track temperature (°C) if the SDK is reliable |
+| `sof` | number \| null | Strength of field when available |
+
+**`standings[]` extras (P3-06)**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `posChange` | number \| null | −1 / 0 / +1 vs previous tick (null on first tick) |
+| `inPit` | boolean \| null | Row car is in pit |
+| `iRating` | number \| null | Driver iRating when available |
+
 **`standings[]` row**
 
 | Field | Type | Description |
@@ -145,6 +173,9 @@ python adapters/telemetry/mock_server.py
 
 # iRacing bridge (replay or live — iRacing must be open)
 python adapters/telemetry/iracing_bridge.py
+
+# Optional: ask sim to write native .ibt under Documents/iRacing/telemetry
+python adapters/telemetry/iracing_bridge.py --ibt
 ```
 
 Dependency: **`websockets`**. iRacing bridge also needs **`pyirsdk`** when talking to the sim.
