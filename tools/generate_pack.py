@@ -705,7 +705,10 @@ def move_transition_settings() -> dict:
 
 
 def build_transitions(*, overlays_dir: Path, profile: str) -> tuple[list[dict], str, int]:
-    """Return (transitions, current_name, duration_ms). Default: Move Transition."""
+    """Return (transitions, current_name, duration_ms).
+
+    Marcato default: Dissolvenza 900 ms; PiGreco default: branded Move transition.
+    """
     if profile == "marcato":
         stinger_path = ROOT / "overlays-marcato" / "stinger" / "marcato-stinger.webm"
         stinger_name = "S.Marcato Stinger"
@@ -2312,11 +2315,38 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
     collection["transitions"] = transitions
     collection["current_transition"] = current_tr
     collection["transition_duration"] = tr_dur
-    collection["quick_transitions"] = [
-        {"name": "Taglio", "duration": 0, "hotkeys": [], "id": 1, "fade_to_black": False},
-        {"name": current_tr, "duration": tr_dur, "hotkeys": [], "id": 2, "fade_to_black": False},
-        {"name": "Dissolvenza", "duration": 350, "hotkeys": [], "id": 3, "fade_to_black": False},
+    transition_names = {t["name"] for t in transitions}
+    quick_transitions = [
+        {
+            "name": "Dissolvenza",
+            "duration": tr_dur,
+            "hotkeys": [],
+            "id": 1,
+            "fade_to_black": False,
+        },
     ]
+    next_id = 2
+    if "S.Marcato Stinger" in transition_names:
+        quick_transitions.append(
+            {
+                "name": "S.Marcato Stinger",
+                "duration": 850,
+                "hotkeys": [],
+                "id": next_id,
+                "fade_to_black": False,
+            }
+        )
+        next_id += 1
+    quick_transitions.append(
+        {
+            "name": "Taglio",
+            "duration": 0,
+            "hotkeys": [],
+            "id": next_id,
+            "fade_to_black": False,
+        }
+    )
+    collection["quick_transitions"] = quick_transitions
 
     out = OBS_DIR / "S_Marcato_Replay.json"
     out.write_text(json.dumps(collection, indent=4), encoding="utf-8")
