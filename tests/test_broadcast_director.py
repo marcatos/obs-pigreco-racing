@@ -135,3 +135,24 @@ console.log("ok");
     )
     assert proc.returncode == 0, proc.stderr + proc.stdout
     assert "ok" in proc.stdout
+
+
+def test_director_module_does_not_add_no_widget_classes():
+    text = (ROOT / "overlays" / "broadcast-director.js").read_text(encoding="utf-8")
+    for cls in ("no-leaderboard", "no-relative", "no-focus", "no-session"):
+        assert cls not in text, "director module must not hide widgets via " + cls
+    assert "classList" not in text
+
+
+def test_overlay_runtime_director_policies_via_node():
+    script = ROOT / "tests" / "broadcast_overlay_runtime.js"
+    assert script.is_file(), "overlay runtime harness missing"
+    proc = subprocess.run(
+        ["node", str(script)],
+        cwd=str(ROOT),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stderr + proc.stdout
+    assert "ok" in proc.stdout

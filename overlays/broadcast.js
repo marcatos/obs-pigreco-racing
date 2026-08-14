@@ -32,6 +32,8 @@
   let retryMs = 1000;
   let lastFlag = "";
   let directorState = { hero: null, queue: [] };
+  let heroGen = 0;
+  let heroExitTimer = null;
   const t0 = (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now();
 
   const elSession = root.querySelector("[data-bc-session]");
@@ -73,6 +75,12 @@
 
   function showHero(item) {
     if (!item) return;
+    if (heroExitTimer != null) {
+      window.clearTimeout(heroExitTimer);
+      heroExitTimer = null;
+      directorLog("DEBUG", "cancelled pending hero exit gen=" + heroGen);
+    }
+    heroGen += 1;
     item.until = Date.now() + item.ttlMs;
     directorState.hero = item;
     if (!elMoment) return;
@@ -110,7 +118,11 @@
       elMoment.classList.add("is-exit");
     }
     directorState.hero = null;
-    window.setTimeout(function () {
+    var exitGen = heroGen;
+    heroExitTimer = window.setTimeout(function () {
+      heroExitTimer = null;
+      if (exitGen !== heroGen) return;
+      if (directorState.hero) return;
       if (directorState.queue.length) showHero(directorState.queue.shift());
       else if (elMoment) {
         elMoment.hidden = true;
@@ -190,7 +202,9 @@
         (flagLabel ? "<span>" + flagLabel + "</span>" : "");
     }
 
-    if (elBanner && director !== "auto") {
+    // Auto + Director: banner comes from flag_change events. If Director is
+    // missing, fall back to tick-driven banner (same as manual/off).
+    if (elBanner && (director !== "auto" || !Director)) {
       applyFlagBanner(flag);
     }
 
