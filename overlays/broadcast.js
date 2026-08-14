@@ -63,20 +63,43 @@
     return m + ":" + (s < 10 ? "0" : "") + s.toFixed(3);
   }
 
+  function fmtRemainMs(ms) {
+    if (ms == null || !Number.isFinite(Number(ms)) || Number(ms) < 0) return "";
+    const total = Math.floor(Number(ms) / 1000);
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = total % 60;
+    if (h > 0) {
+      return h + ":" + String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+    }
+    return m + ":" + String(s).padStart(2, "0");
+  }
+
   function render(tick) {
     if (!tick) return;
 
     const flag = (tick.flag || "none").toLowerCase();
     if (elSession) {
-      elSession.dataset.flag = flag;
+      elSession.dataset.flag = flag === "none" ? "green" : flag;
       const track = tick.trackName || "";
       const lap =
         tick.lap != null
           ? "LAP " + tick.lap + (tick.lapsTotal != null ? "/" + tick.lapsTotal : "")
           : "";
-      const remain =
-        tick.sessionLapsRemain != null ? tick.sessionLapsRemain + " TO GO" : "";
+      // iRacing sentinel 32767 = unlimited / N/A — never show as "TO GO"
+      const remainN = Number(tick.sessionLapsRemain);
+      const remainOk =
+        tick.sessionLapsRemain != null &&
+        Number.isFinite(remainN) &&
+        remainN >= 0 &&
+        remainN < 32000;
+      const remain = remainOk ? remainN + " TO GO" : "";
+      const timeLeft =
+        !remainOk && tick.sessionTimeRemainMs != null
+          ? fmtRemainMs(tick.sessionTimeRemainMs)
+          : "";
       const replay = tick.isReplay ? '<span class="bc-replay-tag">REPLAY</span>' : "";
+      const flagLabel = flag === "none" ? "" : String(flag).toUpperCase();
       elSession.innerHTML =
         '<span class="bc-flag-dot" aria-hidden="true"></span>' +
         replay +
@@ -85,9 +108,8 @@
         "</span>" +
         (lap ? "<span>" + lap + "</span>" : "") +
         (remain ? "<span>" + remain + "</span>" : "") +
-        "<span>" +
-        String(flag).toUpperCase() +
-        "</span>";
+        (timeLeft ? "<span>" + timeLeft + "</span>" : "") +
+        (flagLabel ? "<span>" + flagLabel + "</span>" : "");
     }
 
     if (elBanner) {
@@ -113,6 +135,11 @@
             '">' +
             '<span class="bc-lb-pos">' +
             (r.pos != null ? r.pos : "—") +
+            (r.posChange === 1
+              ? '<span class="bc-pos-up" aria-label="gained">▲</span>'
+              : r.posChange === -1
+                ? '<span class="bc-pos-down" aria-label="lost">▼</span>'
+                : "") +
             "</span>" +
             '<span class="bc-lb-num">#' +
             (r.carNumber || "—") +
@@ -193,6 +220,19 @@
         "<span>GAP <strong>" +
         fmtMs(tick.gapAheadMs) +
         "</strong></span>" +
+        (tick.deltaBestMs != null
+          ? "<span>Δ BEST <strong class=\"" +
+            (Number(tick.deltaBestMs) <= 0 ? "is-purple" : "is-slow") +
+            "\">" +
+            fmtMs(tick.deltaBestMs) +
+            "</strong></span>"
+          : "") +
+        (tick.fuelPct != null
+          ? "<span>FUEL <strong>" + Number(tick.fuelPct).toFixed(0) + "%</strong></span>"
+          : "") +
+        (tick.inPit
+          ? "<span class=\"bc-pit-tag\">PIT</span>"
+          : "") +
         "</div>" +
         "</div>";
     }

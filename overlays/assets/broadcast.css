@@ -182,6 +182,23 @@
   font-weight: 600;
 }
 
+.bc-focus-meta .is-purple {
+  color: #c084fc; /* lap improvement only; not UI chrome glow */
+}
+
+.bc-focus-meta .is-slow {
+  color: var(--muted, #9aa3ad);
+}
+
+.bc-pit-tag {
+  color: #080a0c;
+  background: #009fe5;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  letter-spacing: 0.06em;
+}
+
 /* Relative / battle under focus */
 .bc-relative {
   padding: 0;
@@ -288,7 +305,7 @@
 
 .bc-lb-row {
   display: grid;
-  grid-template-columns: 28px 36px 1fr auto;
+  grid-template-columns: 40px 36px 1fr auto;
   gap: 0.35rem;
   align-items: center;
   padding: 0.28rem 0.55rem;
@@ -305,6 +322,21 @@
   font-weight: 700;
   color: var(--accent, #00c400);
   font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.bc-pos-up {
+  color: #00c400;
+  font-size: 10px;
+  margin-left: 2px;
+}
+
+.bc-pos-down {
+  color: #e5484d;
+  font-size: 10px;
+  margin-left: 2px;
 }
 
 .bc-lb-num {
