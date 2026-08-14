@@ -87,11 +87,11 @@ def test_pit_enter_exit():
     d.feed(_tick(inPit=False, ts=50))
     ev = d.feed(_tick(inPit=True, ts=51))
     assert any(e["kind"] == "pit" and e["payload"]["state"] == "enter" for e in ev)
-    ev2 = d.feed(_tick(inPit=False, ts=60), now_ms=60_000)
+    ev2 = d.feed(_tick(inPit=False, ts=52))
     assert any(e["kind"] == "pit" and e["payload"]["state"] == "exit" for e in ev2)
 
 
-def test_mock_pit_window_emits_enter():
+def test_mock_pit_window_emits_enter_and_exit():
     from mock_server import build_tick
 
     assert build_tick(39.0)["inPit"] is False
@@ -102,6 +102,9 @@ def test_mock_pit_window_emits_enter():
     d.feed(build_tick(39.0))
     ev = d.feed(build_tick(40.0))
     assert any(e["kind"] == "pit" and e["payload"]["state"] == "enter" for e in ev)
+    d.feed(build_tick(44.0))
+    ev2 = d.feed(build_tick(45.0))
+    assert any(e["kind"] == "pit" and e["payload"]["state"] == "exit" for e in ev2)
 
 
 def test_mock_and_bridge_accept_sensitivity_flag():

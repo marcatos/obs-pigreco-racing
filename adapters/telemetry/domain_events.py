@@ -49,10 +49,18 @@ class EventDetector:
             return True
         return False
 
-    def _emit(self, kind: str, ts: int, payload: dict[str, Any]) -> dict[str, Any] | None:
-        if self._debounced(kind, ts):
+    def _emit(
+        self,
+        kind: str,
+        ts: int,
+        payload: dict[str, Any],
+        *,
+        debounce_key: str | None = None,
+    ) -> dict[str, Any] | None:
+        key = debounce_key or kind
+        if self._debounced(key, ts):
             return None
-        self._last_emit_ms[kind] = ts
+        self._last_emit_ms[key] = ts
         self._seq += 1
         return {
             "type": "telemetry.event",
@@ -135,11 +143,11 @@ class EventDetector:
         ppit = bool(prev.get("inPit"))
         cpit = bool(tick.get("inPit"))
         if cpit and not ppit:
-            e = self._emit("pit", ts, {"state": "enter"})
+            e = self._emit("pit", ts, {"state": "enter"}, debounce_key="pit:enter")
             if e:
                 found.append(e)
         elif ppit and not cpit:
-            e = self._emit("pit", ts, {"state": "exit"})
+            e = self._emit("pit", ts, {"state": "exit"}, debounce_key="pit:exit")
             if e:
                 found.append(e)
 
