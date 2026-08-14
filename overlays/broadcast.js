@@ -23,11 +23,77 @@
   if (cfg.broadcastFocus === false) root.classList.add("no-focus");
   if (cfg.broadcastSession === false) root.classList.add("no-session");
   if (cfg.broadcastTicker === false) root.classList.add("no-ticker");
+  if (cfg.broadcastBattlePanel === false) root.classList.add("no-fight");
+  if (cfg.broadcastRaceBest === false) root.classList.add("no-best");
 
   const maxLb = Math.max(5, Math.min(20, Number(cfg.broadcastLeaderboardRows) || 10));
   const url = cfg.telemetryWsUrl || "ws://127.0.0.1:8765";
   const director = cfg.broadcastDirector || "auto"; // auto|manual|off
   const sensitivity = cfg.broadcastDirectorSensitivity || "normal";
+  const BATTLE_SENS = {
+    // engage/closeRate/ticks = arm panel.
+    // include = serious join/rejoin; keep = soft stay; leaveMs = time beyond keep before drop.
+    calm: {
+      engageMs: 1100,
+      includeMs: 280,
+      keepMs: 400,
+      leaveMs: 3000,
+      exitMs: 400,
+      closeRate: 220,
+      ticks: 5,
+    },
+    normal: {
+      engageMs: 850,
+      includeMs: 250,
+      keepMs: 400,
+      leaveMs: 3000,
+      exitMs: 400,
+      closeRate: 280,
+      ticks: 4,
+    },
+    hype: {
+      engageMs: 650,
+      includeMs: 220,
+      keepMs: 400,
+      leaveMs: 3000,
+      exitMs: 400,
+      closeRate: 320,
+      ticks: 3,
+    },
+  };
+  const battleSens = BATTLE_SENS[sensitivity] || BATTLE_SENS.normal;
+  const battlePanelEnabled = cfg.broadcastBattlePanel !== false;
+  const battleEngageMs = Math.max(
+    300,
+    Math.min(2500, Number(cfg.broadcastBattleMs) || battleSens.engageMs)
+  );
+  const battleIncludeMs = Math.max(
+    120,
+    Math.min(800, Number(cfg.broadcastBattleIncludeMs) || battleSens.includeMs)
+  );
+  const battleKeepMs = Math.max(
+    battleIncludeMs,
+    Math.min(1500, Number(cfg.broadcastBattleKeepMs) || battleSens.keepMs)
+  );
+  const battleLeaveMs = Math.max(
+    500,
+    Math.min(10000, Number(cfg.broadcastBattleLeaveMs) || battleSens.leaveMs)
+  );
+  const battleExitMs = Math.max(
+    battleKeepMs,
+    Math.min(2000, Number(cfg.broadcastBattleExitMs) || battleSens.exitMs || battleKeepMs)
+  );
+  const battleCloseRate = Math.max(
+    80,
+    Math.min(2000, Number(cfg.broadcastBattleCloseRate) || battleSens.closeRate)
+  );
+  const battleTicksNeed = Math.max(
+    2,
+    Math.min(12, Number(cfg.broadcastBattleTicks) || battleSens.ticks)
+  );
+  const battleDoorstopMs = Math.max(60, Math.min(250, Number(cfg.broadcastBattleDoorstopMs) || 110));
+  const FIGHT_SWAP_MS = 520;
+  const FIGHT_PACK_MAX = 3;
   // TV-style timing board: freeze standings/relative gaps for a few seconds
   const boardRefreshMs = Math.max(
     1500,
@@ -76,6 +142,31 @@
   const elTicker = root.querySelector("[data-bc-ticker]");
   const elTickerTrack = root.querySelector("[data-bc-ticker-track]");
   const elTickerViewport = root.querySelector(".bc-ticker-viewport");
+  const elFight = root.querySelector("[data-bc-fight]");
+  const elFightTitle = root.querySelector("[data-bc-fight-title]");
+  const elFightRows = root.querySelector("[data-bc-fight-rows]");
+  const elBest = root.querySelector("[data-bc-best]");
+  const elBestTime = root.querySelector("[data-bc-best-time]");
+  const elBestDriver = root.querySelector("[data-bc-best-driver]");
+  const raceBestEnabled = cfg.broadcastRaceBest !== false;
+  let raceBestMs = null;
+  let raceBestFlashTimer = null;
+  let battleStreak = 0;
+  let battleActive = false;
+  let battleFarSince = 0;
+  let battleEmptySince = 0;
+  let fightPrevOrder = [];
+  let fightFlashTimer = null;
+  let fightGapHist = { ahead: null, behind: null, t: 0 };
+  let fightStickyKeys = Object.create(null);
+  let fightLeaveAt = Object.create(null);
+  let fightDroppedKeys = Object.create(null);
+  let fightAnimating = false;
+  let fightDispSeps = null;
+  let fightDispSide = null;
+  let fightDispAt = 0;
+  const FIGHT_GAP_REFRESH_MS = 400;
+  const FIGHT_GAP_EPSILON_MS = 55;
   let tickerRowsCache = null;
   let tickerPhase = "idle"; // idle | rise | expand | show | collapse | drop
   let tickerTimer = null;
@@ -202,6 +293,718 @@
       return sign + m + ":" + (abs % 60 < 10 ? "0" : "") + s;
     }
     return sign + abs.toFixed(2) + "s";
+  }
+
+  function fmtFightGap(ms) {
+    if (ms == null || !Number.isFinite(Number(ms))) return { text: "—", side: false };
+    const abs = Math.abs(Number(ms));
+    if (abs < 60) return { text: "SIDE", side: true };
+    return { text: (abs / 1000).toFixed(2) + "s", side: false };
+  }
+
+  /** SIDE hysteresis + 0.05s quantize so labels don't chatter. */
+  function fmtFightGapStable(ms, wasSide) {
+    if (ms == null || !Number.isFinite(Number(ms))) return { text: "—", side: false };
+    var abs = Math.abs(Number(ms));
+    if (wasSide) {
+      if (abs < 110) return { text: "SIDE", side: true };
+    } else if (abs < 60) {
+      return { text: "SIDE", side: true };
+    }
+    var q = Math.round(abs / 50) * 50;
+    if (q < 100) q = 100;
+    return { text: (q / 1000).toFixed(2) + "s", side: false };
+  }
+
+  function fightOrdersEqual(a, b) {
+    if (!a || !b || a.length !== b.length) return false;
+    var i;
+    for (i = 0; i < a.length; i++) {
+      if (a[i] !== b[i]) return false;
+    }
+    return true;
+  }
+
+  function stabilizeFightSeps(rawSeps, structureChanged) {
+    var now = Date.now();
+    var next = rawSeps.slice();
+    if (
+      !structureChanged &&
+      fightDispSeps &&
+      fightDispSeps.length === next.length &&
+      now - fightDispAt < FIGHT_GAP_REFRESH_MS
+    ) {
+      return fightDispSeps;
+    }
+    if (!structureChanged && fightDispSeps && fightDispSeps.length === next.length) {
+      var moved = false;
+      var i;
+      for (i = 0; i < next.length; i++) {
+        var prev = fightDispSeps[i];
+        var cur = next[i];
+        var prevSide = !!(fightDispSide && fightDispSide[i]);
+        var nextFmt = fmtFightGapStable(cur, prevSide);
+        var prevFmt = fmtFightGapStable(prev, prevSide);
+        if (nextFmt.side !== prevFmt.side || nextFmt.text !== prevFmt.text) {
+          if (Math.abs(cur - prev) >= FIGHT_GAP_EPSILON_MS || nextFmt.side !== prevFmt.side) {
+            moved = true;
+          } else {
+            next[i] = prev;
+          }
+        } else {
+          next[i] = prev;
+        }
+      }
+      if (!moved) return fightDispSeps;
+    }
+    fightDispSeps = next;
+    fightDispSide = next.map(function (ms, idx) {
+      var was = !!(fightDispSide && fightDispSide[idx]);
+      return fmtFightGapStable(ms, was).side;
+    });
+    fightDispAt = now;
+    return fightDispSeps;
+  }
+
+  var HELMET_SVG =
+    '<svg class="bc-fight-avatar bc-fight-helmet" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+    '<path fill="#2a3238" d="M32 6c-12.5 0-22 9.2-22 22.5V40c0 8.5 6.2 14 14 14h16c7.8 0 14-5.5 14-14v-11.5C54 15.2 44.5 6 32 6z"/>' +
+    '<path fill="#1a1f24" d="M14 28.5c0-9.5 7.8-16.5 18-16.5s18 7 18 16.5V36H14v-7.5z"/>' +
+    '<path fill="#4a5560" d="M12 30h40v6.5c0 1.2-.6 2-2 2.4L32 44 14 38.9c-1.4-.4-2-1.2-2-2.4V30z"/>' +
+    '<path fill="#9aa5b0" opacity=".85" d="M18 31.5h28v3.2c0 .7-.5 1.2-1.3 1.4L32 38.5 19.3 36.1c-.8-.2-1.3-.7-1.3-1.4v-3.2z"/>' +
+    '<path stroke="currentColor" stroke-width="2" d="M14 37.5h36"/>' +
+    '<circle cx="32" cy="18" r="2.2" fill="#c8d0d8"/>' +
+    "</svg>";
+
+  function shortDriverName(name) {
+    var s = String(name || "").trim();
+    if (!s) return "—";
+    function capWord(w) {
+      if (!w) return "";
+      return w
+        .split("-")
+        .map(function (part) {
+          if (!part) return "";
+          return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+        })
+        .join("-");
+    }
+    var parts = s.split(/\s+/).filter(Boolean);
+    if (parts.length === 1) return capWord(parts[0]).slice(0, 14);
+    var first = parts[0].charAt(0).toUpperCase();
+    var last = capWord(parts[parts.length - 1]).slice(0, 12);
+    return first + ". " + last;
+  }
+
+  function findFocusStandingIndex(standings, focusCarIdx) {
+    var i;
+    for (i = 0; i < standings.length; i++) {
+      if (focusCarIdx != null && standings[i].carIdx === focusCarIdx) return i;
+      if (standings[i].isFocus) return i;
+    }
+    return -1;
+  }
+
+  function sampleFightGaps(tick) {
+    var now =
+      typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
+    var ga =
+      tick.gapAheadMs != null && Number.isFinite(Number(tick.gapAheadMs))
+        ? Number(tick.gapAheadMs)
+        : null;
+    var gb =
+      tick.gapBehindMs != null && Number.isFinite(Number(tick.gapBehindMs))
+        ? Number(tick.gapBehindMs)
+        : null;
+    var closeAhead = 0;
+    var closeBehind = 0;
+    if (fightGapHist.t > 0) {
+      var dt = Math.max(0.08, (now - fightGapHist.t) / 1000);
+      if (ga != null && fightGapHist.ahead != null && ga >= 0 && fightGapHist.ahead >= 0) {
+        // Positive = we are catching the car ahead (gap shrinking).
+        closeAhead = (fightGapHist.ahead - ga) / dt;
+      }
+      if (gb != null && fightGapHist.behind != null && gb >= 0 && fightGapHist.behind >= 0) {
+        // Positive = car behind is catching us (gap shrinking).
+        closeBehind = (fightGapHist.behind - gb) / dt;
+      }
+    }
+    fightGapHist = { ahead: ga, behind: gb, t: now };
+    return { ga: ga, gb: gb, closeAhead: closeAhead, closeBehind: closeBehind };
+  }
+
+  function fightShouldArm(sample) {
+    var door =
+      (sample.ga != null && sample.ga >= 0 && sample.ga <= battleDoorstopMs) ||
+      (sample.gb != null && sample.gb >= 0 && sample.gb <= battleDoorstopMs);
+    if (door) return true;
+    var catchAhead =
+      sample.ga != null &&
+      sample.ga >= 0 &&
+      sample.ga <= battleEngageMs &&
+      sample.closeAhead >= battleCloseRate;
+    var catchBehind =
+      sample.gb != null &&
+      sample.gb >= 0 &&
+      sample.gb <= battleEngageMs &&
+      sample.closeBehind >= battleCloseRate;
+    return catchAhead || catchBehind;
+  }
+
+  function fightShouldHold(sample) {
+    var near =
+      (sample.ga != null && sample.ga >= 0 && sample.ga <= battleExitMs) ||
+      (sample.gb != null && sample.gb >= 0 && sample.gb <= battleExitMs);
+    return near;
+  }
+
+  function fightNow() {
+    return typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
+  }
+
+  /**
+   * Connected train around focus (consecutive intervals), up to 3 cars.
+   * Sticky stay while gap <= keep; beyond keep for leaveMs → drop.
+   * Rejoin only with tighter include (serious approach).
+   */
+  function buildFightPack(standings, focusCarIdx, joinThr, keepThr) {
+    var focusI = findFocusStandingIndex(standings, focusCarIdx);
+    if (focusI < 0 || !standings.length) return null;
+    var now = fightNow();
+
+    function carKeyAt(i) {
+      return boardCarKey(standings[i]) || "i" + i;
+    }
+
+    /** Gap between standings[i-1] (ahead) and standings[i]. */
+    function edgeGap(i) {
+      return Math.abs(Number(standings[i].intervalMs) || 0);
+    }
+
+    function acceptEdge(gapAbs, key) {
+      if (fightStickyKeys[key]) {
+        if (gapAbs <= keepThr) {
+          delete fightLeaveAt[key];
+          return true;
+        }
+        // Beyond keep: keep showing until leaveMs elapsed, then drop.
+        if (!fightLeaveAt[key]) fightLeaveAt[key] = now;
+        if (now - fightLeaveAt[key] < battleLeaveMs) return true;
+        delete fightLeaveAt[key];
+        fightDroppedKeys[key] = true;
+        return false;
+      }
+      // Already dropped this battle: only a serious close re-admits them.
+      if (fightDroppedKeys[key]) {
+        if (gapAbs <= joinThr) {
+          delete fightDroppedKeys[key];
+          delete fightLeaveAt[key];
+          return true;
+        }
+        return false;
+      }
+      // First join while battle is live: allow up to keep (0.4s).
+      if (gapAbs <= keepThr) {
+        delete fightLeaveAt[key];
+        return true;
+      }
+      return false;
+    }
+
+    var lo = focusI;
+    var hi = focusI;
+
+    while (lo > 0 && focusI - lo < 2) {
+      var aheadKey = carKeyAt(lo - 1);
+      if (!acceptEdge(edgeGap(lo), aheadKey)) break;
+      lo -= 1;
+    }
+    while (hi < standings.length - 1 && hi - focusI < 2) {
+      var behindKey = carKeyAt(hi + 1);
+      if (!acceptEdge(edgeGap(hi + 1), behindKey)) break;
+      hi += 1;
+    }
+
+    while (hi - lo + 1 > FIGHT_PACK_MAX) {
+      var gapDropLo = edgeGap(lo + 1);
+      var gapDropHi = edgeGap(hi);
+      var stickyLo = !!fightStickyKeys[carKeyAt(lo)];
+      var stickyHi = !!fightStickyKeys[carKeyAt(hi)];
+      if (lo === focusI) {
+        hi -= 1;
+      } else if (hi === focusI) {
+        lo += 1;
+      } else if (stickyLo && !stickyHi) {
+        hi -= 1;
+      } else if (stickyHi && !stickyLo) {
+        lo += 1;
+      } else if (gapDropHi >= gapDropLo) {
+        hi -= 1;
+      } else {
+        lo += 1;
+      }
+    }
+
+    if (hi - lo + 1 < 2) {
+      fightStickyKeys = Object.create(null);
+      fightLeaveAt = Object.create(null);
+      return null;
+    }
+
+    var rows = [];
+    var contested = null;
+    var nextSticky = Object.create(null);
+    var nextLeave = Object.create(null);
+    var i;
+
+    for (i = lo; i <= hi; i++) {
+      var gapToFocus = 0;
+      var j;
+      if (i < focusI) {
+        for (j = i + 1; j <= focusI; j++) gapToFocus -= edgeGap(j);
+      } else if (i > focusI) {
+        for (j = focusI + 1; j <= i; j++) gapToFocus += edgeGap(j);
+      }
+      var r = standings[i];
+      var key = carKeyAt(i);
+      var pos = r.pos != null ? Number(r.pos) : i + 1;
+      if (contested == null || pos < contested) contested = pos;
+      nextSticky[key] = true;
+      if (fightLeaveAt[key]) nextLeave[key] = fightLeaveAt[key];
+      rows.push({
+        key: key,
+        pos: pos,
+        carNumber: r.carNumber || "",
+        name: r.name || "—",
+        isFocus: i === focusI,
+        gapMs: gapToFocus,
+        countryCode: r.countryCode || null,
+        country: r.country || null,
+      });
+    }
+
+    fightStickyKeys = nextSticky;
+    fightLeaveAt = nextLeave;
+
+    var seps = [];
+    var k;
+    for (k = 0; k < rows.length - 1; k++) {
+      seps.push(Math.abs(Number(rows[k + 1].gapMs) - Number(rows[k].gapMs)));
+    }
+    return { contestedPos: contested, rows: rows, seps: seps };
+  }
+
+  function setFightOn(on) {
+    if (!elFight) return;
+    elFight.classList.toggle("is-on", !!on);
+    elFight.setAttribute("aria-hidden", on ? "false" : "true");
+    if (on) {
+      elFight.hidden = false;
+      elFight.removeAttribute("hidden");
+    }
+  }
+
+  function hideFightPanel() {
+    if (!elFight) return;
+    setFightOn(false);
+    window.setTimeout(function () {
+      if (!battleActive && elFight && !elFight.classList.contains("is-on")) {
+        elFight.hidden = true;
+        elFight.setAttribute("hidden", "");
+      }
+    }, 450);
+    if (elFightRows) elFightRows.innerHTML = "";
+    fightPrevOrder = [];
+    fightStickyKeys = Object.create(null);
+    fightLeaveAt = Object.create(null);
+    fightDroppedKeys = Object.create(null);
+    fightDispSeps = null;
+    fightDispSide = null;
+    fightDispAt = 0;
+    battleFarSince = 0;
+    battleEmptySince = 0;
+    fightAnimating = false;
+  }
+
+  function flagAssetBase() {
+    // Config server (:8766): always load from pigreco overlays pack.
+    if (location.pathname.indexOf("/o/") === 0) {
+      return "/o/overlays/assets/flags/";
+    }
+    var scripts = document.getElementsByTagName("script");
+    var i;
+    for (i = scripts.length - 1; i >= 0; i--) {
+      var src = scripts[i].getAttribute("src") || "";
+      if (src.indexOf("broadcast.js") < 0) continue;
+      if (src.indexOf("../overlays/") >= 0) return "../overlays/assets/flags/";
+      if (/\/overlays\/broadcast\.js/.test(src)) {
+        return src.replace(/broadcast\.js(?:\?.*)?$/, "assets/flags/");
+      }
+      return "assets/flags/";
+    }
+    return "assets/flags/";
+  }
+
+  var FLAG_ASSET_BASE = flagAssetBase();
+
+  function flagEmojiFromCode(code) {
+    var cc = String(code || "")
+      .trim()
+      .toUpperCase();
+    if (cc.length !== 2 || cc === "UN") return "";
+    var a = cc.charCodeAt(0) - 65;
+    var b = cc.charCodeAt(1) - 65;
+    if (a < 0 || a > 25 || b < 0 || b > 25) return "";
+    return String.fromCodePoint(0x1f1e6 + a, 0x1f1e6 + b);
+  }
+
+  function flagSpanHtml(code, country) {
+    var cc = String(code || "")
+      .trim()
+      .toLowerCase();
+    if (cc.length !== 2 || cc === "un") return "";
+    var title = String(country || code || "")
+      .replace(/&/g, "&amp;")
+      .replace(/"/g, "&quot;")
+      .replace(/</g, "&lt;");
+    // SVG images (OBS CEF often blanks emoji regional flags on Windows).
+    return (
+      '<img class="bc-flag" src="' +
+      FLAG_ASSET_BASE +
+      cc +
+      '.svg" alt="" title="' +
+      title +
+      '" width="18" height="12" decoding="async" draggable="false" />'
+    );
+  }
+
+  function fightAvatarHtml(r) {
+    if (r.isFocus && pilotMarkUrl) {
+      return (
+        '<img class="bc-fight-avatar bc-fight-mono" src="' +
+        pilotMarkUrl +
+        '" alt="" decoding="async" draggable="false" />'
+      );
+    }
+    return HELMET_SVG;
+  }
+
+  function fightCardHtml(r, swapClass) {
+    var flag = flagSpanHtml(r.countryCode, r.country);
+    return (
+      '<div class="bc-fight-card' +
+      (r.isFocus ? " is-focus" : "") +
+      (swapClass || "") +
+      '" data-fight-key="' +
+      r.key +
+      '">' +
+      '<div class="bc-fight-avatar-wrap">' +
+      fightAvatarHtml(r) +
+      '<span class="bc-fight-pos">P' +
+      (r.pos != null ? r.pos : "—") +
+      "</span>" +
+      "</div>" +
+      '<div class="bc-fight-meta">' +
+      '<span class="bc-fight-num">#' +
+      (r.carNumber || "—") +
+      "</span>" +
+      '<span class="bc-fight-name-row">' +
+      (flag ? '<span class="bc-fight-nat">' + flag + "</span>" : "") +
+      '<span class="bc-fight-name">' +
+      shortDriverName(r.name) +
+      "</span>" +
+      "</span>" +
+      "</div>" +
+      "</div>"
+    );
+  }
+
+  function paintFightSepEl(el, ms, wasSide) {
+    var sep = fmtFightGapStable(ms, wasSide);
+    el.classList.toggle("is-side", sep.side);
+    var span = el.querySelector("span");
+    if (span && span.textContent !== sep.text) span.textContent = sep.text;
+    return sep.side;
+  }
+
+  function paintFightCard(card, r) {
+    card.classList.toggle("is-focus", !!r.isFocus);
+    var posEl = card.querySelector(".bc-fight-pos");
+    var posText = "P" + (r.pos != null ? r.pos : "—");
+    if (posEl && posEl.textContent !== posText) posEl.textContent = posText;
+    var numEl = card.querySelector(".bc-fight-num");
+    var numText = "#" + (r.carNumber || "—");
+    if (numEl && numEl.textContent !== numText) numEl.textContent = numText;
+    var nameEl = card.querySelector(".bc-fight-name");
+    var nameText = shortDriverName(r.name);
+    if (nameEl && nameEl.textContent !== nameText) nameEl.textContent = nameText;
+
+    var meta = card.querySelector(".bc-fight-meta");
+    if (meta) {
+      var nameRow = meta.querySelector(".bc-fight-name-row");
+      if (!nameRow) {
+        nameRow = document.createElement("span");
+        nameRow.className = "bc-fight-name-row";
+        if (nameEl) nameRow.appendChild(nameEl);
+        meta.appendChild(nameRow);
+      }
+      var nat = nameRow.querySelector(".bc-fight-nat");
+      var flagHtml = flagSpanHtml(r.countryCode, r.country);
+      if (flagHtml) {
+        if (!nat) {
+          nat = document.createElement("span");
+          nat.className = "bc-fight-nat";
+          nameRow.insertBefore(nat, nameRow.firstChild);
+        }
+        if (nat.innerHTML !== flagHtml) nat.innerHTML = flagHtml;
+      } else if (nat) {
+        nat.remove();
+      }
+    }
+
+    var wrap = card.querySelector(".bc-fight-avatar-wrap");
+    if (!wrap) return;
+    var hasMono = !!wrap.querySelector(".bc-fight-mono");
+    var wantMono = !!(r.isFocus && pilotMarkUrl);
+    if (hasMono === wantMono) return;
+    var posKeep = wrap.querySelector(".bc-fight-pos");
+    var posHtml = posKeep ? posKeep.outerHTML : "";
+    wrap.innerHTML = fightAvatarHtml(r) + posHtml;
+  }
+
+  function renderFightRows(pack) {
+    if (!elFightRows || !pack) return;
+    var order = pack.rows.map(function (r) {
+      return r.key;
+    });
+    var structureChanged = !fightOrdersEqual(fightPrevOrder, order);
+    var swapped = Object.create(null);
+
+    if (structureChanged && fightPrevOrder.length) {
+      pack.rows.forEach(function (r) {
+        var prev = fightPrevOrder.indexOf(r.key);
+        var now = order.indexOf(r.key);
+        if (prev >= 0 && now >= 0 && now !== prev) {
+          if (now < prev) swapped[r.key] = "up";
+          else swapped[r.key] = "down";
+        }
+      });
+    }
+
+    if (elFightTitle) {
+      var title =
+        "BATTLE FOR P" + (pack.contestedPos != null ? pack.contestedPos : "—");
+      if (elFightTitle.textContent !== title) elFightTitle.textContent = title;
+    }
+
+    var seps = stabilizeFightSeps(pack.seps, structureChanged);
+
+    // Same drivers/order: update text only — never recreate mono/helmet.
+    if (!structureChanged && elFightRows.querySelector("[data-fight-key]")) {
+      var cards = elFightRows.querySelectorAll(".bc-fight-card");
+      var sepEls = elFightRows.querySelectorAll(".bc-fight-sep");
+      var idx;
+      for (idx = 0; idx < pack.rows.length; idx++) {
+        if (cards[idx]) paintFightCard(cards[idx], pack.rows[idx]);
+      }
+      for (idx = 0; idx < seps.length; idx++) {
+        if (!sepEls[idx]) continue;
+        var side = paintFightSepEl(sepEls[idx], seps[idx], !!(fightDispSide && fightDispSide[idx]));
+        if (!fightDispSide) fightDispSide = [];
+        fightDispSide[idx] = side;
+      }
+      fightPrevOrder = order;
+      return;
+    }
+
+    var firstRects = Object.create(null);
+    if (structureChanged && fightPrevOrder.length) {
+      elFightRows.querySelectorAll("[data-fight-key]").forEach(function (node) {
+        var key = node.getAttribute("data-fight-key");
+        if (!key) return;
+        firstRects[key] = node.getBoundingClientRect();
+      });
+    }
+
+    var html = "";
+    pack.rows.forEach(function (r, rowIdx) {
+      if (rowIdx > 0) {
+        var sep = fmtFightGapStable(seps[rowIdx - 1], !!(fightDispSide && fightDispSide[rowIdx - 1]));
+        html +=
+          '<div class="bc-fight-sep' +
+          (sep.side ? " is-side" : "") +
+          '"><span>' +
+          sep.text +
+          "</span></div>";
+      }
+      var swap =
+        swapped[r.key] === "up"
+          ? " is-swap-up"
+          : swapped[r.key] === "down"
+            ? " is-swap-down"
+            : "";
+      html += fightCardHtml(r, swap);
+    });
+    elFightRows.innerHTML = html;
+    fightPrevOrder = order;
+    fightDispSide = seps.map(function (ms, sIdx) {
+      return fmtFightGapStable(ms, !!(fightDispSide && fightDispSide[sIdx])).side;
+    });
+
+    if (structureChanged && Object.keys(firstRects).length) {
+      fightAnimating = true;
+      elFightRows.querySelectorAll("[data-fight-key]").forEach(function (node) {
+        var key = node.getAttribute("data-fight-key");
+        var first = key ? firstRects[key] : null;
+        if (!first) return;
+        var last = node.getBoundingClientRect();
+        var dx = first.left - last.left;
+        if (Math.abs(dx) < 1) return;
+        node.classList.add("is-flipping");
+        node.style.transition = "none";
+        node.style.transform = "translateX(" + dx + "px)";
+        void node.offsetWidth;
+        node.style.transition = "transform " + FIGHT_SWAP_MS + "ms cubic-bezier(0.22, 1, 0.36, 1)";
+        node.style.transform = "translateX(0)";
+      });
+      if (fightFlashTimer) window.clearTimeout(fightFlashTimer);
+      fightFlashTimer = window.setTimeout(function () {
+        fightAnimating = false;
+        if (!elFightRows) return;
+        elFightRows.querySelectorAll(".bc-fight-card").forEach(function (el) {
+          el.style.transition = "";
+          el.style.transform = "";
+          el.classList.remove("is-swap-up", "is-swap-down", "is-flipping");
+        });
+      }, FIGHT_SWAP_MS + 40);
+    }
+  }
+
+  function updateFightPanel(tick, standings) {
+    if (!battlePanelEnabled || !elFight) return;
+    var sample = sampleFightGaps(tick);
+    var arm = fightShouldArm(sample);
+    var hold = fightShouldHold(sample);
+    var now = fightNow();
+
+    if (battleActive) {
+      if (!hold) {
+        if (!battleFarSince) battleFarSince = now;
+        if (now - battleFarSince >= battleLeaveMs) {
+          battleActive = false;
+          battleStreak = 0;
+          hideFightPanel();
+          directorLog("INFO", "fight panel off (gaps > keep for " + battleLeaveMs + "ms)");
+          return;
+        }
+      } else {
+        battleFarSince = 0;
+      }
+    } else {
+      battleFarSince = 0;
+      battleEmptySince = 0;
+      if (arm) battleStreak += 1;
+      else battleStreak = 0;
+      if (battleStreak >= battleTicksNeed) {
+        battleActive = true;
+        battleStreak = 0;
+        fightStickyKeys = Object.create(null);
+        fightLeaveAt = Object.create(null);
+        fightDroppedKeys = Object.create(null);
+        setFightOn(true);
+        directorLog(
+          "INFO",
+          "fight panel on includeMs=" +
+            battleIncludeMs +
+            " keepMs=" +
+            battleKeepMs +
+            " leaveMs=" +
+            battleLeaveMs
+        );
+      }
+    }
+
+    if (!battleActive) return;
+    // Skip DOM rebuild mid-FLIP so the slide can finish cleanly.
+    if (fightAnimating) return;
+    var pack = buildFightPack(standings, tick.focusCarIdx, battleIncludeMs, battleKeepMs);
+    if (!pack || pack.rows.length < 2) {
+      if (!battleEmptySince) battleEmptySince = now;
+      // Pack already waited leaveMs per-car; dismiss promptly once empty.
+      if (now - battleEmptySince >= 400) {
+        battleActive = false;
+        battleStreak = 0;
+        hideFightPanel();
+        directorLog("INFO", "fight panel off (pack empty)");
+      }
+      return;
+    }
+    battleEmptySince = 0;
+    renderFightRows(pack);
+  }
+
+  function findRaceBest(standings) {
+    var best = null;
+    var i;
+    var rows = Array.isArray(standings) ? standings : [];
+    for (i = 0; i < rows.length; i++) {
+      var r = rows[i];
+      var ms = r && r.bestLapMs;
+      if (ms == null || !Number.isFinite(Number(ms)) || Number(ms) <= 0) continue;
+      ms = Number(ms);
+      if (!best || ms < best.ms) {
+        best = {
+          ms: ms,
+          name: r.name || "—",
+          carNumber: r.carNumber || "",
+          countryCode: r.countryCode || null,
+          country: r.country || null,
+          isFocus: !!r.isFocus,
+        };
+      }
+    }
+    return best;
+  }
+
+  function updateRaceBestPanel(standings) {
+    if (!raceBestEnabled || !elBest) return;
+    var best = findRaceBest(standings);
+    if (!best) {
+      elBest.hidden = true;
+      elBest.setAttribute("hidden", "");
+      elBest.setAttribute("aria-hidden", "true");
+      elBest.classList.remove("is-on", "is-hot");
+      return;
+    }
+    elBest.hidden = false;
+    elBest.removeAttribute("hidden");
+    elBest.setAttribute("aria-hidden", "false");
+    elBest.classList.add("is-on");
+    if (elBestTime) {
+      var timeTxt = fmtLap(best.ms);
+      if (elBestTime.textContent !== timeTxt) elBestTime.textContent = timeTxt;
+    }
+    if (elBestDriver) {
+      var flag = flagSpanHtml(best.countryCode, best.country);
+      var html =
+        (flag ? '<span class="bc-best-flag">' + flag + "</span>" : "") +
+        '<span class="bc-best-num">#' +
+        (best.carNumber || "—") +
+        "</span>" +
+        '<span class="bc-best-name">' +
+        shortDriverName(best.name) +
+        "</span>";
+      if (elBestDriver.innerHTML !== html) elBestDriver.innerHTML = html;
+      elBestDriver.classList.toggle("is-focus", !!best.isFocus);
+    }
+    if (raceBestMs != null && best.ms < raceBestMs - 0.5) {
+      elBest.classList.add("is-hot");
+      if (raceBestFlashTimer) window.clearTimeout(raceBestFlashTimer);
+      raceBestFlashTimer = window.setTimeout(function () {
+        if (elBest) elBest.classList.remove("is-hot");
+      }, 2200);
+    }
+    raceBestMs = best.ms;
   }
 
   function fmtLap(ms) {
@@ -347,6 +1150,19 @@
     paintPosChange(deltaHost, r.posChange);
     if (num) num.textContent = "#" + (r.carNumber || "—");
     if (nameText) nameText.textContent = r.name || "—";
+    var flagHost = el.querySelector(".bc-lb-flag");
+    if (flagHost) {
+      var flagHtml = flagSpanHtml(r.countryCode, r.country);
+      if (flagHtml) {
+        if (flagHost.innerHTML !== flagHtml) flagHost.innerHTML = flagHtml;
+        flagHost.hidden = false;
+        flagHost.removeAttribute("hidden");
+      } else {
+        flagHost.innerHTML = "";
+        flagHost.hidden = true;
+        flagHost.setAttribute("hidden", "");
+      }
+    }
     if (mark) {
       var isPilot = rowIsPilot(r);
       if (isPilot) {
@@ -378,6 +1194,7 @@
         '<span class="bc-lb-num"></span>' +
         '<span class="bc-lb-name">' +
         '<img class="bc-lb-mark" alt="" hidden decoding="async" />' +
+        '<span class="bc-lb-flag" hidden aria-hidden="true"></span>' +
         '<span class="bc-lb-name-text"></span>' +
         "</span>" +
         '<span class="bc-lb-gap"></span>';
@@ -517,6 +1334,7 @@
           ? "—"
           : fmtMs(r.gapMs != null ? r.gapMs : r.intervalMs);
     var club = String(r.clubName || "").trim();
+    var flag = flagSpanHtml(r.countryCode, r.country || club);
     return (
       '<div class="bc-ticker-item' +
       (r.isFocus ? " is-focus" : "") +
@@ -528,9 +1346,10 @@
       (r.carNumber || "—") +
       "</span>" +
       '<span class="bc-ticker-name">' +
+      (flag ? flag + " " : "") +
       (r.name || "—") +
       "</span>" +
-      (club ? '<span class="bc-ticker-club">' + club + "</span>" : "") +
+      (club && !flag ? '<span class="bc-ticker-club">' + club + "</span>" : "") +
       '<span class="bc-ticker-gap">' +
       gap +
       "</span>" +
@@ -830,6 +1649,8 @@
 
     renderStandingsRows(painted.slice(0, maxLb));
     renderFieldTicker(painted);
+    updateFightPanel(tick, standings);
+    updateRaceBestPanel(standings);
 
     if (elRel && (board.gapsRefreshed || !elRel.innerHTML)) {
       elRel.innerHTML = (board.relatives || [])

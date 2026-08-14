@@ -82,6 +82,7 @@ Layout (periferico, niente centro FOV):
 | Top right | Standings |
 | Mid-right (above Cam 2) | Track minimap |
 | Bottom edge | NASCAR-style scrolling field ticker (`broadcastTicker`); shows `clubName` when present |
+| Bottom center | Live **Battle for Px** pack when gaps are close (`broadcastBattlePanel`) |
 
 Focus shows **S1–Sn** sector chips + live **Δ** when the bridge emits P3-08 fields (`sectors`, `sector`, `sectorDeltaMs`, `deltaLiveMs`). On iRacing, live sector times need the camera on the **player** car; geometry ticks still appear on the map for any focus.
 
@@ -96,7 +97,8 @@ See `overlays/config.example.js`:
 - `broadcastBoardRefreshMs` (default `4000`) — TV-style refresh for standings **gaps** and the relative panel; order + ▲/▼ vs **starting grid** stay live
 - `broadcastTicker` (default `true`) — bottom field strip; **rise** (FIELD only) → **expand** right → scroll once P1→last → **collapse** to FIELD → **drop** down; then wait `broadcastTickerIdleMs`
 - `broadcastTickerSpeed` (default `85`) — scroll speed in px/sec while visible
-- `broadcastTickerIdleMs` (default `60000`) — pause **after** a pass before the next appearance (~1 min)
+- `broadcastBattlePanel` (default `true`) — bottom-center horizontal fight pack (monogram + generic helmets); arms when a neighbour is **closing fast** (gap shrink rate) within engage range; pack only shows cars within a tighter include gap (~0.26s normal)
+- `broadcastBattleMs` / `broadcastBattleTicks` — optional overrides (0 = use `broadcastDirectorSensitivity`)
 - `broadcastTickerFirstDelayMs` (default `4000`) — delay before first appearance
 - `broadcastDirector` (`auto` | `manual` | `off`, default `auto`)
 - `broadcastDirectorSensitivity` (`calm` | `normal` | `hype`, default `normal`)

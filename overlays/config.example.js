@@ -90,6 +90,18 @@ window.PIGRECO_CONFIG = {
   trackMapPredictSec: 0,
   // Optional mark next to pilot row in standings (matched by pilotName, not raceNumber)
   broadcastPilotMarkUrl: "",
+  // Live “Battle for Px” pack (bottom-center; show/hide with close gaps)
+  broadcastBattlePanel: true,
+  // Race/session best lap chip (field best so far)
+  broadcastRaceBest: true,
+  // 0 = use director sensitivity presets (closing-speed based arming)
+  broadcastBattleMs: 0, // max gap (ms) to consider an approach
+  broadcastBattleIncludeMs: 0, // serious join/rejoin (tighter than keep)
+  broadcastBattleKeepMs: 0, // soft stay threshold (default 400ms)
+  broadcastBattleLeaveMs: 0, // must stay beyond keep this long before drop (default 3000)
+  broadcastBattleExitMs: 0, // panel far threshold (defaults to keep)
+  broadcastBattleCloseRate: 0, // gap shrink speed ms/s to arm
+  broadcastBattleTicks: 0, // consecutive close ticks to arm
   // YouTube like/subscribe/bell promo (live-chrome)
   youtubePromoEnabled: true,
   youtubeHandle: "", // falls back to socialHandle / twitchHandle

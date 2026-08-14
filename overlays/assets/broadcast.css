@@ -93,6 +93,122 @@
   background: #009fe5;
 }
 
+/* Race / session best lap — right of session strip */
+.bc-best {
+  position: absolute;
+  top: 56px;
+  left: calc(50% + 10.5rem);
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 9.5rem;
+  padding: 0.35rem 0.7rem 0.45rem;
+  background: color-mix(in srgb, var(--panel, #111) 92%, transparent);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  border-top: 2px solid var(--accent, #00c400);
+  opacity: 0;
+  transform: translate3d(0, 6px, 0);
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 280ms ease,
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 320ms,
+    box-shadow 280ms ease,
+    border-color 280ms ease;
+}
+
+.bc-best.is-on {
+  opacity: 1;
+  visibility: visible;
+  transform: translate3d(0, 0, 0);
+  transition:
+    opacity 240ms ease,
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0s,
+    box-shadow 280ms ease,
+    border-color 280ms ease;
+}
+
+.bc-best.is-hot {
+  border-top-color: #f5d90a;
+  box-shadow: 0 0 18px color-mix(in srgb, #f5d90a 28%, transparent);
+}
+
+.bc-best[hidden],
+.broadcast-root.no-best .bc-best {
+  display: none !important;
+}
+
+.bc-best-label {
+  font-family: var(--font-display);
+  font-size: 0.5rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted, #a7b1ba);
+}
+
+.bc-best-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  min-width: 0;
+}
+
+.bc-best-time {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--accent, #00c400);
+  line-height: 1.1;
+}
+
+.bc-best.is-hot .bc-best-time {
+  color: #f5d90a;
+}
+
+.bc-best-driver {
+  display: flex;
+  align-items: center;
+  gap: 0.28rem;
+  min-width: 0;
+  font-size: 0.68rem;
+  color: var(--text, #f7fafc);
+}
+
+.bc-best-driver.is-focus .bc-best-name {
+  color: var(--accent, #00c400);
+}
+
+.bc-best-flag {
+  display: inline-flex;
+  flex: 0 0 auto;
+  line-height: 1;
+}
+
+.bc-best-flag .bc-flag {
+  width: 14px;
+  height: 10px;
+}
+
+.bc-best-num {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted, #a7b1ba);
+  font-weight: 700;
+}
+
+.bc-best-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
 .bc-session .bc-replay-tag {
   color: var(--accent, #00c400);
   font-weight: 700;
@@ -389,6 +505,255 @@
   color: var(--accent, #00c400);
 }
 
+/* —— Live fight pack (horizontal; show/hide with close gaps) —— */
+.bc-fight {
+  position: absolute;
+  left: 50%;
+  bottom: 56px;
+  z-index: 13;
+  /* Room for 3 cards + seps + side padding without edge-clipping. */
+  width: 520px;
+  max-width: min(520px, 78vw);
+  transform: translate3d(-50%, 24px, 0) scale(0.97);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--panel, #111) 94%, transparent);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  border-top: 2px solid var(--accent, #00c400);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  transition:
+    opacity 320ms ease,
+    transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 420ms;
+}
+
+.bc-fight.is-on {
+  opacity: 1;
+  visibility: visible;
+  transform: translate3d(-50%, 0, 0) scale(1);
+  transition:
+    opacity 280ms ease,
+    transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0s;
+}
+
+.bc-fight[hidden],
+.broadcast-root.no-fight .bc-fight {
+  display: none !important;
+}
+
+.bc-fight-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.45rem 1.35rem 0.25rem;
+  font-family: var(--font-display);
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.bc-fight-head strong {
+  color: var(--text, #f7fafc);
+  letter-spacing: 0.14em;
+  min-width: 14ch;
+}
+
+.bc-fight-head span {
+  color: var(--accent, #00c400);
+  font-size: 0.52rem;
+  letter-spacing: 0.22em;
+}
+
+.bc-fight-rows {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0;
+  padding: 0.5rem 1.35rem 0.9rem;
+  contain: layout style;
+}
+
+.bc-fight-card {
+  display: flex;
+  flex: 0 0 118px;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  box-sizing: border-box;
+  width: 118px;
+  min-width: 118px;
+  max-width: 118px;
+  padding: 0.55rem 0.5rem 0.5rem;
+  border-radius: 2px;
+  transition: background-color 280ms ease, box-shadow 280ms ease;
+}
+
+.bc-fight-card.is-flipping {
+  will-change: transform;
+  transition:
+    background-color 280ms ease,
+    box-shadow 280ms ease,
+    transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.bc-fight-card.is-focus {
+  background: color-mix(in srgb, var(--accent, #00c400) 11%, transparent);
+  box-shadow: inset 0 -2px 0 0 color-mix(in srgb, var(--accent, #00c400) 70%, transparent);
+}
+
+.bc-fight-card.is-swap-up {
+  z-index: 2;
+  background: color-mix(in srgb, var(--accent, #00c400) 22%, transparent);
+  box-shadow: inset 0 -2px 0 0 color-mix(in srgb, var(--accent, #00c400) 80%, transparent);
+}
+
+.bc-fight-card.is-swap-down {
+  z-index: 2;
+  background: color-mix(in srgb, #e5484d 14%, transparent);
+  box-shadow: inset 0 -2px 0 0 color-mix(in srgb, #e5484d 55%, transparent);
+}
+
+.bc-fight-avatar-wrap {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  margin-bottom: 0.15rem;
+}
+
+.bc-fight-avatar {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  display: block;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.bc-fight-mono {
+  filter: none;
+}
+
+.bc-fight-avatar-wrap:has(.bc-fight-mono) {
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.4));
+}
+
+.bc-fight-helmet {
+  color: var(--accent, #00c400);
+  overflow: visible;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.bc-fight-pos {
+  position: absolute;
+  right: -10px;
+  bottom: -8px;
+  min-width: 1.65em;
+  padding: 0.1rem 0.3rem;
+  background: color-mix(in srgb, var(--bg, #080a0c) 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent, #00c400) 45%, transparent);
+  border-radius: 1px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent, #00c400);
+  font-size: 0.54rem;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+.bc-fight-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.12rem;
+  min-width: 0;
+  width: 100%;
+  padding-top: 0.1rem;
+}
+
+.bc-fight-num {
+  font-variant-numeric: tabular-nums;
+  color: var(--muted, #a7b1ba);
+  font-size: 0.64rem;
+  font-weight: 700;
+}
+
+.bc-fight-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.28rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.bc-fight-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  font-size: 0.8rem;
+  text-align: center;
+  color: var(--text, #f7fafc);
+}
+
+.bc-fight-card.is-focus .bc-fight-name {
+  color: var(--accent, #00c400);
+}
+
+.bc-fight-nat {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  line-height: 1;
+}
+
+.bc-fight-nat .bc-flag {
+  width: 16px;
+  height: 11px;
+}
+
+.bc-fight-sep {
+  display: flex;
+  flex: 0 0 3.5rem;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  box-sizing: border-box;
+  width: 3.5rem;
+  min-width: 3.5rem;
+  max-width: 3.5rem;
+  padding: 0;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text, #f7fafc);
+}
+
+.bc-fight-sep span {
+  display: block;
+  width: 100%;
+  padding: 0.15rem 0;
+  text-align: center;
+  border-bottom: 1px solid color-mix(in srgb, var(--line, #fff) 55%, transparent);
+}
+
+.bc-fight-sep.is-side span {
+  color: #f5d90a;
+  letter-spacing: 0.08em;
+  font-size: 0.62rem;
+  border-bottom-color: color-mix(in srgb, #f5d90a 50%, transparent);
+}
+
 /* Leaderboard — top right */
 .bc-leaderboard {
   position: absolute;
@@ -506,7 +871,9 @@
 
 .bc-lb-name {
   position: relative;
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
   min-width: 0;
   overflow: visible;
   font-weight: 600;
@@ -530,12 +897,34 @@
   display: none !important;
 }
 
+.bc-lb-flag {
+  flex: 0 0 auto;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+}
+
+.bc-lb-flag[hidden] {
+  display: none !important;
+}
+
 .bc-lb-name-text {
   display: block;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.bc-flag {
+  display: inline-block;
+  width: 18px;
+  height: 12px;
+  object-fit: cover;
+  vertical-align: -1px;
+  border-radius: 1px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+  flex: 0 0 auto;
 }
 
 .bc-lb-gap {

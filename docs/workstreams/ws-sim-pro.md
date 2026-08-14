@@ -16,6 +16,8 @@ Land **ADR-005** contract + mock telemetry producer before any HTML binds to a s
 - P3-07 Official iRacing SVG maps — **done**
 - P3-08 Sector timing (focus S1–Sn + live Δ) — **done**
 - P3-09 NASCAR-style field ticker — **done**
+- P3-10 Live Battle for Px panel — **done**
+- P3-11 Race best lap panel — **done**
 - P3-05 Audio bus / VOD documentation for OBS profile
 
 ## Constraints

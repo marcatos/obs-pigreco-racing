@@ -30,6 +30,7 @@ HERE = Path(__file__).resolve().parent
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
+from domain_country import resolve_country  # noqa: E402
 from domain_enrich import delta_best_ms  # noqa: E402
 from domain_events import EventDetector  # noqa: E402
 from domain_grid import (  # noqa: E402
@@ -257,6 +258,7 @@ def _driver_map(ir: Any) -> dict[int, dict[str, Any]]:
                 irating = None
         out[idx] = {
             "carIdx": idx,
+            "userId": None,
             "name": d.get("UserName") or d.get("AbbrevName") or "",
             "carNumber": str(d.get("CarNumber") or d.get("CarNumberRaw") or ""),
             "class": d.get("CarClassShortName") or d.get("CarClassStr") or None,
@@ -264,6 +266,18 @@ def _driver_map(ir: Any) -> dict[int, dict[str, Any]]:
             "iRating": irating,
             "clubName": (str(d.get("ClubName") or "").strip() or None),
         }
+        try:
+            if d.get("UserID") is not None:
+                out[idx]["userId"] = int(d.get("UserID"))
+        except (TypeError, ValueError):
+            out[idx]["userId"] = None
+        country = resolve_country(
+            user_id=out[idx].get("userId"),
+            name=out[idx].get("name"),
+            club_name=out[idx].get("clubName"),
+        )
+        out[idx]["countryCode"] = country.get("countryCode")
+        out[idx]["country"] = country.get("country")
     return out
 
 
@@ -481,11 +495,28 @@ def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
             if info is not None:
                 if "iRating" in info:
                     r["iRating"] = info.get("iRating")
+                if info.get("userId") is not None:
+                    r["userId"] = info.get("userId")
                 club = info.get("clubName")
                 if club:
                     r["clubName"] = club
                 elif "clubName" not in r:
                     r["clubName"] = None
+                if info.get("countryCode"):
+                    r["countryCode"] = info.get("countryCode")
+                    r["country"] = info.get("country")
+                else:
+                    resolved = resolve_country(
+                        user_id=info.get("userId") or r.get("userId"),
+                        name=r.get("name") or info.get("name"),
+                        club_name=r.get("clubName") or club,
+                    )
+                    r["countryCode"] = resolved.get("countryCode")
+                    r["country"] = resolved.get("country")
+            else:
+                resolved = resolve_country(name=r.get("name"), club_name=r.get("clubName"))
+                r["countryCode"] = resolved.get("countryCode")
+                r["country"] = resolved.get("country")
         relatives = build_relatives(standings, focus_car_idx=focus_idx, window=2)
 
         focus_row = next((r for r in standings if r.get("carIdx") == focus_idx), None)

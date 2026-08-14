@@ -146,7 +146,10 @@ Additive sector / split fields. Present when the source exposes split geometry (
 | `posChange` | number \| null | Places gained vs **starting grid** (`startPos − pos`); negative = lost. Null if no grid. 0 during formation / rolling-start hold. |
 | `inPit` | boolean \| null | Row car is in pit |
 | `iRating` | number \| null | Driver iRating when available |
-| `clubName` | string \| null | iRacing club (`DriverInfo.ClubName`); not nationality |
+| `clubName` | string \| null | iRacing club (`DriverInfo.ClubName`); often null on live SDK |
+| `userId` | number \| null | iRacing customer id (`DriverInfo.UserID`) |
+| `countryCode` | string \| null | ISO-3166 alpha-2 for flag UI (from overrides / club map) |
+| `country` | string \| null | Display country name when known |
 | `startPos` | number \| null | 1-based grid / qualify start position |
 
 **`standings[]` row**

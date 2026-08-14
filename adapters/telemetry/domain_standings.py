@@ -55,6 +55,8 @@ def build_relatives(
                 "name": row.get("name") or "",
                 "gapMs": gap_ms,
                 "carIdx": row.get("carIdx"),
+                "countryCode": row.get("countryCode"),
+                "country": row.get("country"),
             }
         )
     return out
@@ -63,6 +65,8 @@ def build_relatives(
 def mock_standings(elapsed_s: float, *, focus_pos: int, field: int = 12) -> list[dict[str, Any]]:
     """Deterministic fake leaderboard for overlay smoke tests."""
     import math
+
+    from domain_country import resolve_country
 
     wave = math.sin(elapsed_s * 0.35)
     others = [
@@ -93,12 +97,15 @@ def mock_standings(elapsed_s: float, *, focus_pos: int, field: int = 12) -> list
         gap_to_leader = 0 if pos == 1 else int(1200 + (pos - 1) * (850 + wave * 40))
         interval = 0 if pos == 1 else int(800 + wave * 50 + (pos % 3) * 30)
         dist_pct = ((elapsed_s * 0.011) + (1.0 - (pos - 1) / field) * 0.08) % 1.0
+        country = resolve_country(name=name, club_name=club)
         rows.append(
             {
                 "pos": pos,
                 "carNumber": num,
                 "name": name,
                 "clubName": club,
+                "countryCode": country.get("countryCode"),
+                "country": country.get("country"),
                 "gapMs": gap_to_leader,
                 "intervalMs": interval,
                 "lastLapMs": leader_best + int(pos * 120 + wave * 30),
@@ -177,6 +184,9 @@ def standings_from_cars(
                 "carNumber": str(c.get("carNumber") or ""),
                 "name": str(c.get("name") or ""),
                 "clubName": (str(c.get("clubName") or "").strip() or None),
+                "userId": c.get("userId"),
+                "countryCode": c.get("countryCode"),
+                "country": c.get("country"),
                 "gapMs": gap_ms,
                 "intervalMs": max(0, interval_ms),
                 "lastLapMs": c.get("lastLapMs"),

@@ -46,6 +46,8 @@ window.PIGRECO_CONFIG = {
   "broadcastTickerIdleMs": 60000,
   "broadcastTickerFirstDelayMs": 4000,
   "broadcastPilotMarkUrl": "assets/brand/monogram_sm42_transparent.png",
+  "broadcastBattlePanel": true,
+  "broadcastRaceBest": true,
   "broadcastDirector": "auto",
   "broadcastDirectorSensitivity": "normal",
   "trackMapEnabled": true,
