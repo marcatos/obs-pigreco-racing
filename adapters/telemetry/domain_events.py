@@ -21,6 +21,9 @@ class EventDetector:
         self.set_sensitivity(sensitivity)
         self._prev: dict[str, Any] | None = None
         self._battle_streak = 0
+        # True after a battle hero was emitted; stays True until gap opens (hysteresis).
+        # Prevents BATTLE chip spam while fighting for many laps.
+        self._battle_active = False
         self._last_emit_ms: dict[str, int] = {}
         self._seq = 0
 
@@ -33,6 +36,7 @@ class EventDetector:
         """Drop consecutive-tick state. Keep sensitivity / config."""
         self._prev = None
         self._battle_streak = 0
+        self._battle_active = False
         self._last_emit_ms = {}
 
     def feed(self, tick: dict[str, Any], *, now_ms: int | None = None) -> list[dict[str, Any]]:
@@ -79,8 +83,10 @@ class EventDetector:
             "payload": payload,
         }
 
-    def _gap_close(self, tick: dict[str, Any]) -> tuple[bool, int | None]:
-        thr = self._cfg["battle_ms"]
+    def _gap_close(
+        self, tick: dict[str, Any], *, thr_ms: int | None = None
+    ) -> tuple[bool, int | None]:
+        thr = int(thr_ms if thr_ms is not None else self._cfg["battle_ms"])
         ga = tick.get("gapAheadMs")
         gb = tick.get("gapBehindMs")
         close = False
@@ -93,12 +99,26 @@ class EventDetector:
         return close, gap_val
 
     def _update_battle_streak(self, tick: dict[str, Any]) -> int | None:
-        close, gap_val = self._gap_close(tick)
-        if close:
+        """Count close ticks for entry; clear active battle with exit hysteresis."""
+        enter_thr = int(self._cfg["battle_ms"])
+        # Stay "in battle" a bit longer so gap jitter at the threshold does not re-arm.
+        exit_thr = int(enter_thr * 1.5)
+        close_enter, gap_enter = self._gap_close(tick, thr_ms=enter_thr)
+        close_exit, _ = self._gap_close(tick, thr_ms=exit_thr)
+
+        if self._battle_active:
+            if not close_exit:
+                self._battle_active = False
+                self._battle_streak = 0
+                # Allow a fresh BATTLE chip when the fight restarts after a real gap.
+                self._last_emit_ms.pop("battle", None)
+            return None
+
+        if close_enter:
             self._battle_streak += 1
-        else:
-            self._battle_streak = 0
-        return gap_val if close else None
+            return gap_enter
+        self._battle_streak = 0
+        return None
 
     def _detect(self, prev: dict[str, Any], tick: dict[str, Any], ts: int) -> list[dict[str, Any]]:
         found: list[dict[str, Any]] = []
@@ -114,7 +134,12 @@ class EventDetector:
                     found.append(e2)
 
         gap_val = self._update_battle_streak(tick)
-        if self._battle_streak >= self._cfg["battle_ticks"]:
+        # Rising edge only: one BATTLE hero when the fight starts, not while it lasts.
+        if (
+            not self._battle_active
+            and gap_val is not None
+            and self._battle_streak >= self._cfg["battle_ticks"]
+        ):
             e = self._emit(
                 "battle",
                 ts,
@@ -122,6 +147,7 @@ class EventDetector:
             )
             if e:
                 found.append(e)
+                self._battle_active = True
                 self._battle_streak = 0
 
         pp, cp = prev.get("position"), tick.get("position")
