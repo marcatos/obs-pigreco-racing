@@ -140,28 +140,36 @@ def wav_to_mp3(wav: Path, mp3: Path) -> None:
 
 BEDS = {
     "starting-soon.mp3": dict(
-        # dark carbon pulse — waiting grid
-        roots_hz=(55.0, 82.5, 110.0, 164.8),
-        pulse_hz=0.08,
-        noise_amt=0.12,
-        brightness=0.35,
-        seed=42,
+        # dark carbon pulse — waiting grid (refreshed 2026-08)
+        roots_hz=(52.0, 78.0, 104.0, 156.0),
+        pulse_hz=0.075,
+        noise_amt=0.11,
+        brightness=0.32,
+        seed=42026,
+    ),
+    "lobby.mp3": dict(
+        # soft paddock hold — menus / garage
+        roots_hz=(46.0, 69.0, 92.0, 138.0),
+        pulse_hz=0.055,
+        noise_amt=0.09,
+        brightness=0.30,
+        seed=42042,
     ),
     "brb.mp3": dict(
         # cooler hold — soft tension
-        roots_hz=(49.0, 73.5, 98.0, 146.8),
-        pulse_hz=0.06,
+        roots_hz=(48.0, 72.0, 96.0, 144.0),
+        pulse_hz=0.058,
         noise_amt=0.10,
-        brightness=0.28,
-        seed=420,
+        brightness=0.27,
+        seed=42077,
     ),
     "ending.mp3": dict(
         # slightly warmer resolve
-        roots_hz=(65.4, 98.0, 130.8, 196.0),
-        pulse_hz=0.05,
-        noise_amt=0.08,
-        brightness=0.45,
-        seed=4242,
+        roots_hz=(61.0, 92.0, 122.0, 184.0),
+        pulse_hz=0.048,
+        noise_amt=0.07,
+        brightness=0.44,
+        seed=42111,
     ),
 }
 
