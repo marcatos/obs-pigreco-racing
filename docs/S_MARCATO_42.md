@@ -70,7 +70,14 @@ Guida breve: [`replays/LEGGIMI.txt`](../replays/LEGGIMI.txt). Replay di stasera 
 
 **Mic:** il generator prova a risolvere Focusrite / 2i2; override con env `MARCATO_MIC_ID` o file gitignored `obs/mic.device.json`.
 
-**Transizioni:** default **S.Marcato Stinger** (dual-blade carbon + mark 42 + whoosh). Dettagli e alternative: `docs/TRANSITIONS.md`.
+**Transizioni:** default **Dissolvenza 900 ms** (full mix crossfade). Override **→ Live** / **→ Ending**: **S.Marcato Stinger** + whoosh. Move resta opzionale. Dettagli: [`TRANSITIONS.md`](TRANSITIONS.md).
+
+Verifica audio (stream/registrazione):
+
+- [ ] Starting Soon → Lobby: Dissolvenza; bed A out, bed B in (no click).
+- [ ] Lobby → Live: Stinger + whoosh; Lobby bed out; Desktop + mic in.
+- [ ] Live → BRB: Dissolvenza; Desktop/mic out; BRB bed in.
+- [ ] BRB → Ending: Stinger + whoosh; Ending bed in.
 
 ### 4. Pannello config (profilo Marcato)
 

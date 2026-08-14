@@ -60,9 +60,20 @@ python adapters\obs_flag_director\director.py --dry-run
 |--------|------|
 | Audio Desktop | Race / system (center monitor gameplay) |
 | Microfono | Focusrite 2i2 (or `MARCATO_MIC_ID` / `obs/mic.device.json`) |
-| Music Starting Soon / Lobby / BRB / Ending | Royalty-free beds — active only on those scenes |
+| Music Starting Soon / Lobby / BRB / Ending | Royalty-free beds (~−14 dB file gain + mixer ~0.15–0.18) — active only on those scenes |
 
 On **Live**, music beds are not in the scene (Desktop + Mic only).
+
+## Scene transitions (audio-aware)
+
+Collection default: **Dissolvenza 900 ms**. Overrides **→ Live** / **→ Ending**: **S.Marcato Stinger** + whoosh. Details: [`TRANSITIONS.md`](TRANSITIONS.md).
+
+Verify from **stream/recording** (Monitor Alone may differ):
+
+- [ ] Starting Soon → Lobby: 900 ms Dissolvenza; bed A fades out, bed B fades in (no click/cut).
+- [ ] Lobby → Live: Stinger + whoosh; Lobby bed fades out; Desktop (+ mic) fades in.
+- [ ] Live → BRB: Dissolvenza; Desktop/mic out, BRB bed in.
+- [ ] BRB → Ending: Stinger + whoosh; Ending bed in.
 
 ## Tests
 
