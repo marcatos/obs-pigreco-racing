@@ -79,6 +79,7 @@ window.PIGRECO_CONFIG = {
   broadcastTickerSpeed: 85, // px/sec while visible
   broadcastTickerIdleMs: 60000, // after one P1→last pass, hide this long before next
   broadcastTickerFirstDelayMs: 4000,
+  broadcastFlagStripMs: 10000, // timed flags: white / debris / checkered
   broadcastDirector: "auto",
   broadcastDirectorSensitivity: "normal",
   // P3-03 track minimap Browser Source (track-map.html)

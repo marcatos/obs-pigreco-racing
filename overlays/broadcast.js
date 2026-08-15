@@ -114,7 +114,6 @@
   const Director = window.PigrecoBroadcastDirector;
   let socket = null;
   let retryMs = 1000;
-  let lastFlag = "";
   let lastFocusPos = null;
   let focusFlashTimer = null;
   let directorState = { hero: null, queue: [] };
@@ -136,7 +135,19 @@
   const elLb = root.querySelector("[data-bc-lb-rows]");
   const elRel = root.querySelector("[data-bc-rel-rows]");
   const elFocus = root.querySelector("[data-bc-focus]");
-  const elBanner = root.querySelector("[data-bc-flag-banner]");
+  const elFlagStrip = root.querySelector("[data-bc-flag-strip]");
+  const elFlagStripLabel = root.querySelector("[data-bc-flag-strip-label]");
+  const elFlagStripText = root.querySelector("[data-bc-flag-strip-text]");
+  const flagStripMs = Math.max(
+    2000,
+    Math.min(30000, Number(cfg.broadcastFlagStripMs) || 10000)
+  );
+  const FLAG_STRIP_RISE_MS = 420;
+  const FLAG_STRIP_EXPAND_MS = 480;
+  const FLAG_STRIP_COLLAPSE_MS = 480;
+  const FLAG_STRIP_DROP_MS = 420;
+  const TIMED_FLAGS = { white: 1, debris: 1, checkered: 1 };
+  const HOLD_FLAGS = { yellow: 1, red: 1 };
   const elStatus = root.querySelector("[data-bc-status]");
   const elMoment = root.querySelector("[data-bc-moment]");
   const elTicker = root.querySelector("[data-bc-ticker]");
@@ -197,14 +208,134 @@
 
   setStatus("CONNECTING " + url);
 
-  function applyFlagBanner(flag) {
-    if (!elBanner) return;
+  let flagStripPhase = "idle"; // idle|rise|expand|show|collapse|drop
+  let flagStripTimer = null;
+  let flagStripCurrent = "";
+  let flagStripGen = 0;
+  let flagStripDismissed = "";
+
+  function flagStripMeta(flag) {
+    var f = String(flag || "").toLowerCase();
+    if (f === "white") return { label: "LAST LAP", text: "FINAL LAP" };
+    if (f === "debris") return { label: "DEBRIS", text: "DEBRIS ON TRACK" };
+    if (f === "checkered") return { label: "CHECKERED", text: "SESSION FINISH" };
+    if (f === "yellow") return { label: "YELLOW", text: "CAUTION" };
+    if (f === "red") return { label: "RED", text: "SESSION STOPPED" };
+    if (f === "blue") return { label: "BLUE", text: "LET LEADER BY" };
+    return { label: f.toUpperCase(), text: f.toUpperCase() };
+  }
+
+  function clearFlagStripTimer() {
+    if (flagStripTimer != null) {
+      window.clearTimeout(flagStripTimer);
+      flagStripTimer = null;
+    }
+  }
+
+  function scheduleFlagStrip(ms, fn) {
+    clearFlagStripTimer();
+    flagStripTimer = window.setTimeout(function () {
+      flagStripTimer = null;
+      fn();
+    }, ms);
+  }
+
+  function setFlagStripUp(up) {
+    if (!elFlagStrip) return;
+    elFlagStrip.classList.toggle("is-up", !!up);
+    elFlagStrip.hidden = !up && flagStripPhase === "idle";
+    elFlagStrip.setAttribute("aria-hidden", up ? "false" : "true");
+  }
+
+  function setFlagStripExpanded(expanded) {
+    if (!elFlagStrip) return;
+    elFlagStrip.classList.toggle("is-expanded", !!expanded);
+  }
+
+  function flagStripGoIdle() {
+    if (TIMED_FLAGS[flagStripCurrent]) {
+      flagStripDismissed = flagStripCurrent;
+    }
+    flagStripPhase = "idle";
+    flagStripCurrent = "";
+    setFlagStripExpanded(false);
+    setFlagStripUp(false);
+    if (elFlagStrip) {
+      elFlagStrip.hidden = true;
+      elFlagStrip.dataset.flag = "";
+    }
+    directorLog("DEBUG", "flag strip idle");
+  }
+
+  function flagStripDrop() {
+    flagStripPhase = "drop";
+    setFlagStripUp(false);
+    scheduleFlagStrip(FLAG_STRIP_DROP_MS, flagStripGoIdle);
+  }
+
+  function flagStripCollapse() {
+    if (flagStripPhase === "collapse" || flagStripPhase === "drop" || flagStripPhase === "idle") return;
+    directorLog("INFO", "flag strip collapse flag=" + flagStripCurrent);
+    flagStripPhase = "collapse";
+    clearFlagStripTimer();
+    setFlagStripExpanded(false);
+    scheduleFlagStrip(FLAG_STRIP_COLLAPSE_MS, flagStripDrop);
+  }
+
+  function showFlagStrip(flag) {
+    if (!elFlagStrip) return;
+    var f = String(flag || "").toLowerCase();
+    if (!TIMED_FLAGS[f] && !HOLD_FLAGS[f] && f !== "blue") return;
+    flagStripGen += 1;
+    var gen = flagStripGen;
+    flagStripCurrent = f;
+    if (TIMED_FLAGS[f]) flagStripDismissed = "";
+    var meta = flagStripMeta(f);
+    elFlagStrip.hidden = false;
+    elFlagStrip.dataset.flag = f;
+    if (elFlagStripLabel) elFlagStripLabel.textContent = meta.label;
+    if (elFlagStripText) elFlagStripText.textContent = meta.text;
+    clearFlagStripTimer();
+    flagStripPhase = "rise";
+    setFlagStripExpanded(false);
+    setFlagStripUp(true);
+    directorLog("INFO", "flag strip show flag=" + f + " timed=" + !!TIMED_FLAGS[f]);
+    scheduleFlagStrip(FLAG_STRIP_RISE_MS, function () {
+      if (gen !== flagStripGen) return;
+      flagStripPhase = "expand";
+      setFlagStripExpanded(true);
+      scheduleFlagStrip(FLAG_STRIP_EXPAND_MS, function () {
+        if (gen !== flagStripGen) return;
+        flagStripPhase = "show";
+        if (TIMED_FLAGS[f]) {
+          scheduleFlagStrip(flagStripMs, function () {
+            if (gen !== flagStripGen) return;
+            flagStripCollapse();
+          });
+        }
+      });
+    });
+  }
+
+  function syncFlagStrip(flag) {
     var f = String(flag || "none").toLowerCase();
-    var show = f && f !== "none" && f !== "green";
-    elBanner.classList.toggle("is-on", show);
-    elBanner.dataset.flag = show ? f : "";
-    if (show) lastFlag = f;
-    else lastFlag = "";
+    if (f === "none" || f === "green") {
+      flagStripDismissed = "";
+      if (HOLD_FLAGS[flagStripCurrent] || flagStripCurrent) {
+        // Green clears hold flags; timed flags keep their remaining hold.
+        if (HOLD_FLAGS[flagStripCurrent] || !TIMED_FLAGS[flagStripCurrent]) {
+          flagStripCollapse();
+        }
+      }
+      return;
+    }
+    if (f === flagStripDismissed) return;
+    if (f === flagStripCurrent && flagStripPhase !== "idle") return;
+    showFlagStrip(f);
+  }
+
+  function applyFlagBanner(flag) {
+    syncFlagStrip(flag);
   }
 
   function clearMomentLayer() {
@@ -247,13 +378,14 @@
   function enqueueEvent(ev) {
     if (director !== "auto") return;
     if (!ev || !ev.kind) return;
+    if (ev.kind === "flag_change" || ev.kind === "session_end") {
+      applyFlagBanner(ev.payload && ev.payload.flag);
+      return;
+    }
     if (!Director) return;
     var prevHero = directorState.hero;
     directorState = Director.enqueueEvent(directorState, ev, director);
     directorLog("DEBUG", "event kind=" + ev.kind + " priority=" + (ev.priority || 0));
-    if (ev.kind === "flag_change" || ev.kind === "session_end") {
-      applyFlagBanner(ev.payload && ev.payload.flag);
-    }
     if (directorState.hero && directorState.hero !== prevHero) {
       showHero(directorState.hero);
     }
@@ -403,6 +535,23 @@
       if (standings[i].isFocus) return i;
     }
     return -1;
+  }
+
+  function battleEligibleFromTick(tick) {
+    if (!tick) return false;
+    if (typeof tick.battleEligible === "boolean") return tick.battleEligible;
+    // Fail closed for known non-race/practice if bridge old:
+    var s = String(tick.session || "").toLowerCase();
+    if (s === "quali" || s === "cooldown" || s === "unknown" || !s) return false;
+    if (s === "race") {
+      var lap = Number(tick.lap);
+      return Number.isFinite(lap) && lap >= 1;
+    }
+    if (s === "practice") {
+      var rows = Array.isArray(tick.standings) ? tick.standings : [];
+      return rows.length >= 2;
+    }
+    return false;
   }
 
   function sampleFightGaps(tick) {
@@ -882,6 +1031,17 @@
 
   function updateFightPanel(tick, standings) {
     if (!battlePanelEnabled || !elFight) return;
+    if (!battleEligibleFromTick(tick)) {
+      if (battleActive) {
+        battleActive = false;
+        battleStreak = 0;
+        hideFightPanel();
+        directorLog("INFO", "fight panel off (session not eligible)");
+      } else {
+        battleStreak = 0;
+      }
+      return;
+    }
     var sample = sampleFightGaps(tick);
     var arm = fightShouldArm(sample);
     var hold = fightShouldHold(sample);
@@ -1625,16 +1785,7 @@
         (flagLabel ? "<span>" + flagLabel + "</span>" : "");
     }
 
-    // Auto + Director: latch banner from tick unless a flag/session_end hero
-    // owns the event-driven banner (Browser Source refresh mid-yellow).
-    if (elBanner) {
-      var hero = directorState.hero;
-      var flagHero =
-        hero && (hero.kind === "flag_change" || hero.kind === "session_end");
-      if (director !== "auto" || !Director || !flagHero) {
-        applyFlagBanner(flag);
-      }
-    }
+    applyFlagBanner(flag);
 
     const standings = Array.isArray(tick.standings) ? tick.standings : [];
     const relatives = Array.isArray(tick.relatives) ? tick.relatives : [];

@@ -31,7 +31,7 @@ def test_moment_mount_in_both_chrome_html():
     ):
         html = (ROOT / rel).read_text(encoding="utf-8")
         assert needle in html, rel
-        flag_i = html.index("data-bc-flag-banner")
+        flag_i = html.index("data-bc-flag-strip")
         moment_i = html.index("data-bc-moment")
         status_i = html.index("data-bc-status")
         assert flag_i < moment_i < status_i, rel

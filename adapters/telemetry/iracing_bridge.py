@@ -30,6 +30,7 @@ HERE = Path(__file__).resolve().parent
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
+from domain_battle import battle_panel_eligible  # noqa: E402
 from domain_country import resolve_country  # noqa: E402
 from domain_enrich import delta_best_ms  # noqa: E402
 from domain_events import EventDetector  # noqa: E402
@@ -140,9 +141,10 @@ _FLAG_WHITE = 0x00000002
 _FLAG_GREEN = 0x00000004
 _FLAG_YELLOW = 0x00000008
 _FLAG_RED = 0x00000010
-_FLAG_BLUE = 0x00000040
-_FLAG_BLACK = 0x00000100
-_FLAG_MEATBALL = 0x00008000
+_FLAG_BLUE = 0x00000020
+_FLAG_DEBRIS = 0x00000040
+_FLAG_BLACK = 0x00010000
+_FLAG_MEATBALL = 0x00100000
 
 
 def _ms_now() -> int:
@@ -169,6 +171,8 @@ def _flag_name(session_flags: int | None) -> str:
         return "red"
     if f & _FLAG_YELLOW:
         return "yellow"
+    if f & _FLAG_DEBRIS:
+        return "debris"
     if f & _FLAG_WHITE:
         return "white"
     if f & _FLAG_BLUE:
@@ -680,6 +684,15 @@ def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
         elif sector_starts:
             sector_fields["sector"] = current_sector(focus_dist, sector_starts)
 
+        live_ready = True
+        if session_kind == "race":
+            live_ready = bool(live_order)  # same flag already used for grid hold
+        battle_eligible = battle_panel_eligible(
+            session_kind,
+            live_order_ready=live_ready,
+            other_cars=max(0, sum(1 for r in standings if r.get("carIdx") is not None) - 1),
+        )
+
         return _envelope(
             "telemetry.tick",
             session=session_kind,
@@ -717,6 +730,7 @@ def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
             sessionTimeRemainMs=session_remain_ms,
             standings=standings,
             relatives=relatives,
+            battleEligible=battle_eligible,
             trackId=format_track_id(track_id_raw, track_name),
             trackConfig=track_config,
             mapCars=build_map_cars(cars, focus_car_idx=focus_idx),

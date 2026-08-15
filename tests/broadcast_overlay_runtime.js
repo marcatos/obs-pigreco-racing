@@ -140,10 +140,14 @@ function loadOverlay(opts) {
     rel: createEl(),
     focus: createEl(),
     banner: createEl(),
+    flagStrip: createEl(),
+    flagStripLabel: createEl(),
+    flagStripText: createEl(),
     status: createEl(),
     moment: createEl(),
   };
   els.moment.hidden = true;
+  els.flagStrip.hidden = true;
   els.root.hidden = true;
   var bySel = {
     "[data-broadcast-root]": els.root,
@@ -152,6 +156,9 @@ function loadOverlay(opts) {
     "[data-bc-rel-rows]": els.rel,
     "[data-bc-focus]": els.focus,
     "[data-bc-flag-banner]": els.banner,
+    "[data-bc-flag-strip]": els.flagStrip,
+    "[data-bc-flag-strip-label]": els.flagStripLabel,
+    "[data-bc-flag-strip-text]": els.flagStripText,
     "[data-bc-status]": els.status,
     "[data-bc-moment]": els.moment,
   };
@@ -200,9 +207,13 @@ function loadOverlay(opts) {
       },
     },
     WebSocket: FakeWebSocket,
+    location: { pathname: "/o/marcato/broadcast-chrome.html" },
     document: {
       querySelector: function (sel) {
         return bySel[sel] || null;
+      },
+      getElementsByTagName: function () {
+        return [];
       },
     },
     PIGRECO_CONFIG: cfg,
@@ -259,11 +270,11 @@ function testAutoDoesNotHideWidgetsViaDirector() {
   assert(!toggled.els.root.classList.contains("no-relative"), "untoggled widgets stay visible");
 }
 
-function testMissingDirectorAppliesTickBanner() {
+function testMissingDirectorAppliesTickStrip() {
   var ctx = loadOverlay({ withDirector: false, director: "auto" });
   ctx.send({ type: "telemetry.tick", flag: "yellow", standings: [], relatives: [] });
-  assert(ctx.els.banner.classList.contains("is-on"), "missing Director still applies tick-driven flag banner");
-  assertEq(ctx.els.banner.dataset.flag, "yellow", "banner dataset.flag from tick");
+  assert(ctx.els.flagStrip.classList.contains("is-up"), "missing Director still applies tick-driven flag strip");
+  assertEq(ctx.els.flagStrip.dataset.flag, "yellow", "strip dataset.flag from tick");
 
   ctx.send({
     type: "telemetry.event",
@@ -272,17 +283,21 @@ function testMissingDirectorAppliesTickBanner() {
     ttlMs: 4000,
     payload: { flag: "red" },
   });
-  assertEq(ctx.els.banner.dataset.flag, "yellow", "missing Director enqueueEvent is a no-op");
+  assertEq(ctx.els.flagStrip.dataset.flag, "red", "flag events update strip without Director");
+  assertEq(ctx.els.flagStripLabel.textContent, "RED");
+  assertEq(ctx.els.flagStripText.textContent, "SESSION STOPPED");
 }
 
-function testAutoLatchesFlagBannerFromFirstYellowTick() {
+function testAutoLatchesFlagStripFromFirstYellowTick() {
   var ctx = loadOverlay({ withDirector: true, director: "auto" });
   ctx.send({ type: "telemetry.tick", flag: "yellow", standings: [], relatives: [] });
-  assert(ctx.els.banner.classList.contains("is-on"), "auto+Director latches banner from first yellow tick");
-  assertEq(ctx.els.banner.dataset.flag, "yellow", "banner dataset.flag from tick when no flag hero");
+  assert(ctx.els.flagStrip.classList.contains("is-up"), "auto+Director latches strip from first yellow tick");
+  assertEq(ctx.els.flagStrip.dataset.flag, "yellow", "strip dataset.flag from tick");
+  assertEq(ctx.els.flagStripLabel.textContent, "YELLOW");
+  assertEq(ctx.els.flagStripText.textContent, "CAUTION");
 }
 
-function testFlagHeroKeepsEventDrivenBanner() {
+function testGreenTickCollapsesHoldStrip() {
   var ctx = loadOverlay({ withDirector: true, director: "auto" });
   ctx.send({
     type: "telemetry.event",
@@ -291,13 +306,18 @@ function testFlagHeroKeepsEventDrivenBanner() {
     ttlMs: 4000,
     payload: { flag: "yellow" },
   });
-  assert(ctx.els.banner.classList.contains("is-on"), "flag_change event still drives banner");
-  assertEq(ctx.els.banner.dataset.flag, "yellow");
+  assert(ctx.els.flagStrip.classList.contains("is-up"), "flag_change event drives strip");
+  assertEq(ctx.els.flagStrip.dataset.flag, "yellow");
+  ctx.clock.advance(900);
+  assert(ctx.els.flagStrip.classList.contains("is-expanded"), "hold flag expands");
   ctx.send({ type: "telemetry.tick", flag: "green", standings: [], relatives: [] });
-  assertEq(ctx.els.banner.dataset.flag, "yellow", "flag hero keeps event-driven banner");
+  assert(!ctx.els.flagStrip.classList.contains("is-expanded"), "green collapses hold strip");
+  ctx.clock.advance(1000);
+  assertEq(ctx.els.flagStrip.hidden, true, "hold strip drops after collapse");
+  assertEq(ctx.els.flagStrip.dataset.flag, "", "idle strip clears dataset.flag");
 }
 
-function testBattleHeroStillLatchesTickBanner() {
+function testBattleHeroStillLatchesTickStrip() {
   var ctx = loadOverlay({ withDirector: true, director: "auto" });
   ctx.send({
     type: "telemetry.event",
@@ -307,8 +327,8 @@ function testBattleHeroStillLatchesTickBanner() {
     payload: {},
   });
   ctx.send({ type: "telemetry.tick", flag: "yellow", standings: [], relatives: [] });
-  assert(ctx.els.banner.classList.contains("is-on"), "non-flag hero still latches tick banner");
-  assertEq(ctx.els.banner.dataset.flag, "yellow");
+  assert(ctx.els.flagStrip.classList.contains("is-up"), "non-flag hero still latches tick strip");
+  assertEq(ctx.els.flagStrip.dataset.flag, "yellow");
 }
 
 function testDisconnectClearsMomentLayer() {
@@ -348,20 +368,56 @@ function testHeroExitRaceKeepsNewChip() {
     ttlMs: 4000,
     payload: { flag: "yellow" },
   });
-  assert(ctx.els.moment.innerHTML.indexOf("YELLOW") !== -1, "new hero chip during exit window");
-  assertEq(ctx.els.moment.hidden, false);
+  assert(ctx.els.moment.innerHTML.indexOf("YELLOW") === -1, "flag_change must not enqueue a moment chip");
+  assert(ctx.els.moment.innerHTML.indexOf("BATTLE") !== -1, "battle chip remains while exiting");
+  assertEq(ctx.els.flagStrip.dataset.flag, "yellow", "strip owns flag UX");
 
   ctx.clock.advance(250);
-  assertEq(ctx.els.moment.hidden, false, "pending exit must not hide the new hero");
-  assert(ctx.els.moment.innerHTML.indexOf("YELLOW") !== -1, "new hero chip remains after 200ms");
-  assert(ctx.els.moment.innerHTML.indexOf("bc-moment-chip") !== -1, "chip markup remains");
+  assertEq(ctx.els.moment.hidden, true, "pending battle exit still completes without a flag hero");
+}
+
+function testFlagChangeSkipsMomentChip() {
+  var ctx = loadOverlay({ withDirector: true, director: "auto" });
+  ctx.send({
+    type: "telemetry.event",
+    kind: "flag_change",
+    priority: 100,
+    ttlMs: 4000,
+    payload: { flag: "white" },
+  });
+  assertEq(ctx.els.moment.hidden, true, "flag_change does not show a moment chip");
+  assertEq(ctx.els.moment.innerHTML, "", "flag_change leaves moment DOM empty");
+  assertEq(ctx.els.flagStrip.dataset.flag, "white");
+  assertEq(ctx.els.flagStripLabel.textContent, "LAST LAP");
+  assertEq(ctx.els.flagStripText.textContent, "FINAL LAP");
+}
+
+function testTimedWhiteFlagDropsWhileSdkStillWhite() {
+  var ctx = loadOverlay({
+    withDirector: true,
+    director: "auto",
+    config: { broadcastFlagStripMs: 2000 },
+  });
+  ctx.send({ type: "telemetry.tick", flag: "white", standings: [], relatives: [] });
+  assertEq(ctx.els.flagStrip.dataset.flag, "white");
+  assertEq(ctx.els.flagStripLabel.textContent, "LAST LAP");
+  ctx.clock.advance(900);
+  assert(ctx.els.flagStrip.classList.contains("is-expanded"), "timed flag expands");
+  ctx.clock.advance(2000);
+  assert(!ctx.els.flagStrip.classList.contains("is-expanded"), "timed flag collapses after hold");
+  ctx.send({ type: "telemetry.tick", flag: "white", standings: [], relatives: [] });
+  ctx.clock.advance(1000);
+  assertEq(ctx.els.flagStrip.hidden, true, "timed strip stays down while SDK remains white");
+  assertEq(ctx.els.flagStrip.dataset.flag, "", "dismissed timed flag does not re-enter");
 }
 
 testAutoDoesNotHideWidgetsViaDirector();
-testMissingDirectorAppliesTickBanner();
-testAutoLatchesFlagBannerFromFirstYellowTick();
-testFlagHeroKeepsEventDrivenBanner();
-testBattleHeroStillLatchesTickBanner();
+testMissingDirectorAppliesTickStrip();
+testAutoLatchesFlagStripFromFirstYellowTick();
+testGreenTickCollapsesHoldStrip();
+testBattleHeroStillLatchesTickStrip();
 testDisconnectClearsMomentLayer();
 testHeroExitRaceKeepsNewChip();
+testFlagChangeSkipsMomentChip();
+testTimedWhiteFlagDropsWhileSdkStillWhite();
 console.log("ok");

@@ -33,8 +33,8 @@ CANVAS_W = 1920
 CANVAS_H = 1080
 
 STREAMCAM_ID = (
-    r"Logitech StreamCam:\\?\usb#22vid_046d&pid_0893&mi_00#228&33ee287c&0&0000"
-    r"#22{65e8773d-8f56-11d0-a3b9-00a0c9223196}\global"
+    r"Logitech StreamCam:\\?\usb#vid_046d&pid_0893&mi_00#8&33ee287c&0&0000"
+    r"#{65e8773d-8f56-11d0-a3b9-00a0c9223196}\global"
 )
 # Second camera (seat / wide) on this PC — re-pick in OBS if USB port changes
 USBCAM_ID = (
@@ -533,6 +533,13 @@ def cam_carbon_backdrop(name: str, *, width: int, height: int, marcato: bool) ->
         "color_source_v3",
         {"width": int(width), "height": int(height), "color": color},
     )
+
+
+def log_cam_device_ids() -> None:
+    """INFO: friendly names written into dshow video_device_id constants."""
+    for const_name, device_id in (("STREAMCAM_ID", STREAMCAM_ID), ("USBCAM_ID", USBCAM_ID)):
+        friendly = device_id.split(":", 1)[0]
+        log.info("cam device written %s friendly=%s", const_name, friendly)
 
 
 def dshow_cam(name: str, device_id: str, *, resolution: str = "1920x1080") -> dict:
@@ -3027,6 +3034,7 @@ def main() -> None:
     started = time.perf_counter()
     logo_name = "skipped"
     outputs: list[str] = []
+    log_cam_device_ids()
 
     if args.profile == "marcato":
         log.info("start generating S.Marcato 42 slim live + Replay + Rec 2K")

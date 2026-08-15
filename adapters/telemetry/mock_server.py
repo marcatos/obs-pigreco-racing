@@ -26,6 +26,7 @@ HERE = Path(__file__).resolve().parent
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
+from domain_battle import battle_panel_eligible  # noqa: E402
 from domain_enrich import apply_pos_change, delta_best_ms  # noqa: E402
 from domain_events import EventDetector  # noqa: E402
 from domain_grid import apply_start_positions  # noqa: E402
@@ -137,6 +138,11 @@ def build_tick(elapsed_s: float) -> dict[str, Any]:
     lap = 12 + int(elapsed_s // 95)
     laps_total = 25
     sector_fields = _mock_sector_fields(lap_progress, last_lap, best_lap)
+    battle_eligible = battle_panel_eligible(
+        "race",
+        live_order_ready=lap >= 1,
+        other_cars=max(0, sum(1 for r in standings if r.get("carIdx") is not None) - 1),
+    )
 
     return _envelope(
         "telemetry.tick",
@@ -176,6 +182,7 @@ def build_tick(elapsed_s: float) -> dict[str, Any]:
         sessionTimeRemainMs=None,
         standings=standings,
         relatives=relatives,
+        battleEligible=battle_eligible,
         trackId="900001",
         trackConfig="GP",
         mapCars=build_map_cars(standings, focus_car_idx=focus.get("carIdx")),
