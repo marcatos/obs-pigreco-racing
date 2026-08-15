@@ -87,6 +87,7 @@ Periodic snapshot.
 | `sessionTimeRemainMs` | number \| null | Session time remaining |
 | `standings` | array | Leaderboard rows (see below) |
 | `relatives` | array | Short ahead/behind list around focus |
+| `battleEligible` | boolean | When false, battle pack must not arm (formation / quali / solo practice) |
 
 #### Optional P3-06 enrichment (ignore if absent)
 
