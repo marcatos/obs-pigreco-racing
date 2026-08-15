@@ -34,6 +34,16 @@ Serve OBS con `nv-filters` e **NVIDIA Video Effects / Broadcast** installati.
 5. Live/Replay chrome: solo watermark monogramma (niente lower-third); brand in classifica via `broadcastPilotMarkUrl` (match su `pilotName`, non sul numero gara).
 6. Se una cam è nera: apri la nested scene → Properties sul device corretto.
 
+## Verifica dopo regen
+
+Dopo `python tools/generate_pack.py --profile marcato` (e pigreco se usi le stesse costanti):
+
+1. Apri la nested **Cam PIP** → Properties → il device deve essere **Logitech StreamCam**.
+2. Apri la nested **Cam 2** / **Cam 2 PIP** → Properties → il device deve essere **USB Camera**.
+3. Se il video è nero o il device non compare: la porta USB è cambiata. Ripesca il device in OBS, poi aggiorna `STREAMCAM_ID` / `USBCAM_ID` in `tools/generate_pack.py` (niente escape `#22`) e rigenera.
+
+Istanze attese su questo PC: StreamCam `8&33ee287c`, USB Camera `9&1779791d`.
+
 ## Non usare
 
 - NVIDIA Broadcast come unica Virtual Camera per entrambe (ne gestisce una sola).
