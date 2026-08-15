@@ -52,7 +52,7 @@ Update this file when claiming or finishing an ID.
 | P3-09 | NASCAR-style field ticker | done | bottom scroll strip; `broadcastTicker` |
 | P3-10 | Live Battle for Px panel | done | bottom-center fight pack; show/hide on close gaps |
 | P3-11 | Race best lap panel | done | field best so far + driver; right of session strip |
-| P3-12 | Flag strip + battle session gate + cam ID refresh | in_progress | spec 2026-08-15-marcato-cam-flag-battle-design |
+| P3-12 | Flag strip + battle session gate + cam ID refresh | done | spec 2026-08-15-marcato-cam-flag-battle-design; automated tests pass; live OBS/iRacing visual checks pending |
 
 ## Phase 4 — Team distribution
 
@@ -65,10 +65,10 @@ Update this file when claiming or finishing an ID.
 
 ## Suggested next agent claims
 
-1. `P3-12` Flag strip + battle session gate + cam ID refresh (Tasks 2–6 after Task 1 debris bits)
-2. Showcase PNG for broadcast chrome when widgets are stable on stream
-3. `P2-04` Instant Replay / Highlight scene
-4. `P4-02` Game presets  
+1. Showcase PNG for broadcast chrome when widgets are stable on stream
+2. `P2-04` Instant Replay / Highlight scene
+3. `P4-02` Game presets
+4. Live OBS: confirm Cam PIP / Cam 2 PIP + flag-strip timings on mock or iRacing
 
 ## Definition of done (any ID)
 
