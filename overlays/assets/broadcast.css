@@ -1307,6 +1307,10 @@
 }
 
 /* Top flag strip — FIELD-like accordion (P3-12) */
+.bc-flag-strip[hidden] {
+  display: none !important;
+}
+
 .bc-flag-strip {
   position: absolute;
   left: 0;
