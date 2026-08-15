@@ -15,6 +15,7 @@ __pycache__/
 
 # Agent scratch / local session artifacts
 .superpowers/
+.worktrees/
 
 # Local OBS exports / temp
 *.tmp
