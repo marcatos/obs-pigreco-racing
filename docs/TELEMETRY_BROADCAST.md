@@ -99,6 +99,7 @@ See `overlays/config.example.js`:
 - `broadcastTicker` (default `true`) — bottom field strip; **rise** (FIELD only) → **expand** right → scroll once P1→last → **collapse** to FIELD → **drop** down; then wait `broadcastTickerIdleMs`
 - `broadcastTickerSpeed` (default `85`) — scroll speed in px/sec while visible
 - `broadcastBattlePanel` (default `true`) — bottom-center horizontal fight pack (monogram + generic helmets); arms when a neighbour is **closing fast** (gap shrink rate) within engage range; pack only shows cars within a tighter include gap (~0.26s normal)
+- Battle pack arms only when `battleEligible` is true: **race** after live order (lap ≥ 1, not formation/pace); **practice** with ≥1 other car; **never** in quali/cooldown.
 - `broadcastBattleMs` / `broadcastBattleTicks` — optional overrides (0 = use `broadcastDirectorSensitivity`)
 - `broadcastTickerFirstDelayMs` (default `4000`) — delay before first appearance
 - `broadcastDirector` (`auto` | `manual` | `off`, default `auto`)

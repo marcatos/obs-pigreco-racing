@@ -405,6 +405,23 @@
     return -1;
   }
 
+  function battleEligibleFromTick(tick) {
+    if (!tick) return false;
+    if (typeof tick.battleEligible === "boolean") return tick.battleEligible;
+    // Fail closed for known non-race/practice if bridge old:
+    var s = String(tick.session || "").toLowerCase();
+    if (s === "quali" || s === "cooldown" || s === "unknown" || !s) return false;
+    if (s === "race") {
+      var lap = Number(tick.lap);
+      return Number.isFinite(lap) && lap >= 1;
+    }
+    if (s === "practice") {
+      var rows = Array.isArray(tick.standings) ? tick.standings : [];
+      return rows.length >= 2;
+    }
+    return false;
+  }
+
   function sampleFightGaps(tick) {
     var now =
       typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
@@ -882,6 +899,17 @@
 
   function updateFightPanel(tick, standings) {
     if (!battlePanelEnabled || !elFight) return;
+    if (!battleEligibleFromTick(tick)) {
+      if (battleActive) {
+        battleActive = false;
+        battleStreak = 0;
+        hideFightPanel();
+        directorLog("INFO", "fight panel off (session not eligible)");
+      } else {
+        battleStreak = 0;
+      }
+      return;
+    }
     var sample = sampleFightGaps(tick);
     var arm = fightShouldArm(sample);
     var hold = fightShouldHold(sample);
