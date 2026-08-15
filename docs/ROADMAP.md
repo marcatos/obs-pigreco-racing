@@ -23,7 +23,7 @@ Update this file when claiming or finishing an ID.
 | P1-01 | Countdown Starting Soon | done | `goLiveAt` / `countdownSeconds` |
 | P1-02 | Badge sessione (Practice/Quali/Race) | done | pill top-center |
 | P1-03 | Stinger transition (webm/mov or HTML) | done | `overlays/stinger/` + `docs/STINGER.md` |
-| P1-04 | Dual cam layout (face + wheel) toggle | done | Cam PIP + Cam 2 PIP, NVIDIA greenscreen chair + carbon BG; `docs/CAMERAS.md` |
+| P1-04 | Dual cam layout (face + wheel) toggle | done | Cam PIP + Cam 2 PIP, NVIDIA greenscreen chair + carbon BG; `docs/CAMERAS.md`; cam device ID refresh 2026-08-15 |
 | P1-05 | Ending ricco (Discord QR + CTA) | done | config URLs + QR PNG |
 | P1-06 | BRB smart timer “torno alle HH:MM” | done | `brbUntil` + optional countdown |
 
@@ -52,6 +52,7 @@ Update this file when claiming or finishing an ID.
 | P3-09 | NASCAR-style field ticker | done | bottom scroll strip; `broadcastTicker` |
 | P3-10 | Live Battle for Px panel | done | bottom-center fight pack; show/hide on close gaps |
 | P3-11 | Race best lap panel | done | field best so far + driver; right of session strip |
+| P3-12 | Flag strip + battle session gate + cam ID refresh | in_progress | spec 2026-08-15-marcato-cam-flag-battle-design |
 
 ## Phase 4 — Team distribution
 
@@ -64,9 +65,10 @@ Update this file when claiming or finishing an ID.
 
 ## Suggested next agent claims
 
-1. Showcase PNG for broadcast chrome when widgets are stable on stream
-2. `P2-04` Instant Replay / Highlight scene
-3. `P4-02` Game presets  
+1. `P3-12` Flag strip + battle session gate + cam ID refresh (Tasks 2–6 after Task 1 debris bits)
+2. Showcase PNG for broadcast chrome when widgets are stable on stream
+3. `P2-04` Instant Replay / Highlight scene
+4. `P4-02` Game presets  
 
 ## Definition of done (any ID)
 

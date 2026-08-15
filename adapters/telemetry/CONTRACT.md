@@ -65,7 +65,7 @@ Periodic snapshot.
 | `currentLapMs` | number \| null | Ongoing lap time |
 | `lap` | number \| null | Current lap (focus) |
 | `lapsTotal` | number \| null | Scheduled laps; null if timed |
-| `flag` | string | `none` \| `green` \| `yellow` \| `blue` \| `white` \| `checkered` \| `red` \| `black` \| `meatball` |
+| `flag` | string | `none` \| `green` \| `yellow` \| `blue` \| `white` \| `debris` \| `checkered` \| `red` \| `black` \| `meatball` |
 | `trackName` | string \| null | Track name |
 | `carName` | string \| null | Focus car name |
 | `speedKph` | number \| null | Speed km/h |

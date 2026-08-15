@@ -140,9 +140,10 @@ _FLAG_WHITE = 0x00000002
 _FLAG_GREEN = 0x00000004
 _FLAG_YELLOW = 0x00000008
 _FLAG_RED = 0x00000010
-_FLAG_BLUE = 0x00000040
-_FLAG_BLACK = 0x00000100
-_FLAG_MEATBALL = 0x00008000
+_FLAG_BLUE = 0x00000020
+_FLAG_DEBRIS = 0x00000040
+_FLAG_BLACK = 0x00010000
+_FLAG_MEATBALL = 0x00100000
 
 
 def _ms_now() -> int:
@@ -169,6 +170,8 @@ def _flag_name(session_flags: int | None) -> str:
         return "red"
     if f & _FLAG_YELLOW:
         return "yellow"
+    if f & _FLAG_DEBRIS:
+        return "debris"
     if f & _FLAG_WHITE:
         return "white"
     if f & _FLAG_BLUE:
