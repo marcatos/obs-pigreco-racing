@@ -55,3 +55,7 @@ Safe parallel pairs (little file overlap):
 | `ws-engagement` chat CSS templates | `ws-sim-pro` SimHub notes (docs-only until APIs land) |
 
 Avoid two agents editing `tools/generate_pack.py` or `obs/PiGreco_Racing.json` at once.
+
+<!-- plane-tracker -->
+Plane project **OBSPI** (`OBS PiGreco racing`). Canonical STATUS/DECISIONS/issues live on Plane (`http://10.100.30.87`), workspace `personal`. See `.cursor/rules/plane.mdc`.
+<!-- /plane-tracker -->

@@ -6,6 +6,8 @@ Desktop.ini
 .vscode/
 .idea/
 .cursor/
+!.cursor/rules/
+!.cursor/rules/plane.mdc
 .pytest_cache/
 
 # Python
