@@ -5,7 +5,7 @@ Desktop.ini
 *.bak
 .vscode/
 .idea/
-.cursor/
+.cursor/*
 !.cursor/rules/
 !.cursor/rules/plane.mdc
 .pytest_cache/
