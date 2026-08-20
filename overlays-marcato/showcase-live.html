@@ -9,11 +9,14 @@
 <body>
   <div class="stage">
     <div class="mock-layer mock-game" aria-hidden="true"></div>
-    <div class="mock-label">MOCK GAMEPLAY · LIVE</div>
     <div class="mock-face" aria-hidden="true"></div>
     <div class="mock-pedals" aria-hidden="true"></div>
-    <!-- cam=1: real CAM frame over mock face silhouette (no live webcam) -->
     <iframe class="chrome-frame" src="live-chrome.html?cam=1" title="Live chrome"></iframe>
+    <iframe
+      class="chrome-frame"
+      src="broadcast-chrome.html?showcase=1"
+      title="Telecronaca"
+    ></iframe>
   </div>
 </body>
 </html>
