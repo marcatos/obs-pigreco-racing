@@ -47,6 +47,11 @@ from domain_sectors import (  # noqa: E402
     normalize_sector_starts,
     sectors_payload,
 )
+from domain_session_reset import (  # noqa: E402
+    SessionResetTracker,
+    build_session_key,
+    session_reset_envelope,
+)
 from domain_standings import build_relatives, standings_from_cars  # noqa: E402
 from domain_track_map import build_map_cars, format_track_id  # noqa: E402
 
@@ -63,6 +68,8 @@ _last_focus_car_idx: Any = None
 _last_session_time_ms: int | None = None
 detector = EventDetector(sensitivity="normal")
 _sector_tracker = SectorLapTracker()
+_session_tracker = SessionResetTracker()
+_session_key_missing_logged = False
 _start_by_car: dict[int, int] = {}
 _grid_session_key: Any = None
 SESSION_BACKJUMP_MS = 1000
@@ -223,6 +230,110 @@ def _safe_get(ir: Any, key: str, default: Any = None) -> Any:
         return default if val is None else val
     except Exception:  # noqa: BLE001
         return default
+
+
+def _session_kind_from_ir(ir: Any, session_num: Any) -> str:
+    session_type = None
+    try:
+        sessions = ir["SessionInfo"]["Sessions"]
+        sid = int(session_num or 0)
+        if sessions and 0 <= sid < len(sessions):
+            session_type = sessions[sid].get("SessionType")
+    except Exception:  # noqa: BLE001
+        pass
+    return _session_kind(session_type)
+
+
+def note_session_identity(ir: Any, *, now_ms: int) -> dict[str, Any] | None:
+    """Latch the current sim identity and return a reset envelope on change."""
+    global _session_key_missing_logged
+    unique_id = _safe_get(ir, "SessionUniqueID", None)
+    session_num = _safe_get(ir, "SessionNum", None)
+    track_id = None
+    try:
+        track_id = ir["WeekendInfo"].get("TrackID")
+    except Exception:  # noqa: BLE001
+        pass
+    key = build_session_key(
+        unique_id=unique_id,
+        track_id=track_id,
+        session_num=session_num,
+        session_kind=_session_kind_from_ir(ir, session_num),
+    )
+    if key is None:
+        if not _session_key_missing_logged:
+            log.warning(
+                "session identity unavailable uniqueId=%r trackId=%r sessionNum=%r",
+                unique_id,
+                track_id,
+                session_num,
+            )
+            _session_key_missing_logged = True
+        return None
+    _session_key_missing_logged = False
+    event = _session_tracker.note(key, now_ms=now_ms)
+    if event is None:
+        return None
+    reset_continuity()
+    log.info(
+        "session reset reason=%s previous=%s current=%s",
+        event["reason"],
+        event["previousKey"],
+        event["sessionKey"],
+    )
+    return session_reset_envelope(
+        reason=event["reason"],
+        session_key=event["sessionKey"],
+        previous_key=event["previousKey"],
+        ts=now_ms,
+    )
+
+
+def handle_telemetry_command(
+    msg: dict[str, Any],
+    *,
+    now_ms: int | None = None,
+) -> dict[str, Any] | None:
+    """Apply supported client commands and return the frame to broadcast."""
+    if msg.get("type") != "telemetry.command":
+        return None
+    command = msg.get("command")
+    if command != "session_reset":
+        log.warning("unsupported telemetry command command=%r", command)
+        return None
+    if now_ms is None:
+        try:
+            now_ms = int(msg.get("ts") or _ms_now())
+        except (TypeError, ValueError):
+            now_ms = _ms_now()
+            log.warning("session_reset command has invalid ts=%r", msg.get("ts"))
+    reason = str(msg.get("reason") or "manual")
+    event = _session_tracker.force(reason=reason, now_ms=now_ms)
+    reset_continuity()
+    log.info(
+        "session reset command reason=%s session=%s",
+        event["reason"],
+        event["sessionKey"],
+    )
+    return session_reset_envelope(
+        reason=event["reason"],
+        session_key=event["sessionKey"],
+        previous_key=event["previousKey"],
+        ts=now_ms,
+    )
+
+
+def disconnect_session_reset(*, now_ms: int) -> dict[str, Any]:
+    """Clear the latched identity and return the disconnect reset frame."""
+    previous_key = _session_tracker.current_key
+    reset_continuity()
+    _session_tracker.clear_key()
+    return session_reset_envelope(
+        reason="sim_disconnected",
+        session_key=None,
+        previous_key=previous_key,
+        ts=now_ms,
+    )
 
 
 def _num_or_none(v: Any) -> float | None:
@@ -757,6 +868,19 @@ def write_tick_file(path: Path, tick: dict[str, Any]) -> None:
     tmp.replace(path)
 
 
+async def broadcast_message(clients: set[Any], message: dict[str, Any]) -> None:
+    """Broadcast one JSON frame, pruning clients whose send fails."""
+    payload = json.dumps(message, separators=(",", ":"))
+    dead: list[Any] = []
+    for websocket in list(clients):
+        try:
+            await websocket.send(payload)
+        except Exception:  # noqa: BLE001
+            dead.append(websocket)
+    for websocket in dead:
+        clients.discard(websocket)
+
+
 def configure_logging(level_name: str) -> None:
     level = getattr(logging, level_name.upper(), None)
     if not isinstance(level, int):
@@ -898,6 +1022,10 @@ async def async_main(args: argparse.Namespace) -> int:
                             separators=(",", ":"),
                         )
                     )
+                elif msg.get("type") == "telemetry.command":
+                    event = handle_telemetry_command(msg)
+                    if event is not None:
+                        await broadcast_message(clients, event)
         except Exception as exc:  # noqa: BLE001
             log.debug("Client ended peer=%s err=%s", peer, exc)
         finally:
@@ -933,7 +1061,7 @@ async def async_main(args: argparse.Namespace) -> int:
                 if not ir.startup():
                     if connected_logged:
                         log.warning("iRacing disconnected")
-                        reset_continuity()
+                        reset_event = disconnect_session_reset(now_ms=_ms_now())
                         if ibt_armed:
                             ibt_stop(ir, irsdk)
                             ibt_armed = False
@@ -943,12 +1071,8 @@ async def async_main(args: argparse.Namespace) -> int:
                             connected=False,
                             reason="sim_disconnected",
                         )
-                        payload = json.dumps(status, separators=(",", ":"))
-                        for ws in list(clients):
-                            try:
-                                await ws.send(payload)
-                            except Exception:  # noqa: BLE001
-                                pass
+                        await broadcast_message(clients, reset_event)
+                        await broadcast_message(clients, status)
                     try:
                         await asyncio.wait_for(stop.wait(), timeout=interval)
                     except asyncio.TimeoutError:
@@ -976,6 +1100,9 @@ async def async_main(args: argparse.Namespace) -> int:
                     pass
                 continue
 
+            reset_event = note_session_identity(ir, now_ms=_ms_now())
+            if reset_event is not None:
+                await broadcast_message(clients, reset_event)
             events = detector.feed(tick)
             payload = json.dumps(tick, separators=(",", ":"))
             event_payloads = [

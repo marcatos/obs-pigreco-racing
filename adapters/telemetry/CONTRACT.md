@@ -228,6 +228,43 @@ Sparse frames emitted on the **WebSocket** after the tick that produced them (ti
 }
 ```
 
+### `telemetry.session_reset` (server → client)
+
+Broadcast when the bridge detects a new iRacing session, receives a manual reset command, or loses the sim connection. Consumers clear session-scoped state without restarting or reloading.
+
+```json
+{
+  "type": "telemetry.session_reset",
+  "schemaVersion": 1,
+  "ts": 1738000000123,
+  "reason": "session_changed",
+  "sessionKey": "abc123",
+  "previousKey": "xyz789"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `reason` | string | `session_changed` \| `manual` \| `sim_disconnected` |
+| `sessionKey` | string \| null | New session key; null when disconnected |
+| `previousKey` | string \| null | Session key active before the reset |
+
+The first stable session identity after connect is latched without emitting a reset.
+
+### `telemetry.command` (client → server)
+
+Clients may request the same reset path used by automatic session detection. The bridge responds by broadcasting `telemetry.session_reset` to every connected client. Unknown commands are logged and ignored without disconnecting the sender.
+
+```json
+{
+  "type": "telemetry.command",
+  "schemaVersion": 1,
+  "ts": 1738000000123,
+  "command": "session_reset",
+  "reason": "manual"
+}
+```
+
 ### `client.ping` / `server.pong`
 
 Optional keepalive.
