@@ -115,6 +115,51 @@ def test_manual_command_uses_same_reset_path() -> None:
         _reset_bridge_state()
 
 
+def test_command_debounce_uses_server_clock_not_client_ts() -> None:
+    _reset_bridge_state()
+    try:
+        bridge._session_tracker.note("race-a", now_ms=1_000)
+
+        event = bridge.handle_telemetry_command(
+            {
+                "type": "telemetry.command",
+                "command": "session_reset",
+                "reason": "manual",
+                "ts": 1,  # skewed client clock
+            },
+            now_ms=10_000,
+        )
+
+        assert event is not None
+        assert event["ts"] == 1  # envelope keeps the client stamp
+        assert bridge._session_tracker._last_emit_ms == 10_000
+        # A sim session change inside the server debounce window stays suppressed.
+        assert bridge.note_session_identity(_ir(unique_id="race-b"), now_ms=10_500) is None
+        assert bridge.note_session_identity(_ir(unique_id="race-b"), now_ms=12_000) is not None
+    finally:
+        _reset_bridge_state()
+
+
+def test_command_with_invalid_ts_falls_back_to_server_now(caplog: Any) -> None:
+    _reset_bridge_state()
+    try:
+        with caplog.at_level(logging.WARNING):
+            event = bridge.handle_telemetry_command(
+                {
+                    "type": "telemetry.command",
+                    "command": "session_reset",
+                    "ts": "not-a-number",
+                },
+                now_ms=7_000,
+            )
+
+        assert event is not None
+        assert event["ts"] == 7_000
+        assert "invalid ts" in caplog.text
+    finally:
+        _reset_bridge_state()
+
+
 def test_unknown_command_warns_without_reset(caplog: Any) -> None:
     _reset_bridge_state()
     with caplog.at_level(logging.WARNING):

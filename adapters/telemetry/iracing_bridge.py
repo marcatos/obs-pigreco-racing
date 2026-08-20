@@ -301,25 +301,31 @@ def handle_telemetry_command(
     if command != "session_reset":
         log.warning("unsupported telemetry command command=%r", command)
         return None
-    if now_ms is None:
+    # Debounce on our own clock: a client with a skewed clock must not be able
+    # to disarm (or prematurely rearm) the reset gate.
+    server_now = _ms_now() if now_ms is None else int(now_ms)
+    envelope_ts = server_now
+    raw_ts = msg.get("ts")
+    if raw_ts is not None:
         try:
-            now_ms = int(msg.get("ts") or _ms_now())
+            envelope_ts = int(raw_ts)
         except (TypeError, ValueError):
-            now_ms = _ms_now()
-            log.warning("session_reset command has invalid ts=%r", msg.get("ts"))
+            log.warning("session_reset command has invalid ts=%r", raw_ts)
     reason = str(msg.get("reason") or "manual")
-    event = _session_tracker.force(reason=reason, now_ms=now_ms)
+    event = _session_tracker.force(reason=reason, now_ms=server_now)
     reset_continuity()
     log.info(
-        "session reset command reason=%s session=%s",
+        "session reset command reason=%s session=%s serverMs=%d clientTs=%s",
         event["reason"],
         event["sessionKey"],
+        server_now,
+        raw_ts,
     )
     return session_reset_envelope(
         reason=event["reason"],
         session_key=event["sessionKey"],
         previous_key=event["previousKey"],
-        ts=now_ms,
+        ts=envelope_ts,
     )
 
 
