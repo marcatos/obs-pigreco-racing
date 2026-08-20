@@ -807,7 +807,7 @@ def move_transition_settings() -> dict:
 def build_transitions(*, overlays_dir: Path, profile: str) -> tuple[list[dict], str, int]:
     """Return (transitions, current_name, duration_ms).
 
-    Marcato default: Dissolvenza 900 ms; PiGreco default: branded Move transition.
+    Both profiles default to branded Move (~650 ms). Stinger stays as a manual alternate.
     """
     if profile == "marcato":
         stinger_path = ROOT / "overlays-marcato" / "stinger" / "marcato-stinger.webm"
@@ -845,7 +845,7 @@ def build_transitions(*, overlays_dir: Path, profile: str) -> tuple[list[dict], 
         {"color": 0x08080A if profile == "marcato" else 0x080A0C},
     )
 
-    # Move first; stinger kept as branded alternative
+    # Move first; stinger kept as branded alternative (no per-scene overrides)
     transitions = [move, cut, fade, swipe, slide, flash]
 
     if stinger_path.is_file():
@@ -874,14 +874,9 @@ def build_transitions(*, overlays_dir: Path, profile: str) -> tuple[list[dict], 
             profile,
         )
 
-    if profile == "marcato":
-        current = "Dissolvenza"
-        duration = 900
-        log.info("marcato default transition: Dissolvenza (%d ms)", duration)
-    else:
-        current = move_name
-        duration = _MOVE_DURATION_MS
-        log.info("move transition default: %s (%d ms)", move_name, duration)
+    current = move_name
+    duration = _MOVE_DURATION_MS
+    log.info("move transition default: %s (%d ms)", move_name, duration)
 
     return transitions, current, duration
 
@@ -1373,7 +1368,7 @@ def build_collection(
 
 
 def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
-    """Slim S.Marcato 42: Starting Soon / Live / Headcam / Lobby / BRB / Ending."""
+    """Slim S.Marcato 42 live collection with an auxiliary reset scene."""
     t0 = time.perf_counter()
     overlays_dir = overlays or (ROOT / "overlays-marcato")
     OBS_DIR.mkdir(parents=True, exist_ok=True)
@@ -1470,6 +1465,27 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
     )
     ov_cam_frame = browser("Overlay Cam Frame", "cam-frame.html")
     ov_cam_frame_pedals = browser("Overlay Cam Pedals Frame", "cam-frame-2.html")
+    ov_instant_replay = browser(
+        "Overlay Instant Replay Chrome", "instant-replay-chrome.html"
+    )
+
+    # Clip path is filled at runtime by Session Director (OBS Replay Buffer).
+    replay_clip = source_base(
+        "Instant Replay Clip",
+        "ffmpeg_source",
+        {
+            "local_file": "",
+            "looping": False,
+            "restart_on_activate": True,
+            "close_when_inactive": True,
+            "clear_on_media_end": True,
+            "hw_decode": True,
+            "speed_percent": 100,
+            "is_local_file": True,
+        },
+        mixers=255,
+        volume=0.85,
+    )
 
     def music(name: str, filename: str, *, volume: float = 0.28) -> dict | None:
         path = AUDIO_DIR / filename
@@ -1622,6 +1638,32 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
         ],
     )
 
+    # Full-canvas nested scene; scaled to 960×540 on Live/Headcam (bottom-right).
+    scene_instant_replay = make_scene(
+        "Instant Replay",
+        [
+            fullscreen(replay_clip["name"], replay_clip["uuid"], 1),
+            fullscreen(
+                ov_instant_replay["name"], ov_instant_replay["uuid"], 2, locked=True
+            ),
+        ],
+    )
+
+    def instant_replay_pip_item(item_id: int) -> dict:
+        ir_w, ir_h = 960.0, 540.0
+        ir_x = CANVAS_W - 36.0 - ir_w
+        ir_y = CANVAS_H - 36.0 - ir_h
+        return scene_item(
+            scene_instant_replay["name"],
+            scene_instant_replay["uuid"],
+            item_id,
+            pos=(ir_x, ir_y),
+            scale=(ir_w / float(CANVAS_W), ir_h / float(CANVAS_H)),
+            scale_ref=(float(CANVAS_W), float(CANVAS_H)),
+            visible=False,
+            locked=True,
+        )
+
     def cam_pip_item(item_id: int, *, visible: bool = True) -> dict:
         return scene_item(
             scene_cam_pip["name"],
@@ -1692,6 +1734,7 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
             cam_pedals_pip_item(6, visible=True),
             mic_live_item(7),
             fullscreen(ov_flag_fx["name"], ov_flag_fx["uuid"], 8, locked=True),
+            instant_replay_pip_item(9),
         ],
     )
     scene_live["settings"]["items"][0]["bounds_crop"] = True
@@ -1705,6 +1748,7 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
             *telecronaca_items(3),
             cam_pedals_pip_item(5, visible=True),
             mic_live_item(6),
+            instant_replay_pip_item(7),
         ],
     )
     scene_lobby = make_scene(
@@ -1750,16 +1794,7 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
             *audio_bed_item(mus_end, 2),
         ],
     )
-
-    apply_scene_transition_override(
-        scene_live, transition_name="S.Marcato Stinger", duration_ms=850
-    )
-    apply_scene_transition_override(
-        scene_headcam, transition_name="S.Marcato Stinger", duration_ms=850
-    )
-    apply_scene_transition_override(
-        scene_end, transition_name="S.Marcato Stinger", duration_ms=850
-    )
+    scene_reset = make_scene("Reset Session", [])
 
     music_sources = [s for s in (mus_soon, mus_lobby, mus_brb, mus_end) if s is not None]
     if music_sources:
@@ -1783,15 +1818,19 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
         ov_flag_fx,
         ov_cam_frame,
         ov_cam_frame_pedals,
+        ov_instant_replay,
+        replay_clip,
         *music_sources,
         scene_cam_pip,
         scene_cam_pedals_pip,
+        scene_instant_replay,
         scene_soon,
         scene_live,
         scene_headcam,
         scene_lobby,
         scene_brb,
         scene_end,
+        scene_reset,
     ]
 
     scene_order = [
@@ -1801,6 +1840,7 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
         {"name": "Lobby"},
         {"name": "BRB"},
         {"name": "Ending"},
+        {"name": "Reset Session"},
     ]
 
     collection = {
@@ -1843,37 +1883,29 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
     collection["transitions"] = transitions
     collection["current_transition"] = current_tr
     collection["transition_duration"] = tr_dur
-    transition_names = {t["name"] for t in transitions}
     quick_transitions = [
         {
-            "name": "Dissolvenza",
+            "name": current_tr,
             "duration": tr_dur,
             "hotkeys": [],
             "id": 1,
             "fade_to_black": False,
         },
-    ]
-    next_id = 2
-    if "S.Marcato Stinger" in transition_names:
-        quick_transitions.append(
-            {
-                "name": "S.Marcato Stinger",
-                "duration": 850,
-                "hotkeys": [],
-                "id": next_id,
-                "fade_to_black": False,
-            }
-        )
-        next_id += 1
-    quick_transitions.append(
+        {
+            "name": "Dissolvenza",
+            "duration": 900,
+            "hotkeys": [],
+            "id": 2,
+            "fade_to_black": False,
+        },
         {
             "name": "Taglio",
             "duration": 0,
             "hotkeys": [],
-            "id": next_id,
+            "id": 3,
             "fade_to_black": False,
-        }
-    )
+        },
+    ]
     collection["quick_transitions"] = quick_transitions
     log.info("default transition=%s (%d ms), %d transitions", current_tr, tr_dur, len(transitions))
 
@@ -2458,14 +2490,21 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
     transition_names = {t["name"] for t in transitions}
     quick_transitions = [
         {
-            "name": "Dissolvenza",
+            "name": current_tr,
             "duration": tr_dur,
             "hotkeys": [],
             "id": 1,
             "fade_to_black": False,
         },
+        {
+            "name": "Dissolvenza",
+            "duration": 900,
+            "hotkeys": [],
+            "id": 2,
+            "fade_to_black": False,
+        },
     ]
-    next_id = 2
+    next_id = 3
     if "S.Marcato Stinger" in transition_names:
         quick_transitions.append(
             {

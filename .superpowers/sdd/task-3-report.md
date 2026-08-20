@@ -50,3 +50,11 @@ After Task 2 the bool is always on the tick; the session/lap/standings path is l
 1. Director `telemetry.event` `battle` chips are **not** gated here (brief: only `updateFightPanel`). A quali/formation fight chip could still play if the producer emits `battle`.
 2. Fallback practice check uses `tick.standings.length >= 2`, not “≥1 other car vs focus”. Harmless after Task 2 (bool always present).
 3. Pre-existing overlay runtime harness crash (`location` missing) — Task 7 review lock, unrelated to this change.
+
+## Critical dependency fix — 2026-08-20
+
+- Reviewed the untracked instant-replay policy and focused tests against `InstantReplayController`; the module provides the imported config parser and all policy methods used by the director, including `reset()`.
+- Committed `adapters/obs_flag_director/domain_instant_replay.py` and `tests/test_instant_replay_policy.py` as `752a6bd` (`feat(director): add instant replay policy module (session-reset dep)`).
+- `python -m pytest tests/test_flag_director.py tests/test_instant_replay_policy.py -v` passed: 28 tests in 0.04s.
+- `python -m py_compile adapters/obs_flag_director/domain_instant_replay.py tests/test_instant_replay_policy.py` passed; IDE diagnostics reported no errors.
+- Unrelated dirty overlay, telemetry, OBS pack, documentation, and generator WIP remained unstaged.

@@ -42,6 +42,13 @@
       "hotkeyHint": "F5"
     },
     {
+      "id": "scene-reset-session",
+      "label": "Reset Session",
+      "action": "SetCurrentProgramScene",
+      "sceneName": "Reset Session",
+      "hotkeyHint": null
+    },
+    {
       "id": "stream-toggle",
       "label": "Start/Stop Stream",
       "action": "ToggleStream",

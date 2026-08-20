@@ -12,7 +12,9 @@ from dataclasses import dataclass, field
 
 FLAG_SCENES = frozenset({"yellow", "red", "checkered"})
 HOME_FLAGS = frozenset({"green", "none"})
-DEFAULT_MANUAL_SCENES = frozenset({"Starting Soon", "BRB", "Ending"})
+DEFAULT_MANUAL_SCENES = frozenset(
+    {"Starting Soon", "BRB", "Ending", "Reset Session"}
+)
 # overlay = Browser Source FX on Live (recommended); scenes = OBS program cuts
 PRESENTATIONS = frozenset({"overlay", "scenes"})
 
@@ -37,6 +39,7 @@ class SessionDirectorConfig:
     session_debounce_ms: int = 4000
     flag_presentation: str = "overlay"
     manual_scenes: frozenset[str] = field(default_factory=lambda: DEFAULT_MANUAL_SCENES)
+    reset_session_scene: str = "Reset Session"
     # Scenes the operator may stay on during a race; resume after Lobby.
     race_scenes: frozenset[str] = field(
         default_factory=lambda: frozenset({"Live", "Headcam"})
@@ -153,6 +156,25 @@ class SessionDirector:
             preferred = self._preferred_home()
             self.flags.set_stacked_home(preferred)
         return scene
+
+    def on_reset_session_scene(self, *, previous_scene: str | None) -> str | None:
+        """Return the scene to restore after a manual reset.
+
+        A prior race scene comes back as-is. An unknown previous scene falls
+        back to the preferred home so program never strands on the empty Reset
+        Session scene. Other known scenes (Starting Soon, BRB, …) return None:
+        the caller keeps the operator where they were.
+        """
+        previous = (previous_scene or "").strip()
+        if previous in self.config.race_scenes:
+            return previous
+        if not previous:
+            return self._preferred_home()
+        return None
+
+    def preferred_home_scene(self) -> str:
+        """Last-resort target for callers that must leave a placeholder scene."""
+        return self._preferred_home()
 
     def _preferred_home(self) -> str:
         if self._telem_connected:
