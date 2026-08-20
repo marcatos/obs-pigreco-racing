@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import sys
 from pathlib import Path
@@ -22,8 +23,18 @@ class FakeIR:
 
 
 class FakeWebSocket:
-    def __init__(self) -> None:
+    def __init__(self, incoming: list[str] | None = None) -> None:
+        self.incoming = incoming or []
         self.messages: list[str] = []
+        self.remote_address = ("127.0.0.1", 12345)
+
+    def __aiter__(self) -> Any:
+        return self
+
+    async def __anext__(self) -> str:
+        if not self.incoming:
+            raise StopAsyncIteration
+        return self.incoming.pop(0)
 
     async def send(self, payload: str) -> None:
         self.messages.append(payload)
@@ -137,6 +148,58 @@ def test_broadcast_message_sends_to_all_clients() -> None:
 
     assert first.messages == second.messages
     assert '"type":"telemetry.session_reset"' in first.messages[0]
+
+
+def test_websocket_handler_routes_session_reset_command_to_all_clients() -> None:
+    _reset_bridge_state()
+    try:
+        bridge._session_tracker.note("race-a", now_ms=1_000)
+        bridge.detector.feed(
+            {
+                "type": "telemetry.tick",
+                "schemaVersion": 1,
+                "ts": 1,
+                "flag": "green",
+                "position": 2,
+            }
+        )
+        bridge._prev_pos_by_car = {42: 2}
+        sender = FakeWebSocket(
+            [
+                json.dumps(
+                    {
+                        "type": "telemetry.command",
+                        "command": "session_reset",
+                        "reason": "manual",
+                        "ts": 2_000,
+                    }
+                )
+            ]
+        )
+        observer = FakeWebSocket()
+        clients = {observer}
+
+        asyncio.run(
+            bridge.handle_websocket_client(
+                sender,
+                clients,
+                tick_hz=10.0,
+                also_file=False,
+            )
+        )
+
+        sender_frames = [json.loads(payload) for payload in sender.messages]
+        observer_frames = [json.loads(payload) for payload in observer.messages]
+        assert [frame["type"] for frame in sender_frames] == [
+            "telemetry.hello",
+            "telemetry.session_reset",
+        ]
+        assert observer_frames == [sender_frames[1]]
+        assert observer_frames[0]["reason"] == "manual"
+        assert bridge.detector._prev is None
+        assert bridge._prev_pos_by_car == {}
+    finally:
+        _reset_bridge_state()
 
 
 def test_contract_documents_session_reset_and_command() -> None:

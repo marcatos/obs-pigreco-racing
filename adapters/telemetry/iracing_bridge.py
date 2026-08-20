@@ -881,6 +881,48 @@ async def broadcast_message(clients: set[Any], message: dict[str, Any]) -> None:
         clients.discard(websocket)
 
 
+async def handle_websocket_client(
+    websocket: Any,
+    clients: set[Any],
+    *,
+    tick_hz: float,
+    also_file: bool,
+) -> None:
+    """Serve one client and route supported commands through bridge fan-out."""
+    clients.add(websocket)
+    peer = getattr(websocket, "remote_address", None)
+    log.info("Client connected peer=%s total=%d", peer, len(clients))
+    hello = _envelope(
+        "telemetry.hello",
+        server=SERVER_NAME,
+        tickHz=tick_hz,
+        modes=["websocket"] + (["file"] if also_file else []),
+    )
+    await websocket.send(json.dumps(hello, separators=(",", ":")))
+    try:
+        async for raw in websocket:
+            try:
+                msg = json.loads(raw)
+            except json.JSONDecodeError:
+                continue
+            if msg.get("type") == "client.ping":
+                await websocket.send(
+                    json.dumps(
+                        _envelope("server.pong", pingTs=msg.get("ts")),
+                        separators=(",", ":"),
+                    )
+                )
+            elif msg.get("type") == "telemetry.command":
+                event = handle_telemetry_command(msg)
+                if event is not None:
+                    await broadcast_message(clients, event)
+    except Exception as exc:  # noqa: BLE001
+        log.debug("Client ended peer=%s err=%s", peer, exc)
+    finally:
+        clients.discard(websocket)
+        log.info("Client disconnected peer=%s total=%d", peer, len(clients))
+
+
 def configure_logging(level_name: str) -> None:
     level = getattr(logging, level_name.upper(), None)
     if not isinstance(level, int):
@@ -999,38 +1041,12 @@ async def async_main(args: argparse.Namespace) -> int:
             signal.signal(sig, lambda *_: _request_stop())
 
     async def handler(websocket: Any) -> None:
-        clients.add(websocket)
-        peer = getattr(websocket, "remote_address", None)
-        log.info("Client connected peer=%s total=%d", peer, len(clients))
-        hello = _envelope(
-            "telemetry.hello",
-            server=SERVER_NAME,
-            tickHz=args.hz,
-            modes=["websocket"] + (["file"] if args.also_file else []),
+        await handle_websocket_client(
+            websocket,
+            clients,
+            tick_hz=args.hz,
+            also_file=args.also_file,
         )
-        await websocket.send(json.dumps(hello, separators=(",", ":")))
-        try:
-            async for raw in websocket:
-                try:
-                    msg = json.loads(raw)
-                except json.JSONDecodeError:
-                    continue
-                if msg.get("type") == "client.ping":
-                    await websocket.send(
-                        json.dumps(
-                            _envelope("server.pong", pingTs=msg.get("ts")),
-                            separators=(",", ":"),
-                        )
-                    )
-                elif msg.get("type") == "telemetry.command":
-                    event = handle_telemetry_command(msg)
-                    if event is not None:
-                        await broadcast_message(clients, event)
-        except Exception as exc:  # noqa: BLE001
-            log.debug("Client ended peer=%s err=%s", peer, exc)
-        finally:
-            clients.discard(websocket)
-            log.info("Client disconnected peer=%s total=%d", peer, len(clients))
 
     interval = 1.0 / max(args.hz, 0.1)
     started = time.perf_counter()
