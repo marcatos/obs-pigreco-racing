@@ -1,6 +1,6 @@
 # OBS PiGreco Racing
 
-**Production-ready OBS Studio pack for sim racing streams** — brand-coherent chrome, local HTML overlays, and a double-click Windows setup. One repo, two looks: team **PiGreco Racing** and personal **S.Marcato 42**.
+**Production-ready OBS Studio pack for sim racing streams** — brand-coherent chrome, local HTML overlays, hands-free **Live ↔ Lobby ↔ Headcam**, and a double-click Windows setup. One repo, two looks: team **PiGreco Racing** and personal **S.Marcato 42**.
 
 ![Windows](https://img.shields.io/badge/Windows-first-0078D4?style=flat-square&logo=windows&logoColor=white)
 ![OBS](https://img.shields.io/badge/OBS-32.x-302E31?style=flat-square)
@@ -10,7 +10,7 @@
 
 > **Pilota non tecnico?** Apri [`LEGGIMI.txt`](LEGGIMI.txt) oppure fai doppio clic su **`Setup.bat`** — guida e setup restano in italiano.
 
-Zip → useful OBS preview in under **10 minutes**. Gameplay stays center-stage; sponsors and telemetry stay peripheral. No SaaS, no mandatory cloud — files on disk you can share in Discord.
+Zip → useful OBS preview in under **10 minutes**. Gameplay stays center-stage; sponsors and telemetry stay peripheral. Open OBS → Session Director + telemetry start themselves. No SaaS, no mandatory cloud — files on disk you can share in Discord.
 
 ---
 
@@ -20,18 +20,18 @@ Full-bleed **1920×1080** previews — browse locally: [`showcase/index.html`](s
 
 ### S.Marcato 42
 
-| Starting Soon | Live Triplo |
+| Starting Soon | Live Chrome |
 |:---:|:---:|
-| ![Starting Soon](showcase/marcato-01-starting-soon.png) | ![Live Triplo](showcase/marcato-05-triple-frame.png) |
+| ![Starting Soon](showcase/marcato-01-starting-soon.png) | ![Live Chrome](showcase/marcato-02-live-chrome.png) |
 
 | BRB | Ending |
 |:---:|:---:|
 | ![BRB](showcase/marcato-03-brb.png) | ![Ending](showcase/marcato-04-ending.png) |
 
 <p align="center">
-  <img src="showcase/marcato-02-live-chrome.png" alt="Live Chrome" width="720" />
+  <img src="showcase/marcato-05-triple-frame.png" alt="Triple frame / Rec layout" width="720" />
   <br />
-  <sub>Live Chrome — watermark + CAM</sub>
+  <sub>Triple-frame layout (Replay / Rec) — Live slim uses Game Capture + Headcam + Lobby</sub>
 </p>
 
 ### PiGreco Racing
@@ -53,10 +53,12 @@ python tools/generate_showcase.py
 ## Why this pack
 
 - **Setup.bat** — nick, optional Python install (UAC), overlays personalized, scene collection copied into OBS AppData
+- **Hands-free Session Director** — iRacing open + telem → **Live** / **Headcam**; UI-only or quit → **Lobby**; reopen restores the race scene you left
 - **Brand chrome that respects the FOV** — π / 42 identity in corners; center stays gameplay
 - **Browser Source overlays** — HTML/CSS/JS, not baked OBS images; refresh when you change config
-- **Original interstitial music** — synthesized locally (typical Twitch Content ID from stock libraries avoided)
-- **Optional sim-pro stack** — iRacing telecronaca, track map, auto flag scenes — all local WebSocket / HTTP
+- **Multi-cam race look** — face PiP (NVIDIA VB), Headcam (Brio), pedals crop — on Live / Headcam
+- **Original interstitial music** — Pixabay beds on Starting Soon / Lobby / BRB / Ending
+- **Optional sim-pro stack** — iRacing telecronaca, track map, flag FX — all local WebSocket / HTTP
 
 Canvas target: **1920×1080** @ 60 fps (OBS 32.x, relative transforms `pos_rel` / `scale_rel`).
 
@@ -78,15 +80,16 @@ Switch collections in OBS — no uninstall needed.
 | Area | What you get | Docs |
 |------|----------------|------|
 | Broadcast polish | Countdown, session badge, BRB timer, rich ending + QR | [`docs/`](docs/README.md) |
-| Stinger & cams | Brand stinger, Cam PIP / Cam 2, greenscreen notes | [`STINGER`](docs/STINGER.md) · [`CAMERAS`](docs/CAMERAS.md) |
+| Stinger & cams | Brand stinger, Cam PIP / Headcam / pedals, NV VB notes | [`STINGER`](docs/STINGER.md) · [`CAMERAS`](docs/CAMERAS.md) |
 | Config dock | Live config at `http://127.0.0.1:8766/` | [`OBS_CONFIG_PANEL`](docs/OBS_CONFIG_PANEL.md) |
-| Telecronaca | Standings / focus / flags over WebSocket `:8765` | [`TELEMETRY_BROADCAST`](docs/TELEMETRY_BROADCAST.md) |
-| Track map | Peripheral minimap + self-learn outlines | [`TRACK_MAP`](docs/TRACK_MAP.md) |
-| Flag director | Auto scene on yellow / red / checkered | [`FLAG_DIRECTOR`](docs/FLAG_DIRECTOR.md) |
+| **Session Director** | Auto **Live ↔ Lobby ↔ Headcam**, telem autostart, Lua on OBS open | [`SESSION_DIRECTOR`](docs/SESSION_DIRECTOR.md) |
+| Telecronaca | Standings / focus / battle / flags over WebSocket `:8765` | [`TELEMETRY_BROADCAST`](docs/TELEMETRY_BROADCAST.md) |
+| Track map | Peripheral minimap + self-learn / official SVG | [`TRACK_MAP`](docs/TRACK_MAP.md) |
+| Flag FX | Animated rails on Live (default) — no full-screen cutaway | [`FLAG_DIRECTOR`](docs/FLAG_DIRECTOR.md) |
 | Rec 2K | Native 2560×1440 VOD profile | [`ADR-007`](docs/adr/007-recording-1440p.md) |
-| Engagement | StreamElements chat / alert themes | [`adapters/streamelements`](adapters/streamelements/README.md) |
+| Engagement | StreamElements chat / alert themes · VirtualDeck | [`adapters/streamelements`](adapters/streamelements/README.md) · [`OBS_VIRTUALDECK`](docs/OBS_VIRTUALDECK.md) |
 
-Also included: Game Capture (iRacing) + Display Capture, StreamCam PIP, Move transitions, clean **Rec** layouts, **Replay** pack for commentary streams.
+Also included: Game Capture (iRacing) + Lobby window capture (Chromium UI), StreamCam face PiP, Move / Dissolvenza transitions, **Replay** pack for commentary, clean **Rec** layouts.
 
 ---
 
@@ -112,38 +115,41 @@ The pack ships an **in-OBS Custom Browser Dock** so pilots tweak identity, sessi
 | Sponsors | Rotator on/off, timing, JSON list (PiGreco only) |
 | Telecronaca | Broadcast overlay on/off, WS URL, widget toggles, director, track map |
 
-Autostart: Lua `obs/scripts/pigreco_config_autostart.lua` when OBS opens (localhost only). Fallback: `Start-ConfigPanel.bat`. Full setup: [`docs/OBS_CONFIG_PANEL.md`](docs/OBS_CONFIG_PANEL.md).
+Autostart: Lua `obs/scripts/pigreco_config_autostart.lua` when OBS opens — config dock **and** Session Director + telemetry (localhost only). Fallback: `Start-ConfigPanel.bat` / `Start-FlagDirector.bat`. Full setup: [`docs/OBS_CONFIG_PANEL.md`](docs/OBS_CONFIG_PANEL.md) · [`docs/SESSION_DIRECTOR.md`](docs/SESSION_DIRECTOR.md).
 
 ---
 
 ## Telecronaca — local telemetry on stream
 
-Optional **sim-pro** layer for replay commentary and live races: standings, focus, relatives, session/flag strip, moment chips, track minimap, and auto flag scenes — all **on your PC**, no cloud overlay service.
+Optional **sim-pro** layer for replay commentary and live races: standings, focus, relatives, session/flag strip, battle panel, moment chips, track minimap — all **on your PC**, no cloud overlay service. **Session Director** ties it to OBS scenes.
 
 ```text
 iRacing SDK or mock  →  adapters/telemetry (WS :8765)
                               ↓
               Overlay Broadcast Chrome (HTTP via :8766)
                               ↓
-         Flag Director (OBS WebSocket) when yellow/red/checkered
+         Session Director (OBS WebSocket) — Live/Lobby/Headcam + Flag FX
 ```
 
 | Piece | Role |
 |-------|------|
-| **Broadcast chrome** | Peripheral HTML: classifica, relative (AHD/CAM/BHD), focus card, session/flag strip, director moment chips |
-| **Track map** | Mid-right minimap inside the same Browser Source (`trackMapEnabled`) |
-| **Flag director** | Cuts OBS to branded Flag Yellow / Red / Checkered, returns on green |
+| **Broadcast chrome** | Peripheral HTML: classifica, relative, focus, session/flag strip, battle, ticker, director chips |
+| **Track map** | Mid-right minimap (`trackMapEnabled`) |
+| **Session Director** | Live ↔ Lobby ↔ Headcam from telem / iRacing process; Flag FX on Live (default) |
 | **Config dock** | Master switch `telemetryEnabled` (default off — no WS until you opt in) |
 
-**One-command smoke test (no iRacing):** `Start-Telecronaca.bat mock` — brings up config `:8766`, telemetry `:8765`, and Flag Director. In OBS, eye **on** **Overlay Broadcast Chrome** (must be `http://127.0.0.1:8766/o/...`, not `file://`).
+**Autostart (Marcato / pack):** opening OBS runs Lua → config `:8766` + Session Director + telemetry `:8765`. Fallback: `Start-FlagDirector.bat` / `Start-Telecronaca.bat`.
 
-**Live / replay:** `Start-Telecronaca.bat iracing` (or `Start-Telemetry.bat iracing` + `Start-FlagDirector.bat`).
+**One-command smoke test (no iRacing):** `Start-Telecronaca.bat mock` — config `:8766`, telemetry `:8765`, Session Director. In OBS, eye **on** **Overlay Broadcast Chrome** (must be `http://127.0.0.1:8766/o/...`, not `file://`).
+
+**Live / replay:** usually nothing to click — or `Start-Telecronaca.bat iracing` if Lua is disabled.
 
 | Guide | Covers |
 |-------|--------|
+| [`SESSION_DIRECTOR`](docs/SESSION_DIRECTOR.md) | Live↔Lobby↔Headcam, telem autostart, checklist |
 | [`TELEMETRY_BROADCAST`](docs/TELEMETRY_BROADCAST.md) | Bridge, widgets, director modes (`auto` / `manual` / `off`) |
-| [`TRACK_MAP`](docs/TRACK_MAP.md) | Open + self-learn outlines |
-| [`FLAG_DIRECTOR`](docs/FLAG_DIRECTOR.md) | OBS scene automation on flags |
+| [`TRACK_MAP`](docs/TRACK_MAP.md) | Open + self-learn + official SVG |
+| [`FLAG_DIRECTOR`](docs/FLAG_DIRECTOR.md) | Flag FX overlay (prefer Session Director doc for live) |
 | [`CONTRACT`](adapters/telemetry/CONTRACT.md) | WebSocket tick / event schema |
 
 Third-party tools (SimHub, Racing Overlay) can sit **beside** the pack as extra Browser Sources; brand chrome stays the primary layer.
@@ -172,18 +178,23 @@ Italian walkthrough: [`LEGGIMI.txt`](LEGGIMI.txt) · PDF: [`Guida_PiGreco_OBS.pd
 - **S.Marcato 42** — personal live race
 - **S.Marcato Replay** — iRacing replay commentary
 
-### 3. Config panel + optional telecronaca
+### 3. Config panel + Session Director (usually automatic)
 
-On OBS open, Lua `obs/scripts/pigreco_config_autostart.lua` starts the dock server at `http://127.0.0.1:8766/`. Optional login keepalive: `tools/install_config_autostart.ps1`.
+On OBS open, Lua `obs/scripts/pigreco_config_autostart.lua` starts:
+
+1. Config dock server → `http://127.0.0.1:8766/`
+2. **Session Director** + iRacing telemetry → `:8765` (Live↔Lobby↔Headcam)
+
+Optional login keepalive: `tools/install_config_autostart.ps1`.
 
 1. **View → Docks → Custom Browser Docks**:
    - PiGreco: `http://127.0.0.1:8766/`
    - Marcato: `http://127.0.0.1:8766/?profile=marcato`
-2. Fallback: double-click `Start-ConfigPanel.bat`
+2. Fallback: `Start-ConfigPanel.bat` · `Start-FlagDirector.bat`
 3. Edit fields → **Salva e applica** → refresh Browser Sources (see [Config dock](#config-dock--change-the-stream-without-editing-files))
-4. Telecronaca (optional): `Start-Telecronaca.bat mock` (or `iracing`) — eye on **Overlay Broadcast Chrome** (see [Telecronaca](#telecronaca--local-telemetry-on-stream))
+4. Telecronaca eye **on** **Overlay Broadcast Chrome** when you want standings on stream
 
-Deep dive: [`OBS_CONFIG_PANEL`](docs/OBS_CONFIG_PANEL.md) · [`TELEMETRY_BROADCAST`](docs/TELEMETRY_BROADCAST.md)
+Deep dive: [`OBS_CONFIG_PANEL`](docs/OBS_CONFIG_PANEL.md) · [`SESSION_DIRECTOR`](docs/SESSION_DIRECTOR.md) · [`TELEMETRY_BROADCAST`](docs/TELEMETRY_BROADCAST.md)
 ### 4. After overlay edits
 
 Browser Source → **Refresh cache of current page** (or restart OBS).
@@ -194,16 +205,17 @@ Browser Source → **Refresh cache of current page** (or restart OBS).
 
 ## Scenes
 
-### S.Marcato 42 (live)
+### S.Marcato 42 (live slim)
 
 | Scene | Use |
 |-------|-----|
 | Starting Soon | Countdown / teaser + music bed |
-| Live Race / Singolo / Triplo | Center monitor, single, or iRacing window + chrome + cam |
-| Rec * / Rec * Live | Clean recording or stream alias of Live layouts |
+| **Live** | Game Capture + chrome + face PiP + pedals + Flag FX |
+| **Headcam** | Brio fullscreen + telecronaca + pedals (no empty CAM frame) |
+| **Lobby** | iRacing UI window capture + music (sim open, no telem) |
 | BRB / Ending | Pause and close |
 
-Guide: [`docs/S_MARCATO_42.md`](docs/S_MARCATO_42.md)
+Hands-free cuts: [`docs/SESSION_DIRECTOR.md`](docs/SESSION_DIRECTOR.md) · pack notes: [`docs/S_MARCATO_42.md`](docs/S_MARCATO_42.md)
 
 ### S.Marcato Replay
 
@@ -250,9 +262,10 @@ Full index: **[`docs/README.md`](docs/README.md)**
 | For… | Start here |
 |------|------------|
 | Non-technical pilots (IT) | [`LEGGIMI.txt`](LEGGIMI.txt) · [`Guida_PiGreco_OBS.pdf`](Guida_PiGreco_OBS.pdf) |
-| Config dock & telecronaca | [Config dock](#config-dock--change-the-stream-without-editing-files) · [Telecronaca](#telecronaca--local-telemetry-on-stream) · [`OBS_CONFIG_PANEL`](docs/OBS_CONFIG_PANEL.md) |
+| Config dock & Session Director | [Config dock](#config-dock--change-the-stream-without-editing-files) · [`SESSION_DIRECTOR`](docs/SESSION_DIRECTOR.md) |
+| Telecronaca | [Telecronaca](#telecronaca--local-telemetry-on-stream) · [`TELEMETRY_BROADCAST`](docs/TELEMETRY_BROADCAST.md) |
 | On-stream polish | [`DESIGN_SYSTEM`](docs/DESIGN_SYSTEM.md) · [`STINGER`](docs/STINGER.md) · [`CAMERAS`](docs/CAMERAS.md) |
-| Sim pro deep dives | [`TELEMETRY_BROADCAST`](docs/TELEMETRY_BROADCAST.md) · [`TRACK_MAP`](docs/TRACK_MAP.md) · [`FLAG_DIRECTOR`](docs/FLAG_DIRECTOR.md) |
+| Sim pro deep dives | [`TRACK_MAP`](docs/TRACK_MAP.md) · [`FLAG_DIRECTOR`](docs/FLAG_DIRECTOR.md) · [`S_MARCATO_42`](docs/S_MARCATO_42.md) |
 | Contributors / agents | [`AGENTS.md`](AGENTS.md) · [`STRATEGY.md`](STRATEGY.md) · [`ROADMAP`](docs/ROADMAP.md) · [`ARCHITECTURE`](docs/ARCHITECTURE.md) |
 
 ---
@@ -303,13 +316,16 @@ Agent rules: [`AGENTS.md`](AGENTS.md) · product strategy: [`STRATEGY.md`](STRAT
 
 ### Example hotkeys
 
-| Key | Scene |
+| Key | Scene (Marcato live) |
 |-----|--------|
 | F1 | Starting Soon |
-| F2 | Live Race / Replay iRacing |
-| F3 | Live Singolo / Live Triplo |
-| F4 | BRB |
-| F5 | Ending |
+| F2 | Live |
+| F3 | Headcam |
+| F4 | Lobby |
+| F5 | BRB |
+| F6 | Ending |
+
+VirtualDeck profile: [`docs/OBS_VIRTUALDECK.md`](docs/OBS_VIRTUALDECK.md).
 
 ---
 
