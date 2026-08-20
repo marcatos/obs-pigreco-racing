@@ -360,6 +360,9 @@ async def _run_ws_loop(cfg: MockConfig, stop: asyncio.Event, also_file: bool) ->
         also_file,
     )
 
+    logging.getLogger("websockets.server").setLevel(logging.CRITICAL)
+    logging.getLogger("websockets.asyncio.server").setLevel(logging.CRITICAL)
+
     async with serve(handler, cfg.host, cfg.port):
         log.info("WebSocket listening ws://%s:%d", cfg.host, cfg.port)
         status = _envelope(
