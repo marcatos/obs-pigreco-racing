@@ -56,7 +56,8 @@ python adapters/telemetry/iracing_bridge.py --ibt
 Files appear under `Documents\iRacing\telemetry\` when the driver is **in-car**.
 In pure replay/spectator the sim often writes nothing — use live sessions for Motec.
 
-Do **not** autostart the bridge from OBS scripting (console flash / fragile Python).
+Do **not** spawn a console `cmd` from OBS scripting. Prefer the silent path:
+`tools/ensure_session_director.py` via Lua `pigreco_config_autostart.lua` (no window flash).
 
 ## OBS sources
 

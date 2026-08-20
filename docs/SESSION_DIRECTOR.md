@@ -19,8 +19,9 @@ VirtualDeck: [`OBS_VIRTUALDECK.md`](OBS_VIRTUALDECK.md). Flag FX: [`FLAG_DIRECTO
 
 1. OBS Studio **28+** with **WebSocket** enabled (`:4455`) — [`OBS_VIRTUALDECK.md`](OBS_VIRTUALDECK.md)
 2. Reimport **S.Marcato 42** after `python tools/generate_pack.py --profile marcato`
-3. Config server `:8766` (telecronaca + Flag FX Browser Sources are HTTP)
-4. Python deps:
+3. Config server `:8766` (telecronaca + Flag FX Browser Sources are HTTP) — Lua autostart
+4. Session Director + telemetry — same Lua script on OBS open (`ensure_session_director`)
+5. Python deps:
 
 ```powershell
 pip install -r adapters/obs_flag_director/requirements.txt
@@ -48,11 +49,21 @@ If you already have a `config.local.json`, set `"flagPresentation": "overlay"` s
 
 ## Run
 
+OBS opens → Lua `pigreco_config_autostart.lua` starts **Session Director + telemetry** silently (same path as the config server). Manual fallback:
+
 ```powershell
 .\Start-Telecronaca.bat iracing
 # or:
 .\Start-FlagDirector.bat
 python adapters\obs_flag_director\director.py --dry-run
+```
+
+Idempotent ensure (no console):
+
+```powershell
+python tools\ensure_session_director.py
+# or:
+wscript //nologo tools\ensure_session_director_silent.vbs
 ```
 
 ## Mixer notes (P3-05 snippet)
