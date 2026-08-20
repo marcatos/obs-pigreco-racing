@@ -11,7 +11,7 @@
 | Scena | Video | Cam di default |
 |-------|--------|----------------|
 | **Live** | Game Capture iRacing | Face ON + Pedals ON |
-| **Headcam** | Brio fullscreen (niente Game Capture / Monitor) | Pedals ON; audio Desktop + mic come Live |
+| **Headcam** | Brio fullscreen (niente Game Capture / Monitor) | Pedals ON; telecronaca come Live; audio Desktop + mic |
 
 USB Camera (Windows Hello / lavoro) **non** è nel pack Live.
 

@@ -281,10 +281,18 @@ def test_marcato_live_headcam_and_pedals():
     assert head_items == [
         "Cam Head",
         "Overlay Live Chrome",
+        "Overlay Broadcast Chrome",
+        "Overlay Track Map",
         "Cam Pedals PIP",
         "Microfono",
     ]
     assert "Game Capture" not in head_items
+    bc_head = next(
+        it for it in head["settings"]["items"] if it["name"] == "Overlay Broadcast Chrome"
+    )
+    assert bc_head.get("visible") is True
+    tm_head = next(it for it in head["settings"]["items"] if it["name"] == "Overlay Track Map")
+    assert tm_head.get("visible") is False
 
     cam_head = next(s for s in data["sources"] if s.get("name") == "Cam Head")
     assert "vid_046d" in cam_head["settings"]["video_device_id"].lower()

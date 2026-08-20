@@ -1633,8 +1633,10 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
         [
             fullscreen(cam_head["name"], cam_head["uuid"], 1),
             fullscreen(ov_live["name"], ov_live["uuid"], 2, locked=True),
-            cam_pedals_pip_item(3, visible=True),
-            mic_live_item(4),
+            # Same telecronaca as Live (standings / telemetry over Brio)
+            *telecronaca_items(3),
+            cam_pedals_pip_item(5, visible=True),
+            mic_live_item(6),
         ],
     )
     scene_lobby = make_scene(
