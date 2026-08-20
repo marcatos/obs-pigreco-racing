@@ -198,7 +198,6 @@ def test_marcato_replay_collection():
     cam_pip = next(s for s in data["sources"] if s.get("name") == "Cam PIP")
     assert cam_pip.get("id") == "scene"
     assert [it.get("name") for it in cam_pip.get("settings", {}).get("items", [])] == [
-        "Cam Backdrop Face",
         "StreamCam",
         "Overlay Cam Frame",
     ]
