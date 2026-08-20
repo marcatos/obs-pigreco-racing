@@ -150,9 +150,8 @@ class SessionDirector:
     def _preferred_home(self) -> str:
         if self._telem_connected:
             return self.config.live_scene
-        if self._iracing_up:
-            return self.config.lobby_scene
-        return self.config.home_scene
+        # UI only or sim fully closed → Lobby (not Live)
+        return self.config.lobby_scene
 
     def _on_manual_scene(self) -> bool:
         cur = self.flags.active_scene
@@ -187,7 +186,8 @@ class SessionDirector:
         elif iracing_up:
             target = self.config.lobby_scene
         else:
-            return None
+            # Sim fully closed → Lobby (Starting Soon/BRB/Ending still protected above)
+            target = self.config.lobby_scene
 
         if target == self.flags.active_scene:
             return None
