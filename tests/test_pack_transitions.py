@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -11,13 +12,13 @@ sys.path.insert(0, str(ROOT / "tools"))
 import generate_pack as gp  # noqa: E402
 
 
-def test_marcato_default_is_dissolvenza_900():
+def test_marcato_default_is_move_650():
     overlays = ROOT / "overlays-marcato"
     transitions, current, duration = gp.build_transitions(
         overlays_dir=overlays, profile="marcato"
     )
-    assert current == "Dissolvenza"
-    assert duration == 900
+    assert current == "S.Marcato Move"
+    assert duration == 650
     names = [t["name"] for t in transitions]
     assert "Dissolvenza" in names
     assert "S.Marcato Stinger" in names
@@ -25,6 +26,18 @@ def test_marcato_default_is_dissolvenza_900():
     stinger = next(t for t in transitions if t["name"] == "S.Marcato Stinger")
     assert stinger["settings"]["audio_fade_style"] == 1
     assert stinger["volume"] <= 0.55
+
+
+def test_marcato_collections_lead_with_the_default_transition():
+    """Quick-transition slot 1 must match the collection default in every profile file."""
+    for filename in ("S_Marcato_42.json", "S_Marcato_Replay.json"):
+        data = json.loads((ROOT / "obs" / filename).read_text(encoding="utf-8"))
+        assert data["current_transition"] == "S.Marcato Move", filename
+        assert data["transition_duration"] == 650, filename
+        quick = data["quick_transitions"]
+        assert quick[0]["name"] == data["current_transition"], filename
+        assert quick[0]["duration"] == data["transition_duration"], filename
+        assert "Dissolvenza" in [q["name"] for q in quick], filename
 
 
 def test_apply_scene_transition_override_sets_private_settings():

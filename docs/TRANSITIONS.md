@@ -2,10 +2,10 @@
 
 Il default dipende dal profilo collection:
 
-- **S.Marcato 42:** **Dissolvenza 900 ms** — crossfade audio-aware su tutto il mix (bed, Desktop, mic).
-- **PiGreco Racing:** **PiGreco Move** (plugin Exeldro, ~650 ms) — morph posizione/scala sulle source matched; appearing/disappearing animate.
+- **S.Marcato 42:** **S.Marcato Move** (plugin Exeldro, ~650 ms) — morph posizione/scala sulle source matched; appearing/disappearing animate.
+- **PiGreco Racing:** **PiGreco Move** (stesso preset racing, ~650 ms).
 
-Move (Exeldro) resta disponibile su entrambi i profili come transizione opzionale; vedi preset sotto.
+Dissolvenza e Stinger restano disponibili come alternative manuali; nessuno override per-scena.
 
 ## Prerequisito: plugin Move
 
@@ -18,23 +18,21 @@ Senza il plugin, OBS non caricherà la transizione Move nella collection.
 
 ## S.Marcato 42
 
-Default collection transition: **Dissolvenza 900 ms** — full mix crossfade (beds, Desktop, mic dissolve together; no hard audio cut mid-fade).
+Default collection transition: **S.Marcato Move** (~650 ms).
 
 | Transizione | Tipo | Note |
 |-------------|------|------|
-| **Dissolvenza** (default) | Fade | 900 ms; audio-aware crossfade |
-| **S.Marcato Stinger** | Stinger WebM | Override **→ Live** and **→ Ending** (dual-blade + Opus whoosh) |
-| S.Marcato Move | Move | Opzionale (matched morph racing preset) |
+| **S.Marcato Move** (default) | Move | Matched morph racing preset |
+| Dissolvenza | Fade | Alternativa audio-aware (~900 ms) |
+| **S.Marcato Stinger** | Stinger WebM | Alternativa brandizzata (dual-blade + Opus whoosh) |
 | Swipe Racing | Swipe | |
 | Slide Racing | Slide | |
 | Flash Carbon | Fade to color | Flash sul carbon |
 | Taglio | Cut | Emergency / quick hard-cut |
 
-**Quick transitions** (dock Transizioni): Dissolvenza · Stinger · Taglio.
+**Quick transitions** (dock Transizioni): Move · Dissolvenza · Taglio.
 
-Scene **transition overrides** (set by `generate_pack.py --profile marcato`): switching **to Live** or **to Ending** uses **S.Marcato Stinger** instead of Dissolvenza.
-
-> **Monitoring:** judge crossfades from **stream or recording**, not headphones alone — OBS “Monitor only” may not mirror the full mix fade.
+`S_Marcato_Replay` condivide lo stesso default (profilo `marcato`) e aggiunge Stinger fra le quick transitions.
 
 Asset stinger: `overlays-marcato/stinger/marcato-stinger.webm`  
 Rigenera stinger: `python tools/generate_stinger.py --profile marcato --with-whoosh`
@@ -65,7 +63,7 @@ python tools/generate_pack.py --profile marcato
 # chiudi OBS, copia obs\S_Marcato_42.json in %APPDATA%\obs-studio\basic\scenes\
 ```
 
-In OBS: dock **Transizioni scene** → **Dissolvenza** (900 ms) per Marcato; **PiGreco Move** per PiGreco. Prova Starting Soon → Lobby → Live: beds crossfade on Dissolvenza; Live/Ending use Stinger + whoosh.
+In OBS: dock **Transizioni scene** → **S.Marcato Move** (Marcato) o **PiGreco Move** (PiGreco). Prova Starting Soon → Lobby → Live.
 
 ### Alternativa stinger
 

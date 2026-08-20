@@ -1885,7 +1885,7 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
     collection["transition_duration"] = tr_dur
     quick_transitions = [
         {
-            "name": "S.Marcato Move",
+            "name": current_tr,
             "duration": tr_dur,
             "hotkeys": [],
             "id": 1,
@@ -2490,14 +2490,21 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
     transition_names = {t["name"] for t in transitions}
     quick_transitions = [
         {
-            "name": "Dissolvenza",
+            "name": current_tr,
             "duration": tr_dur,
             "hotkeys": [],
             "id": 1,
             "fade_to_black": False,
         },
+        {
+            "name": "Dissolvenza",
+            "duration": 900,
+            "hotkeys": [],
+            "id": 2,
+            "fade_to_black": False,
+        },
     ]
-    next_id = 2
+    next_id = 3
     if "S.Marcato Stinger" in transition_names:
         quick_transitions.append(
             {

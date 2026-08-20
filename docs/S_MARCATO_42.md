@@ -72,7 +72,9 @@ Guida breve: [`replays/LEGGIMI.txt`](../replays/LEGGIMI.txt). Replay di stasera 
 
 **Mic:** il generator prova a risolvere Focusrite / 2i2; override con env `MARCATO_MIC_ID` o file gitignored `obs/mic.device.json`.
 
-**Transizioni:** default **Dissolvenza 900 ms** (full mix crossfade). Override **→ Live** / **→ Headcam** / **→ Ending**: **S.Marcato Stinger** + whoosh. Move resta opzionale. Dettagli: [`TRANSITIONS.md`](TRANSITIONS.md).
+**Transizioni:** default **S.Marcato Move** (~650 ms). Stinger e Dissolvenza restano alternative manuali (niente override per-scena). Dettagli: [`TRANSITIONS.md`](TRANSITIONS.md).
+
+**Instant Replay:** nested scene `Instant Replay` (960×540, basso-destra, hidden) su Live/Headcam. Requires OBS Replay Buffer enabled; Session Director triggers on hot moments — see [`SESSION_DIRECTOR.md`](SESSION_DIRECTOR.md).
 
 Verifica audio (stream/registrazione):
 

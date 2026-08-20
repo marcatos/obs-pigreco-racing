@@ -5317,8 +5317,8 @@
     "current_scene": "Starting Soon",
     "current_program_scene": "Starting Soon",
     "canvases": [],
-    "current_transition": "Dissolvenza",
-    "transition_duration": 900,
+    "current_transition": "S.Marcato Move",
+    "transition_duration": 650,
     "transitions": [
         {
             "prev_ver": 536936450,
@@ -5529,24 +5529,31 @@
     ],
     "quick_transitions": [
         {
+            "name": "S.Marcato Move",
+            "duration": 650,
+            "hotkeys": [],
+            "id": 1,
+            "fade_to_black": false
+        },
+        {
             "name": "Dissolvenza",
             "duration": 900,
             "hotkeys": [],
-            "id": 1,
+            "id": 2,
             "fade_to_black": false
         },
         {
             "name": "S.Marcato Stinger",
             "duration": 850,
             "hotkeys": [],
-            "id": 2,
+            "id": 3,
             "fade_to_black": false
         },
         {
             "name": "Taglio",
             "duration": 0,
             "hotkeys": [],
-            "id": 3,
+            "id": 4,
             "fade_to_black": false
         }
     ],
