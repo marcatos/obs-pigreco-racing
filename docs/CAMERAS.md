@@ -28,7 +28,7 @@ Non toccare StreamCam / Cam Pedals dentro le nested scene: usa solo gli occhi di
 
 ## Sfondo virtuale (solo faccia)
 
-Filtro **NVIDIA Background Removal** (mode **Quality + Chair**) su **StreamCam**, solo se è installato il redistributable **NVIDIA Video Effects**.
+Filtro **NVIDIA Background Removal** (mode **Quality**, *senza* Chair removal — tiene sedile/torso) su **StreamCam**, solo se è installato il redistributable **NVIDIA Video Effects**.
 
 Dietro: lastra carbon brand (`Cam Backdrop Face`).
 

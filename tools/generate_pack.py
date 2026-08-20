@@ -512,9 +512,11 @@ def source_base(
     return out
 
 
-# NVIDIA Background Removal (nv-filters.dll) — mode 2 = Quality + Chair
-# (keeps seat / mic stand; drops messy room). Requires Video Effects SDK.
-NV_GS_MODE_QUALITY_CHAIR = 2
+# NVIDIA Background Removal (nv-filters.dll)
+# mode 0 = Quality (keeps person + seat/chair)
+# mode 2 = Quality + Chair *removal* (strips the seat — not what we want)
+NV_GS_MODE_QUALITY = 0
+NV_GS_MODE_QUALITY_CHAIR_REMOVAL = 2
 
 # DirectShow VideoFormat (libdshowcapture) + frame_interval in 100ns units
 DSHOW_FMT_NV12 = 201
@@ -551,8 +553,9 @@ def nvidia_video_effects_installed() -> bool:
 def nv_greenscreen_filter(
     *,
     name: str = "NVIDIA Background Removal",
-    mode: int = NV_GS_MODE_QUALITY_CHAIR,
-    threshold: float = 0.92,
+    mode: int = NV_GS_MODE_QUALITY,
+    # Slightly softer than 0.92 so seat / torso edges stay in the matte.
+    threshold: float = 0.85,
     # Every Nth frame. At 30 fps input, interval=1 keeps the matte at full rate.
     processing_interval: int = 1,
 ) -> dict:
