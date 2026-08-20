@@ -62,6 +62,9 @@ def write_pid(pid: int) -> None:
 
 def port_listening(port: int) -> bool:
     """True if something LISTENs on TCP port (no bare connect → no WS spam)."""
+    kwargs: dict = {}
+    if sys.platform == "win32":
+        kwargs["creationflags"] = getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000)
     try:
         out = subprocess.run(
             ["netstat", "-ano"],
@@ -69,6 +72,7 @@ def port_listening(port: int) -> bool:
             text=True,
             timeout=2,
             check=False,
+            **kwargs,
         ).stdout or ""
     except (OSError, subprocess.TimeoutExpired):
         return False
@@ -93,8 +97,10 @@ def director_running() -> bool:
             [
                 "powershell",
                 "-NoProfile",
+                "-WindowStyle",
+                "Hidden",
                 "-Command",
-                "Get-CimInstance Win32_Process -Filter \"Name='python.exe'\" |"
+                "Get-CimInstance Win32_Process -Filter \"Name='python.exe' OR Name='pythonw.exe'\" |"
                 " Where-Object { $_.CommandLine -match 'obs_flag_director\\\\director' } |"
                 " Select-Object -First 1 -ExpandProperty ProcessId",
             ],
@@ -102,6 +108,7 @@ def director_running() -> bool:
             text=True,
             timeout=8,
             check=False,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000),
         )
         raw = (proc.stdout or "").strip()
         if raw.isdigit():

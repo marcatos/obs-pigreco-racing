@@ -47,6 +47,21 @@ DEFAULT_CONFIG = HERE / "config.local.json"
 EXAMPLE_CONFIG = HERE / "config.example.json"
 
 
+def _hidden_run_kwargs() -> dict[str, Any]:
+    """Avoid flashing cmd/PowerShell consoles on every Session Director poll."""
+    if sys.platform != "win32":
+        return {}
+    # CREATE_NO_WINDOW — tasklist/netstat otherwise pop a console ~1 Hz
+    return {"creationflags": getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000)}
+
+
+def _detached_spawn_flags() -> int:
+    if sys.platform != "win32":
+        return 0
+    # DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP | CREATE_NO_WINDOW
+    return 0x00000008 | 0x00000200 | 0x08000000
+
+
 def _ms_now() -> int:
     return int(time.time() * 1000)
 
@@ -209,6 +224,7 @@ def process_running(names: list[str]) -> bool:
             text=True,
             timeout=8,
             check=False,
+            **_hidden_run_kwargs(),
         )
         if proc.returncode != 0:
             return False
@@ -233,6 +249,7 @@ def telemetry_port_open(host: str = "127.0.0.1", port: int = 8765) -> bool:
             text=True,
             timeout=2,
             check=False,
+            **_hidden_run_kwargs(),
         ).stdout or ""
     except (OSError, subprocess.TimeoutExpired) as exc:
         log.debug("telemetry_port_open netstat failed: %s", exc)
@@ -268,19 +285,30 @@ class TelemetryLauncher:
         bat = ROOT / "Start-Telemetry.bat"
         py = ROOT / "tools" / "start_telemetry.py"
         self._last_start_ms = now_ms
+        flags = _detached_spawn_flags()
         try:
-            if bat.is_file():
-                log.info("Starting telemetry via %s %s", bat.name, self.mode)
-                self._child = subprocess.Popen(
-                    ["cmd", "/c", str(bat), self.mode],
-                    cwd=str(ROOT),
-                    creationflags=getattr(subprocess, "CREATE_NEW_CONSOLE", 0),
-                )
-            elif py.is_file():
+            # Prefer python (no console) over .bat which always flashes cmd.
+            if py.is_file():
                 log.info("Starting telemetry via start_telemetry.py %s", self.mode)
                 self._child = subprocess.Popen(
                     [sys.executable, str(py), self.mode],
                     cwd=str(ROOT),
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    creationflags=flags,
+                    close_fds=True,
+                )
+            elif bat.is_file():
+                log.info("Starting telemetry via %s %s", bat.name, self.mode)
+                self._child = subprocess.Popen(
+                    ["cmd", "/c", str(bat), self.mode],
+                    cwd=str(ROOT),
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    creationflags=flags,
+                    close_fds=True,
                 )
             else:
                 log.error("No Start-Telemetry.bat or tools/start_telemetry.py found")
