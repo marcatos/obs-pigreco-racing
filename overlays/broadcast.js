@@ -652,27 +652,37 @@
   }
 
   function fightShouldArm(sample) {
+    if (Director && Director.fightGapsArm) {
+      return Director.fightGapsArm(sample, {
+        doorstopMs: battleDoorstopMs,
+        engageMs: battleEngageMs,
+        closeRate: battleCloseRate,
+      });
+    }
     var door =
-      (sample.ga != null && sample.ga >= 0 && sample.ga <= battleDoorstopMs) ||
-      (sample.gb != null && sample.gb >= 0 && sample.gb <= battleDoorstopMs);
+      (sample.ga != null && sample.ga > 0 && sample.ga <= battleDoorstopMs) ||
+      (sample.gb != null && sample.gb > 0 && sample.gb <= battleDoorstopMs);
     if (door) return true;
     var catchAhead =
       sample.ga != null &&
-      sample.ga >= 0 &&
+      sample.ga > 0 &&
       sample.ga <= battleEngageMs &&
       sample.closeAhead >= battleCloseRate;
     var catchBehind =
       sample.gb != null &&
-      sample.gb >= 0 &&
+      sample.gb > 0 &&
       sample.gb <= battleEngageMs &&
       sample.closeBehind >= battleCloseRate;
     return catchAhead || catchBehind;
   }
 
   function fightShouldHold(sample) {
+    if (Director && Director.fightGapsHold) {
+      return Director.fightGapsHold(sample, battleExitMs);
+    }
     var near =
-      (sample.ga != null && sample.ga >= 0 && sample.ga <= battleExitMs) ||
-      (sample.gb != null && sample.gb >= 0 && sample.gb <= battleExitMs);
+      (sample.ga != null && sample.ga > 0 && sample.ga <= battleExitMs) ||
+      (sample.gb != null && sample.gb > 0 && sample.gb <= battleExitMs);
     return near;
   }
 
