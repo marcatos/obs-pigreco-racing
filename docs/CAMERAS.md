@@ -5,7 +5,7 @@
 | Source | Ruolo | Occhio OBS |
 |--------|--------|------------|
 | **Cam PIP** | Faccia (basso sinistra) = StreamCam + carbon + NVIDIA | on / off **da sola** |
-| **Cam Pedals PIP** | Creative Live pedali (basso destra) + carbon, **senza** NVIDIA | on / off **da sola** |
+| **Cam Pedals PIP** | Creative Live pedali (basso destra) + carbon, **senza** NVIDIA; crop zoom piedi/pedali | on / off **da sola** |
 | **Cam Head** | Logitech Brio 4K fullscreen | solo scena **Headcam** |
 
 | Scena | Video | Cam di default |

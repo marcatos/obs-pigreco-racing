@@ -36,7 +36,17 @@ STREAMCAM_ID = (
     r"Logitech StreamCam:\\?\usb#vid_046d&pid_0893&mi_00#8&33ee287c&0&0000"
     r"#{65e8773d-8f56-11d0-a3b9-00a0c9223196}\global"
 )
-# Second camera (seat / wide) on this PC — re-pick in OBS if USB port changes
+# Headcam (Brio 4K) — Live Headcam scene; re-pick in OBS if USB port changes
+BRIO_ID = (
+    r"Logitech BRIO:\\?\usb#vid_046d&pid_085e&mi_00#9&341f90e2&0&0000"
+    r"#{65e8773d-8f56-11d0-a3b9-00a0c9223196}\global"
+)
+# Pedals / feet (Creative Live) — Live + Headcam PiP
+CREATIVE_ID = (
+    r"Creative Live! Cam Sync 1080p V2:\\?\usb#vid_041e&pid_40a9&mi_00#b&938a461&0&0000"
+    r"#{65e8773d-8f56-11d0-a3b9-00a0c9223196}\global"
+)
+# Seat / wide (USB Camera) — Replay / Rec only; not used on Live (Windows Hello / work)
 USBCAM_ID = (
     r"USB Camera:\\?\usb#vid_0c6a&pid_646a&mi_00#9&1779791d&0&0000"
     r"#{65e8773d-8f56-11d0-a3b9-00a0c9223196}\global"
@@ -537,12 +547,24 @@ def cam_carbon_backdrop(name: str, *, width: int, height: int, marcato: bool) ->
 
 def log_cam_device_ids() -> None:
     """INFO: friendly names written into dshow video_device_id constants."""
-    for const_name, device_id in (("STREAMCAM_ID", STREAMCAM_ID), ("USBCAM_ID", USBCAM_ID)):
+    for const_name, device_id in (
+        ("STREAMCAM_ID", STREAMCAM_ID),
+        ("BRIO_ID", BRIO_ID),
+        ("CREATIVE_ID", CREATIVE_ID),
+        ("USBCAM_ID", USBCAM_ID),
+    ):
         friendly = device_id.split(":", 1)[0]
         log.info("cam device written %s friendly=%s", const_name, friendly)
 
 
-def dshow_cam(name: str, device_id: str, *, resolution: str = "1920x1080") -> dict:
+def dshow_cam(
+    name: str,
+    device_id: str,
+    *,
+    resolution: str = "1920x1080",
+    greenscreen: bool = True,
+) -> dict:
+    filters = [nv_greenscreen_filter()] if greenscreen else None
     return source_base(
         name,
         "dshow_input",
@@ -552,7 +574,7 @@ def dshow_cam(name: str, device_id: str, *, resolution: str = "1920x1080") -> di
             "res_type": 1,
             "resolution": resolution,
         },
-        filters=[nv_greenscreen_filter()],
+        filters=filters,
     )
 
 
@@ -1281,7 +1303,7 @@ def build_collection(
 
 
 def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
-    """Slim S.Marcato 42: Starting Soon / Live / Lobby / BRB / Ending (+ Flag FX on Live)."""
+    """Slim S.Marcato 42: Starting Soon / Live / Headcam / Lobby / BRB / Ending."""
     t0 = time.perf_counter()
     overlays_dir = overlays or (ROOT / "overlays-marcato")
     OBS_DIR.mkdir(parents=True, exist_ok=True)
@@ -1302,12 +1324,13 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
         volume=0.90,
     )
     cam = dshow_cam("StreamCam", STREAMCAM_ID)
-    cam2 = dshow_cam("Cam 2", USBCAM_ID)
+    cam_head = dshow_cam("Cam Head", BRIO_ID, greenscreen=False)
+    cam_pedals = dshow_cam("Cam Pedals", CREATIVE_ID, greenscreen=False)
     cam_bd_face = cam_carbon_backdrop(
         "Cam Backdrop Face", width=360, height=202, marcato=True
     )
-    cam_bd_2 = cam_carbon_backdrop(
-        "Cam Backdrop 2", width=320, height=180, marcato=True
+    cam_bd_pedals = cam_carbon_backdrop(
+        "Cam Backdrop Pedals", width=320, height=180, marcato=True
     )
 
     roles = monitor_roles()
@@ -1325,10 +1348,11 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
         else:
             log.warning("monitor %s not detected — pick display in OBS", role)
 
-    mon_center = source_base(
-        "Monitor Centro",
-        "monitor_capture",
-        monitor_capture_settings(roles["center"]),
+    game = source_base(
+        "Game Capture",
+        "game_capture",
+        iracing_capture_settings(),
+        mixers=255,
     )
     ui_capture = source_base(
         "iRacing UI Capture",
@@ -1371,7 +1395,7 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
         "Overlay Flag FX", overlays_dir, "flag-scene.html"
     )
     ov_cam_frame = browser("Overlay Cam Frame", "cam-frame.html")
-    ov_cam_frame_2 = browser("Overlay Cam 2 Frame", "cam-frame-2.html")
+    ov_cam_frame_pedals = browser("Overlay Cam Pedals Frame", "cam-frame-2.html")
 
     def music(name: str, filename: str, *, volume: float = 0.28) -> dict | None:
         path = AUDIO_DIR / filename
@@ -1417,7 +1441,7 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
         ]
 
     def mic_live_item(item_id: int) -> dict:
-        """Mic only on Live — tiny locked item so the source stays in the mixer."""
+        """Mic on Live / Headcam — tiny locked item so the source stays in the mixer."""
         return scene_item(
             mic["name"],
             mic["uuid"],
@@ -1433,9 +1457,13 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
     cam_scale = cam_w / 1920.0
     cam_x, cam_y = 36.0, CANVAS_H - 36.0 - cam_h
     cam_ref = (1920.0, 1080.0)
-    cam2_w, cam2_h = 320.0, 180.0
-    cam2_scale = cam2_w / 1920.0
-    cam2_x, cam2_y = CANVAS_W - 36.0 - cam2_w, CANVAS_H - 36.0 - cam2_h
+    pedals_w, pedals_h = 320.0, 180.0
+    pedals_scale = pedals_w / 1920.0
+    # Digital zoom into feet/pedals (Creative has no UVC zoom). Crop on 1920x1080, keep 16:9.
+    pedals_crop = (360, 220, 360, 185)  # L, T, R, B
+    pedals_crop_w = 1920.0 - pedals_crop[0] - pedals_crop[2]
+    pedals_scale_zoomed = pedals_w / pedals_crop_w
+    pedals_x, pedals_y = CANVAS_W - 36.0 - pedals_w, CANVAS_H - 36.0 - pedals_h
     cam_sm_w = 280.0
     cam_sm_scale = cam_sm_w / 1920.0
     cam_sm_h = 1080.0 * cam_sm_scale
@@ -1461,6 +1489,7 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
             scale_ref=(float(CANVAS_W), float(CANVAS_H)),
         )
 
+    # Keep name "Cam PIP" — Lua syncs eye → live-chrome ?cam=
     scene_cam_pip = make_scene(
         "Cam PIP",
         [
@@ -1481,30 +1510,47 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
                 scale=(cam_scale, cam_scale),
                 scale_ref=cam_ref,
             ),
-            fullscreen(ov_cam_frame["name"], ov_cam_frame["uuid"], 3, locked=True),
+            scene_item(
+                ov_cam_frame["name"],
+                ov_cam_frame["uuid"],
+                3,
+                pos=(cam_x, cam_y),
+                scale=(cam_scale, cam_scale),
+                scale_ref=cam_ref,
+                locked=True,
+            ),
         ],
     )
-    scene_cam2_pip = make_scene(
-        "Cam 2 PIP",
+    scene_cam_pedals_pip = make_scene(
+        "Cam Pedals PIP",
         [
             scene_item(
-                cam_bd_2["name"],
-                cam_bd_2["uuid"],
+                cam_bd_pedals["name"],
+                cam_bd_pedals["uuid"],
                 1,
-                pos=(cam2_x, cam2_y),
+                pos=(pedals_x, pedals_y),
                 scale=(1.0, 1.0),
-                scale_ref=(cam2_w, cam2_h),
+                scale_ref=(pedals_w, pedals_h),
                 locked=True,
             ),
             scene_item(
-                cam2["name"],
-                cam2["uuid"],
+                cam_pedals["name"],
+                cam_pedals["uuid"],
                 2,
-                pos=(cam2_x, cam2_y),
-                scale=(cam2_scale, cam2_scale),
+                pos=(pedals_x, pedals_y),
+                scale=(pedals_scale_zoomed, pedals_scale_zoomed),
                 scale_ref=cam_ref,
+                crop=pedals_crop,
             ),
-            fullscreen(ov_cam_frame_2["name"], ov_cam_frame_2["uuid"], 3, locked=True),
+            scene_item(
+                ov_cam_frame_pedals["name"],
+                ov_cam_frame_pedals["uuid"],
+                3,
+                pos=(pedals_x, pedals_y),
+                scale=(pedals_scale, pedals_scale),
+                scale_ref=cam_ref,
+                locked=True,
+            ),
         ],
     )
 
@@ -1519,10 +1565,10 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
             scale_ref=(float(CANVAS_W), float(CANVAS_H)),
         )
 
-    def cam2_pip_item(item_id: int, *, visible: bool = True) -> dict:
+    def cam_pedals_pip_item(item_id: int, *, visible: bool = True) -> dict:
         return scene_item(
-            scene_cam2_pip["name"],
-            scene_cam2_pip["uuid"],
+            scene_cam_pedals_pip["name"],
+            scene_cam_pedals_pip["uuid"],
             item_id,
             pos=(0.0, 0.0),
             scale=(1.0, 1.0),
@@ -1562,19 +1608,33 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
     scene_live = make_scene(
         "Live",
         [
-            layout_single_monitor(
-                mon_center["name"],
-                mon_center["uuid"],
+            scene_item(
+                game["name"],
+                game["uuid"],
                 1,
-                roles["center"],
+                pos=(0.0, 0.0),
+                scale=(1.0, 1.0),
+                scale_ref=(float(CANVAS_W), float(CANVAS_H)),
+                bounds=(float(CANVAS_W), float(CANVAS_H)),
+                bounds_type=3,  # OBS_BOUNDS_SCALE_OUTER
             ),
             fullscreen(ov_live["name"], ov_live["uuid"], 2, locked=True),
             *telecronaca_items(3),
             cam_pip_item(5),
-            cam2_pip_item(6, visible=False),
+            cam_pedals_pip_item(6, visible=True),
             mic_live_item(7),
-            # Transparent animated flag FX (telemetry-driven; center FOV stays clear)
             fullscreen(ov_flag_fx["name"], ov_flag_fx["uuid"], 8, locked=True),
+        ],
+    )
+    scene_live["settings"]["items"][0]["bounds_crop"] = True
+
+    scene_headcam = make_scene(
+        "Headcam",
+        [
+            fullscreen(cam_head["name"], cam_head["uuid"], 1),
+            fullscreen(ov_live["name"], ov_live["uuid"], 2, locked=True),
+            cam_pedals_pip_item(3, visible=True),
+            mic_live_item(4),
         ],
     )
     scene_lobby = make_scene(
@@ -1613,6 +1673,9 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
         scene_live, transition_name="S.Marcato Stinger", duration_ms=850
     )
     apply_scene_transition_override(
+        scene_headcam, transition_name="S.Marcato Stinger", duration_ms=850
+    )
+    apply_scene_transition_override(
         scene_end, transition_name="S.Marcato Stinger", duration_ms=850
     )
 
@@ -1624,10 +1687,11 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
         desktop,
         mic,
         cam,
-        cam2,
+        cam_head,
+        cam_pedals,
         cam_bd_face,
-        cam_bd_2,
-        mon_center,
+        cam_bd_pedals,
+        game,
         ui_capture,
         ov_soon,
         ov_brb,
@@ -1637,12 +1701,13 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
         ov_track_map,
         ov_flag_fx,
         ov_cam_frame,
-        ov_cam_frame_2,
+        ov_cam_frame_pedals,
         *music_sources,
         scene_cam_pip,
-        scene_cam2_pip,
+        scene_cam_pedals_pip,
         scene_soon,
         scene_live,
+        scene_headcam,
         scene_lobby,
         scene_brb,
         scene_end,
@@ -1651,6 +1716,7 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
     scene_order = [
         {"name": "Starting Soon"},
         {"name": "Live"},
+        {"name": "Headcam"},
         {"name": "Lobby"},
         {"name": "BRB"},
         {"name": "Ending"},
@@ -1659,7 +1725,7 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
     collection = {
         "name": "S.Marcato 42",
         "DesktopAudioDevice1": desktop,
-        # No AuxAudioDevice1 — mic is a scene source on Live only (not Start/BRB/Ending/Lobby)
+        # No AuxAudioDevice1 — mic is a scene source on Live/Headcam only
         "sources": [s for s in sources if s["name"] != "Audio Desktop"],
         "groups": [],
         "scene_order": scene_order,

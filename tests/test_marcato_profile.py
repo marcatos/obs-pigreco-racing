@@ -133,7 +133,7 @@ def test_marcato_collection_uses_dissolvenza_transition():
     assert settings.get("position_in") == (1 << 1) | (1 << 2)  # EDGE|LEFT
     assert settings.get("position_out") == (1 << 1) | (1 << 3)  # EDGE|RIGHT
     by_name = {s.get("name"): s for s in data.get("sources", []) if s.get("id") == "scene"}
-    for scene_name in ("Live", "Ending"):
+    for scene_name in ("Live", "Headcam", "Ending"):
         ps = by_name[scene_name].get("private_settings") or {}
         assert ps.get("transition") == "S.Marcato Stinger"
         assert ps.get("transition_duration") == 850
@@ -189,6 +189,8 @@ def test_marcato_replay_collection():
         "Overlay Triple Frame Live",
         "StreamCam",
         "Overlay Broadcast Chrome",
+        "Overlay Track Map",
+        "Overlay Flag FX",
     ]
     assert "broadcast-chrome.html" in text
     assert (ROOT / "overlays-marcato" / "broadcast-chrome.html").is_file()
@@ -239,29 +241,73 @@ def test_marcato_replay_collection():
     assert (ROOT / "replays" / "LEGGIMI.txt").is_file()
 
 
-def test_marcato_live_has_rec_scenes():
+def test_marcato_live_headcam_and_pedals():
+    """Slim live: Game Capture + face/pedals; Headcam = Brio + pedals; no USB Camera."""
     path = ROOT / "obs" / "S_Marcato_42.json"
     data = json.loads(path.read_text(encoding="utf-8"))
     names = {s.get("name") for s in data.get("scene_order", [])}
-    assert "Live Race" in names
-    assert "Live Singolo" in names
-    assert "Live Triplo" in names
-    assert "Replay iRacing" not in names
-    assert "Replay Monitor" not in names
-    assert "Rec Singolo" in names
-    assert "Rec Triplo" in names
-    assert "Rec Singolo Live" in names
-    assert "Rec Triplo Live" in names
-    rec_triple = next(s for s in data["sources"] if s.get("name") == "Rec Triplo")
-    assert [it.get("name") for it in rec_triple["settings"]["items"]] == ["Game Capture"]
-    live_triple = next(s for s in data["sources"] if s.get("name") == "Live Triplo")
-    assert [it.get("name") for it in live_triple["settings"]["items"]] == [
-        "Game Capture",
-        "Overlay Triple Frame Live",
-        "StreamCam",
+    assert names == {
+        "Starting Soon",
+        "Live",
+        "Headcam",
+        "Lobby",
+        "BRB",
+        "Ending",
+    }
+    assert "Live Race" not in names
+    assert "Rec Singolo" not in names
+
+    source_names = {s.get("name") for s in data["sources"]}
+    assert "Game Capture" in source_names
+    assert "Cam Head" in source_names
+    assert "Cam Pedals" in source_names
+    assert "Cam Pedals PIP" in source_names
+    assert "Cam PIP" in source_names
+    assert "USB Camera" not in path.read_text(encoding="utf-8")
+    assert "Cam 2" not in source_names
+    assert "Monitor Centro" not in source_names
+
+    live = next(s for s in data["sources"] if s.get("name") == "Live")
+    live_items = [it.get("name") for it in live["settings"]["items"]]
+    assert live_items[0] == "Game Capture"
+    assert "Cam PIP" in live_items
+    assert "Cam Pedals PIP" in live_items
+    assert "Microfono" in live_items
+    pedals_live = next(it for it in live["settings"]["items"] if it["name"] == "Cam Pedals PIP")
+    assert pedals_live.get("visible") is True
+
+    head = next(s for s in data["sources"] if s.get("name") == "Headcam")
+    head_items = [it.get("name") for it in head["settings"]["items"]]
+    assert head_items == [
+        "Cam Head",
+        "Overlay Live Chrome",
+        "Cam Pedals PIP",
+        "Microfono",
     ]
-    ov = next(s for s in data["sources"] if s.get("name") == "Overlay Triple Frame Live")
-    assert "badge=LIVE" in ov.get("settings", {}).get("url", "")
+    assert "Game Capture" not in head_items
+
+    cam_head = next(s for s in data["sources"] if s.get("name") == "Cam Head")
+    assert "vid_046d" in cam_head["settings"]["video_device_id"].lower()
+    assert "pid_085e" in cam_head["settings"]["video_device_id"].lower()
+    assert not (cam_head.get("filters") or [])
+
+    cam_pedals = next(s for s in data["sources"] if s.get("name") == "Cam Pedals")
+    assert "vid_041e" in cam_pedals["settings"]["video_device_id"].lower()
+    assert not (cam_pedals.get("filters") or [])
+
+    pedals_pip = next(s for s in data["sources"] if s.get("name") == "Cam Pedals PIP")
+    assert [it.get("name") for it in pedals_pip["settings"]["items"]] == [
+        "Cam Backdrop Pedals",
+        "Cam Pedals",
+        "Overlay Cam Pedals Frame",
+    ]
+    pedals_item = next(it for it in pedals_pip["settings"]["items"] if it["name"] == "Cam Pedals")
+    assert pedals_item["crop_left"] == 360
+    assert pedals_item["crop_top"] == 220
+    assert pedals_item["crop_right"] == 360
+    assert pedals_item["crop_bottom"] == 185
+    # Zoomed scale fills 320px PiP from cropped 1200px source width
+    assert abs(pedals_item["scale"]["x"] - (320.0 / 1200.0)) < 1e-6
 
 
 def test_marcato_rec_2k_collection():
@@ -276,6 +322,9 @@ def test_marcato_rec_2k_collection():
         "Rec Triplo",
         "Rec Singolo Live",
         "Rec Triplo Live",
+        "Flag Yellow",
+        "Flag Red",
+        "Flag Checkered",
     }
     assert "Live Race" not in names
     rec_single = next(s for s in data["sources"] if s.get("name") == "Rec Singolo")
@@ -291,8 +340,10 @@ def test_marcato_rec_2k_collection():
         "Game Capture",
         "Overlay Live Chrome",
         "Overlay Broadcast Chrome",
+        "Overlay Track Map",
         "Cam PIP",
         "Cam 2 PIP",
+        "Overlay Flag FX",
     ]
     assert live["settings"]["items"][0].get("visible") is False
     assert live["settings"]["items"][1].get("visible") is True
@@ -310,8 +361,10 @@ def test_marcato_rec_2k_collection():
         "Game Capture",
         "Overlay Triple Frame Live",
         "Overlay Broadcast Chrome",
+        "Overlay Track Map",
         "StreamCam",
         "Cam 2 PIP",
+        "Overlay Flag FX",
     ]
     text = path.read_text(encoding="utf-8")
     assert "overlays-marcato" in text.replace("\\\\", "/")
@@ -353,7 +406,7 @@ def test_rec_triplo_game_bounds_and_cam_slot():
     assert abs(cam_x - 1480.0) < 1e-6
     assert abs(cam_y - 840.0) < 1e-6
 
-    for coll in ("S_Marcato_42.json", "S_Marcato_Replay.json"):
+    for coll in ("S_Marcato_Replay.json",):
         data = json.loads((ROOT / "obs" / coll).read_text(encoding="utf-8"))
         scene = next(s for s in data["sources"] if s.get("name") == "Rec Triplo Live")
         items = {it["name"]: it for it in scene["settings"]["items"]}
