@@ -1,4 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
-  <!-- Synthetic mock outline for TrackID 900001  not iRacing art -->
-  <path d="M 18 50 C 18 22, 82 22, 82 50 C 82 78, 18 78, 18 50 Z" fill="none" stroke="#00C400" stroke-width="2"/>
+  <!-- Synthetic mock outline for TrackID 900001 (showcase / tests) -->
+  <path d="M 18 50 C 18 22, 82 22, 82 50 C 82 78, 18 78, 18 50 Z" fill="none" stroke="#e10600" stroke-width="2"/>
 </svg>

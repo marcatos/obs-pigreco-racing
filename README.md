@@ -35,7 +35,7 @@ Full-bleed **1920×1080** previews — browse locally: [`showcase/index.html`](s
 <p align="center">
   <img src="showcase/marcato-07-triple-frame.png" alt="Triple frame / Rec layout" width="720" />
   <br />
-  <sub>Triple-frame layout (Replay / Rec) — cams are mock placeholders, not live capture</sub>
+  <sub>Triple-frame (Replay / Rec). Live/Headcam previews include mock telecronaca + cams.</sub>
 </p>
 
 ### PiGreco Racing

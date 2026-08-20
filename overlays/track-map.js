@@ -438,6 +438,36 @@
     });
   }
 
+  function showcaseTickUrl() {
+    const path = String(window.location.pathname || "").replace(/\\/g, "/");
+    if (path.indexOf("overlays-marcato") !== -1) {
+      return new URL("../overlays/showcase-telemetry-tick.json", window.location.href).href;
+    }
+    return new URL("showcase-telemetry-tick.json", window.location.href).href;
+  }
+
+  function loadShowcaseFixture() {
+    const params = new URLSearchParams(window.location.search || "");
+    if (params.get("showcase") !== "1") return false;
+    setHint("TRACK · SHOWCASE", "connecting");
+    fetch(showcaseTickUrl())
+      .then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      })
+      .then(function (msg) {
+        if (!msg || msg.type !== "telemetry.tick") throw new Error("bad fixture");
+        setHint("TRACK", "live");
+        render(msg);
+      })
+      .catch(function () {
+        setHint("TRACK · SHOWCASE FAIL", "error");
+      });
+    return true;
+  }
+
   setHint("", "ready");
-  connect();
+  if (!loadShowcaseFixture()) {
+    connect();
+  }
 })();

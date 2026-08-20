@@ -8,6 +8,15 @@
   const root = document.querySelector("[data-broadcast-root]");
   if (!root) return;
 
+  const showcaseMode =
+    new URLSearchParams(window.location.search || "").get("showcase") === "1";
+  if (showcaseMode) {
+    // Paint immediately for headless PNG capture (no wait for ticker idle).
+    cfg.broadcastTickerFirstDelayMs = 0;
+    cfg.broadcastTickerIdleMs = 0;
+    cfg.broadcastBoardRefreshMs = 1000;
+  }
+
   if (cfg.telemetryEnabled !== true) {
     root.hidden = true;
     root.setAttribute("aria-hidden", "true");
@@ -1922,6 +1931,37 @@
     retryMs = Math.min(retryMs * 1.5, 8000);
   }
 
+  function showcaseTickUrl() {
+    const path = String(window.location.pathname || "").replace(/\\/g, "/");
+    if (path.indexOf("overlays-marcato") !== -1) {
+      return new URL("../overlays/showcase-telemetry-tick.json", window.location.href).href;
+    }
+    return new URL("showcase-telemetry-tick.json", window.location.href).href;
+  }
+
+  function loadShowcaseFixture() {
+    const params = new URLSearchParams(window.location.search || "");
+    if (params.get("showcase") !== "1") return false;
+    setStatus("SHOWCASE FIXTURE…");
+    fetch(showcaseTickUrl())
+      .then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      })
+      .then(function (msg) {
+        if (!msg || msg.type !== "telemetry.tick") throw new Error("bad fixture");
+        root.dataset.state = "live";
+        setStatus("SHOWCASE");
+        render(msg);
+      })
+      .catch(function (err) {
+        root.dataset.state = "error";
+        setStatus("SHOWCASE FIXTURE FAIL");
+        directorLog("WARN", "showcase fixture: " + (err && err.message ? err.message : err));
+      });
+    return true;
+  }
+
   function connect() {
     if (typeof WebSocket === "undefined") {
       root.dataset.state = "unsupported";
@@ -1983,5 +2023,7 @@
     });
   }
 
-  connect();
+  if (!loadShowcaseFixture()) {
+    connect();
+  }
 })();

@@ -56,6 +56,8 @@ def capture(overlay_dir: Path, html_spec: str, out_png: Path) -> None:
     if not html.exists():
         raise FileNotFoundError(html)
     out_png.parent.mkdir(parents=True, exist_ok=True)
+    # Showcase pages nest iframes + fetch fixture JSON — need more virtual time.
+    budget_ms = 6500 if "showcase-" in html_name else 3500
     cmd = [
         str(CHROME),
         "--headless=new",
@@ -64,7 +66,9 @@ def capture(overlay_dir: Path, html_spec: str, out_png: Path) -> None:
         "--force-device-scale-factor=1",
         "--window-size=1920,1080",
         f"--screenshot={out_png.resolve()}",
-        "--virtual-time-budget=3500",
+        f"--virtual-time-budget={budget_ms}",
+        # Allow file:// pages to fetch local showcase fixture JSON
+        "--allow-file-access-from-files",
         file_url(html, query),
     ]
     t0 = time.perf_counter()
