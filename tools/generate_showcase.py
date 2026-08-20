@@ -23,17 +23,19 @@ PIGRECO_SHOTS = [
 
 MARCATO_SHOTS = [
     ("marcato-01-starting-soon.png", "overlays-marcato", "starting-soon.html", "Starting Soon"),
-    ("marcato-02-live-chrome.png", "overlays-marcato", "live-chrome.html", "Live Chrome"),
-    ("marcato-03-brb.png", "overlays-marcato", "brb.html?brbUntil=21:45", "BRB"),
-    ("marcato-04-ending.png", "overlays-marcato", "ending.html", "Ending"),
+    ("marcato-02-live.png", "overlays-marcato", "showcase-live.html", "Live"),
+    ("marcato-03-headcam.png", "overlays-marcato", "showcase-headcam.html", "Headcam"),
+    ("marcato-04-lobby.png", "overlays-marcato", "showcase-lobby.html", "Lobby"),
+    ("marcato-05-brb.png", "overlays-marcato", "brb.html?brbUntil=21:45", "BRB"),
+    ("marcato-06-ending.png", "overlays-marcato", "ending.html", "Ending"),
     (
-        "marcato-05-triple-frame.png",
+        "marcato-07-triple-frame.png",
         "overlays-marcato",
         "triple-frame.html?cam=1&badge=LIVE",
-        "Live Triplo",
+        "Triple frame (Replay / Rec)",
     ),
     (
-        "marcato-06-replay-chrome.png",
+        "marcato-08-replay-chrome.png",
         "overlays-marcato",
         "replay-chrome.html",
         "Replay Chrome",

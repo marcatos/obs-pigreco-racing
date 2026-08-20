@@ -20,18 +20,22 @@ Full-bleed **1920×1080** previews — browse locally: [`showcase/index.html`](s
 
 ### S.Marcato 42
 
-| Starting Soon | Live Chrome |
+| Starting Soon | Live |
 |:---:|:---:|
-| ![Starting Soon](showcase/marcato-01-starting-soon.png) | ![Live Chrome](showcase/marcato-02-live-chrome.png) |
+| ![Starting Soon](showcase/marcato-01-starting-soon.png) | ![Live](showcase/marcato-02-live.png) |
+
+| Headcam | Lobby |
+|:---:|:---:|
+| ![Headcam](showcase/marcato-03-headcam.png) | ![Lobby](showcase/marcato-04-lobby.png) |
 
 | BRB | Ending |
 |:---:|:---:|
-| ![BRB](showcase/marcato-03-brb.png) | ![Ending](showcase/marcato-04-ending.png) |
+| ![BRB](showcase/marcato-05-brb.png) | ![Ending](showcase/marcato-06-ending.png) |
 
 <p align="center">
-  <img src="showcase/marcato-05-triple-frame.png" alt="Triple frame / Rec layout" width="720" />
+  <img src="showcase/marcato-07-triple-frame.png" alt="Triple frame / Rec layout" width="720" />
   <br />
-  <sub>Triple-frame layout (Replay / Rec) — Live slim uses Game Capture + Headcam + Lobby</sub>
+  <sub>Triple-frame layout (Replay / Rec) — cams are mock placeholders, not live capture</sub>
 </p>
 
 ### PiGreco Racing

@@ -1,0 +1,267 @@
+/* Shared mock layers for showcase PNGs — no real webcam / iRacing capture. */
+
+.mock-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.mock-label {
+  position: absolute;
+  top: 14%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  font-family: var(--font-display, "Audiowide", sans-serif);
+  font-size: 0.72rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(248, 248, 250, 0.28);
+  white-space: nowrap;
+}
+
+/* --- Live: faux track / FOV --- */
+.mock-game {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 18%, rgba(120, 160, 200, 0.22), transparent 55%),
+    linear-gradient(180deg, #1a2430 0%, #0c1018 38%, #121212 55%, #1a1a1c 100%);
+}
+
+.mock-game::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  width: 140%;
+  height: 70%;
+  transform: translateX(-50%) perspective(600px) rotateX(58deg);
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 46px,
+      rgba(248, 248, 250, 0.12) 46px 50px
+    ),
+    linear-gradient(180deg, #2a2a30, #141418);
+  border-top: 3px solid rgba(225, 6, 0, 0.55);
+  opacity: 0.85;
+}
+
+.mock-game::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    var(--weave-fine, none) center / 420px repeat,
+    radial-gradient(ellipse 70% 55% at 50% 100%, rgba(0, 0, 0, 0.55), transparent 60%);
+  opacity: 0.35;
+  mix-blend-mode: soft-light;
+}
+
+/* --- Headcam: cockpit POV --- */
+.mock-headcam {
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 40%, #2a3038 0%, #0a0a0c 70%),
+    linear-gradient(165deg, #101218, #08080a);
+}
+
+.mock-headcam::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -8%;
+  width: 78%;
+  height: 42%;
+  transform: translateX(-50%);
+  border-radius: 50% 50% 0 0;
+  background:
+    radial-gradient(ellipse at 50% 30%, #3a3a42, #121216 70%),
+    var(--weave-bold, none) center / 280px repeat;
+  box-shadow: inset 0 20px 40px rgba(0, 0, 0, 0.55);
+  border: 2px solid rgba(168, 168, 176, 0.25);
+  border-bottom: none;
+}
+
+.mock-headcam::after {
+  content: "";
+  position: absolute;
+  inset: 8% 12% 38%;
+  background:
+    linear-gradient(180deg, rgba(90, 140, 190, 0.25), rgba(10, 12, 16, 0.15)),
+    linear-gradient(90deg, transparent, rgba(225, 6, 0, 0.08), transparent);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  clip-path: polygon(8% 0, 92% 0, 100% 100%, 0 100%);
+}
+
+/* --- Lobby: faux iRacing Chromium UI --- */
+.mock-lobby {
+  background: #0e0e12;
+  display: grid;
+  grid-template-columns: 220px 1fr 320px;
+  gap: 0;
+}
+
+.mock-lobby-nav,
+.mock-lobby-main,
+.mock-lobby-side {
+  position: relative;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 28px 20px;
+  font-family: var(--font-body, "IBM Plex Sans", sans-serif);
+}
+
+.mock-lobby-side {
+  border-right: none;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mock-lobby-nav {
+  background: linear-gradient(180deg, #14141a, #0c0c10);
+}
+
+.mock-lobby-nav .brand {
+  font-family: var(--font-display, "Audiowide", sans-serif);
+  color: #e10600;
+  letter-spacing: 0.12em;
+  font-size: 0.85rem;
+  margin-bottom: 28px;
+}
+
+.mock-lobby-nav ul {
+  list-style: none;
+  display: grid;
+  gap: 10px;
+  color: rgba(200, 200, 208, 0.75);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.mock-lobby-nav li.active {
+  color: #f8f8fa;
+  border-left: 3px solid #e10600;
+  padding-left: 10px;
+  margin-left: -13px;
+}
+
+.mock-lobby-main {
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 45%, rgba(225, 6, 0, 0.12), transparent 60%),
+    linear-gradient(160deg, #16161c, #0a0a0e);
+}
+
+.mock-car {
+  width: min(70%, 720px);
+  aspect-ratio: 16 / 9;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background:
+    url("assets/brand/avatar_1024_carbon.png") center 30% / 42% no-repeat,
+    linear-gradient(145deg, #1c1c24, #0e0e14);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  display: grid;
+  align-content: end;
+  padding: 18px;
+}
+
+.mock-car span {
+  font-family: var(--font-display, "Audiowide", sans-serif);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  color: rgba(248, 248, 250, 0.55);
+}
+
+.mock-lobby-side h3 {
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #a8a8b0;
+  margin-bottom: 16px;
+}
+
+.mock-lobby-side .row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.8rem;
+  color: #c8c8d0;
+}
+
+.mock-lobby-side .row strong {
+  color: #f8f8fa;
+}
+
+/* Face / pedals placeholders (brand silhouette — not live cams) */
+.mock-face {
+  position: absolute;
+  left: 36px;
+  bottom: 36px;
+  width: 360px;
+  height: 202px;
+  z-index: 2;
+  background:
+    linear-gradient(180deg, transparent 55%, rgba(8, 8, 10, 0.55)),
+    url("assets/brand/avatar_1024_carbon.png") center 20% / cover no-repeat,
+    #121216;
+  border: 1px solid rgba(168, 168, 176, 0.35);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+}
+
+.mock-face::after {
+  content: "FACE · MOCK";
+  position: absolute;
+  left: 10px;
+  bottom: 8px;
+  font-family: var(--font-body, "IBM Plex Sans", sans-serif);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: rgba(248, 248, 250, 0.55);
+}
+
+.mock-pedals {
+  position: absolute;
+  right: 36px;
+  bottom: 36px;
+  width: 320px;
+  height: 180px;
+  z-index: 2;
+  background:
+    linear-gradient(180deg, #1a1a20 0%, #0c0c10 100%);
+  border: 1px solid rgba(168, 168, 176, 0.35);
+  overflow: hidden;
+}
+
+.mock-pedals::before {
+  content: "";
+  position: absolute;
+  inset: 18% 22% 28%;
+  background: linear-gradient(90deg, #2a2a32, #3a3a44 40%, #222228);
+  clip-path: polygon(10% 100%, 30% 20%, 70% 20%, 90% 100%);
+  opacity: 0.9;
+}
+
+.mock-pedals::after {
+  content: "PEDALS · MOCK";
+  position: absolute;
+  left: 10px;
+  bottom: 8px;
+  font-family: var(--font-body, "IBM Plex Sans", sans-serif);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: rgba(248, 248, 250, 0.55);
+}
+
+.chrome-frame {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+}
