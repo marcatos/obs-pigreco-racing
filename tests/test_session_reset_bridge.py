@@ -160,6 +160,13 @@ def test_command_with_invalid_ts_falls_back_to_server_now(caplog: Any) -> None:
         _reset_bridge_state()
 
 
+def test_main_loop_notes_session_before_building_tick() -> None:
+    """The tick that triggers a reset must not be built from stale continuity."""
+    src = (ROOT / "adapters" / "telemetry" / "iracing_bridge.py").read_text(encoding="utf-8")
+    loop = src[src.index("async with serve(handler") :]
+    assert loop.index("note_session_identity") < loop.index("build_tick_from_ir")
+
+
 def test_unknown_command_warns_without_reset(caplog: Any) -> None:
     _reset_bridge_state()
     with caplog.at_level(logging.WARNING):

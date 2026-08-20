@@ -1113,6 +1113,13 @@ async def async_main(args: argparse.Namespace) -> int:
                         )
                     ibt_armed = ibt_start(ir, irsdk, ibt_dir=ibt_dir)
 
+            # Before the tick: a reset clears continuity, so the tick we then
+            # build (and broadcast) is derived from the new session only —
+            # overlays never re-render stale state right after clearing.
+            reset_event = note_session_identity(ir, now_ms=_ms_now())
+            if reset_event is not None:
+                await broadcast_message(clients, reset_event)
+
             tick = build_tick_from_ir(ir)
             if tick is None:
                 reset_continuity()
@@ -1122,9 +1129,6 @@ async def async_main(args: argparse.Namespace) -> int:
                     pass
                 continue
 
-            reset_event = note_session_identity(ir, now_ms=_ms_now())
-            if reset_event is not None:
-                await broadcast_message(clients, reset_event)
             events = detector.feed(tick)
             payload = json.dumps(tick, separators=(",", ":"))
             event_payloads = [
