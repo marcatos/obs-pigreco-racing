@@ -84,6 +84,55 @@ def test_standings_from_distance_replay_order():
     assert any(r["rel"] == 0 for r in rel)
 
 
+def test_standings_mixed_official_uses_progress_not_flip():
+    """One missing officialPos must not switch to a different order than pure progress."""
+    cars = [
+        {
+            "carIdx": 1,
+            "name": "Leader",
+            "carNumber": "1",
+            "lap": 5,
+            "distPct": 0.8,
+            "officialPos": 2,  # stale / wrong vs progress
+            "lastLapMs": 90000,
+            "bestLapMs": 89000,
+            "class": "GT3",
+        },
+        {
+            "carIdx": 2,
+            "name": "Focus",
+            "carNumber": "42",
+            "lap": 5,
+            "distPct": 0.9,
+            "officialPos": -1,  # timing glitch
+            "lastLapMs": 91000,
+            "bestLapMs": 90000,
+            "class": "GT3",
+        },
+        {
+            "carIdx": 3,
+            "name": "Third",
+            "carNumber": "7",
+            "lap": 5,
+            "distPct": 0.5,
+            "officialPos": 1,
+            "lastLapMs": 92000,
+            "bestLapMs": 91000,
+            "class": "GT3",
+        },
+    ]
+    by_progress = standings_from_cars(cars, focus_car_idx=2, use_official_pos=False)
+    with_flag = standings_from_cars(cars, focus_car_idx=2, use_official_pos=True)
+    assert [r["carIdx"] for r in with_flag] == [r["carIdx"] for r in by_progress]
+    assert [r["carIdx"] for r in with_flag] == [2, 1, 3]
+
+
+def test_bridge_race_live_prefers_progress_order():
+    src = (ROOT / "adapters" / "telemetry" / "iracing_bridge.py").read_text(encoding="utf-8")
+    # Race live must force progress order (avoid S/F official thrash)
+    assert "not (session_kind == \"race\" and live_order)" in src
+
+
 def test_sanitize_laps_remain_sentinel():
     from iracing_bridge import _sanitize_laps_remain
 

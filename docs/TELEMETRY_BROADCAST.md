@@ -37,8 +37,10 @@ python adapters/telemetry/iracing_bridge.py
 3. Enable `telemetryEnabled` in the config panel and show **Overlay Broadcast Chrome**.
 
 Replay note: SDK `CarIdxPosition` is often wrong in replay. The bridge ranks cars by
-`CarIdxLap` + `CarIdxLapDistPct`. In live it prefers official positions when enough
-cars report `> 0`.
+`CarIdxLap` + `CarIdxLapDistPct`. In **live race** (after rolling-start hold) it also
+uses lap + distPct so a brief missing `CarIdxPosition` at S/F cannot flip the whole
+board to official order and back. Quali / practice still prefer official positions when
+enough cars report `> 0`.
 
 ### Optional IBT recording (native Motec / Mu)
 
@@ -143,7 +145,9 @@ Hybrid auto/manual moments on the same Browser Source. Base widgets (session, fo
 
 `telemetry.event` frames (`flag_change`, `battle`, `overtake`, `fast_lap`, `pit`, `session_end`) are emitted on the **WebSocket** after the tick that produced them. File mode (`--mode file`) stores the latest tick only — events are **not** persisted.
 
-`battle` is **edge-triggered**: one chip when the fight starts (gap stays under the sensitivity threshold for a short streak). While the gap stays close, no more `BATTLE` heroes — the relative/battle panel already shows the fight. A new chip can fire only after the gap opens again (with a bit of hysteresis so threshold jitter does not re-arm).
+`battle` is **edge-triggered**: one chip when the fight starts (gap stays under the sensitivity threshold for a short streak). While the gap stays close, no more `BATTLE` heroes — the relative/battle panel already shows the fight. A new chip can fire only after the gap opens again (with a bit of hysteresis so threshold jitter does not re-arm). Near start/finish (`distPct` < 0.04 or > 0.96) battle arming is muted because estimated gaps thrash on the timing line.
+
+`overtake` requires the improved focus position to hold for **3 ticks** (single-tick S/F reshuffles are ignored) and is also muted in that S/F corridor. `fast_lap` / FASTEST only fires on a true personal best (`lastLapMs` beats the previous `bestLapMs`).
 
 Mock scripted windows (elapsed seconds):
 

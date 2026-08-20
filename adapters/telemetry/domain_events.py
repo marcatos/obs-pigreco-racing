@@ -14,6 +14,35 @@ PRIORITIES = {
     "pit": 40,
 }
 DEFAULT_TTL_MS = 4000
+# Focus LapDistPct corridor where estimated gaps / positions are unreliable.
+SF_MUTE_LO = 0.04
+SF_MUTE_HI = 0.96
+OVERTAKE_CONFIRM_TICKS = 3
+
+
+def focus_dist_pct(tick: dict[str, Any]) -> float | None:
+    """Focus car lap distance 0–1 from tick or standings focus row."""
+    raw = tick.get("focusDistPct")
+    if isinstance(raw, (int, float)):
+        d = float(raw) % 1.0
+        return d + 1.0 if d < 0 else d
+    for row in tick.get("standings") or []:
+        if not isinstance(row, dict):
+            continue
+        if not row.get("isFocus"):
+            continue
+        d_raw = row.get("distPct")
+        if isinstance(d_raw, (int, float)):
+            d = float(d_raw) % 1.0
+            return d + 1.0 if d < 0 else d
+    return None
+
+
+def near_start_finish(tick: dict[str, Any]) -> bool:
+    d = focus_dist_pct(tick)
+    if d is None:
+        return False
+    return d < SF_MUTE_LO or d > SF_MUTE_HI
 
 
 class EventDetector:
@@ -26,6 +55,9 @@ class EventDetector:
         self._battle_active = False
         self._last_emit_ms: dict[str, int] = {}
         self._seq = 0
+        self._overtake_streak = 0
+        self._overtake_from: int | None = None
+        self._overtake_to: int | None = None
 
     def set_sensitivity(self, name: str) -> None:
         key = name if name in SENSITIVITY else "normal"
@@ -38,6 +70,9 @@ class EventDetector:
         self._battle_streak = 0
         self._battle_active = False
         self._last_emit_ms = {}
+        self._overtake_streak = 0
+        self._overtake_from = None
+        self._overtake_to = None
 
     def feed(self, tick: dict[str, Any], *, now_ms: int | None = None) -> list[dict[str, Any]]:
         ts = int(now_ms if now_ms is not None else tick.get("ts") or 0)
@@ -100,6 +135,12 @@ class EventDetector:
 
     def _update_battle_streak(self, tick: dict[str, Any]) -> int | None:
         """Count close ticks for entry; clear active battle with exit hysteresis."""
+        # Estimated gaps spike/collapse at S/F — ignore for arming; keep active as-is.
+        if near_start_finish(tick):
+            if not self._battle_active:
+                self._battle_streak = 0
+            return None
+
         enter_thr = int(self._cfg["battle_ms"])
         # Stay "in battle" a bit longer so gap jitter at the threshold does not re-arm.
         exit_thr = int(enter_thr * 1.5)
@@ -118,6 +159,53 @@ class EventDetector:
             self._battle_streak += 1
             return gap_enter
         self._battle_streak = 0
+        return None
+
+    def _update_overtake(self, prev: dict[str, Any], tick: dict[str, Any]) -> dict[str, int] | None:
+        """Require held position improve; mute in S/F corridor."""
+        if near_start_finish(tick):
+            self._overtake_streak = 0
+            self._overtake_from = None
+            self._overtake_to = None
+            return None
+
+        pp, cp = prev.get("position"), tick.get("position")
+        if not isinstance(pp, (int, float)) or not isinstance(cp, (int, float)):
+            self._overtake_streak = 0
+            self._overtake_from = None
+            self._overtake_to = None
+            return None
+
+        pp_i, cp_i = int(pp), int(cp)
+        if cp_i < pp_i:
+            # Fresh improve edge (or further improve)
+            if self._overtake_from is None:
+                self._overtake_from = pp_i
+            self._overtake_to = cp_i
+            self._overtake_streak = 1
+        elif (
+            self._overtake_to is not None
+            and cp_i == self._overtake_to
+            and self._overtake_from is not None
+            and cp_i < self._overtake_from
+        ):
+            self._overtake_streak += 1
+        else:
+            self._overtake_streak = 0
+            self._overtake_from = None
+            self._overtake_to = None
+            return None
+
+        if (
+            self._overtake_streak >= OVERTAKE_CONFIRM_TICKS
+            and self._overtake_from is not None
+            and self._overtake_to is not None
+        ):
+            payload = {"fromPos": self._overtake_from, "toPos": self._overtake_to}
+            self._overtake_streak = 0
+            self._overtake_from = None
+            self._overtake_to = None
+            return payload
         return None
 
     def _detect(self, prev: dict[str, Any], tick: dict[str, Any], ts: int) -> list[dict[str, Any]]:
@@ -150,23 +238,20 @@ class EventDetector:
                 self._battle_active = True
                 self._battle_streak = 0
 
-        pp, cp = prev.get("position"), tick.get("position")
-        if isinstance(pp, (int, float)) and isinstance(cp, (int, float)) and int(cp) < int(pp):
-            e = self._emit(
-                "overtake",
-                ts,
-                {"fromPos": int(pp), "toPos": int(cp)},
-            )
+        overtake_payload = self._update_overtake(prev, tick)
+        if overtake_payload is not None:
+            e = self._emit("overtake", ts, overtake_payload)
             if e:
                 found.append(e)
 
         pl, pb = prev.get("lastLapMs"), prev.get("bestLapMs")
-        cl, cb = tick.get("lastLapMs"), tick.get("bestLapMs")
+        cl = tick.get("lastLapMs")
+        # Strict personal best: last must change and beat the previous best.
         if (
             isinstance(cl, (int, float))
-            and isinstance(cb, (int, float))
-            and cl <= cb
-            and (pl != cl or pb != cb)
+            and isinstance(pb, (int, float))
+            and pl != cl
+            and float(cl) < float(pb)
         ):
             e = self._emit("fast_lap", ts, {"lapMs": int(cl)})
             if e:

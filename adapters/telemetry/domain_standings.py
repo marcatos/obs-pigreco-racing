@@ -142,8 +142,10 @@ def standings_from_cars(
 
     Each car dict: carIdx, name, carNumber, class, lap, distPct, surface,
     officialPos (optional), lastLapMs, bestLapMs.
-    Sort: official positions if use_official_pos and all valid (>0),
-    else by (lap + distPct) descending (replay-safe).
+    Sort: official positions if use_official_pos and **all** cars have
+    officialPos > 0; otherwise by (lap + distPct) descending (replay-safe and
+    stable when any car briefly lacks an official position at S/F — never flip
+    only some cars to official while others stay on progress).
     Gaps estimated from distance delta * est_lap_ms.
     """
     active = [
