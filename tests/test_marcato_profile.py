@@ -279,6 +279,15 @@ def test_marcato_live_headcam_and_pedals():
     assert "Cam 2" not in source_names
     assert "Monitor Centro" not in source_names
 
+    ui = next(s for s in data["sources"] if s.get("name") == "iRacing UI Capture")
+    assert ui["id"] == "window_capture"
+    assert ui["settings"].get("method") == 2
+    assert "iRacingUI.exe" in ui["settings"].get("window", "")
+
+    lobby = next(s for s in data["sources"] if s.get("name") == "Lobby")
+    lobby_items = [it.get("name") for it in lobby["settings"]["items"]]
+    assert lobby_items[0] == "iRacing UI Capture"
+
     live = next(s for s in data["sources"] if s.get("name") == "Live")
     live_items = [it.get("name") for it in live["settings"]["items"]]
     assert live_items[0] == "Game Capture"

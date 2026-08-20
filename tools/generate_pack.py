@@ -282,13 +282,17 @@ def iracing_capture_settings() -> dict:
 
 
 def iracing_ui_capture_settings() -> dict:
-    """Window capture for iRacing UI (garage / menus) — Lobby scene."""
+    """Window capture for iRacing UI (garage / menus) — Lobby scene.
+
+    iRacingUI.exe is Chromium/Electron: Game Capture cannot hook it (OBS warns
+    and shows nothing). Must be ``window_capture`` with WGC (method=2).
+    """
     return {
-        "capture_mode": "window",
         "window": IRACING_UI_WINDOW,
-        "capture_cursor": False,
-        "capture_audio": False,
-        "priority": 2,
+        "method": 2,  # Windows Graphics Capture (Win10 1903+)
+        "cursor": False,
+        "client_area": True,
+        "priority": 2,  # match by executable
     }
 
 
@@ -1410,7 +1414,7 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
     )
     ui_capture = source_base(
         "iRacing UI Capture",
-        "game_capture",
+        "window_capture",
         iracing_ui_capture_settings(),
         mixers=0,
     )
