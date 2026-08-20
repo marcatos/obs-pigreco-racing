@@ -328,6 +328,7 @@ def test_marcato_live_headcam_and_pedals():
 
     cam_pedals = next(s for s in data["sources"] if s.get("name") == "Cam Pedals")
     assert "vid_041e" in cam_pedals["settings"]["video_device_id"].lower()
+    assert cam_pedals["settings"]["video_format"] == 400  # MJPEG (no NV12 on Creative)
     assert not (cam_pedals.get("filters") or [])
 
     pedals_pip = next(s for s in data["sources"] if s.get("name") == "Cam Pedals PIP")

@@ -1395,7 +1395,13 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
     )
     cam = streamcam_dshow()
     cam_head = dshow_cam("Cam Head", BRIO_ID, greenscreen=False)
-    cam_pedals = dshow_cam("Cam Pedals", CREATIVE_ID, greenscreen=False)
+    cam_pedals = dshow_cam(
+        "Cam Pedals",
+        CREATIVE_ID,
+        greenscreen=False,
+        # Creative Sync 1080p V2: MJPEG/YUY2 only — NV12 opens black
+        video_format=DSHOW_FMT_MJPEG,
+    )
     cam_bd_face = cam_carbon_backdrop(
         "Cam Backdrop Face", width=360, height=202, marcato=True
     )
