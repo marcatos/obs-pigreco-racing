@@ -40,7 +40,7 @@ Scene previste (**live slim**): Starting Soon, **Live**, **Headcam**, Lobby, BRB
 | Starting Soon | Countdown / pre-show + musica |
 | **Live** | **Game Capture** iRacing + live chrome + telecronaca + **Cam PIP** (StreamCam) + **Cam Pedals PIP** (Creative) |
 | **Headcam** | **Brio** fullscreen + pedali ON + live chrome + telecronaca; audio Desktop + mic (niente Game Capture) |
-| **Lobby** | **Window Capture** iRacing UI (Chromium — not Game Capture) + musica (sim aperto, niente telemetria) |
+| **Lobby** | **Window Capture** iRacing UI (Chromium — not Game Capture), Scale Outer → 1920×1080 + musica |
 | BRB / Ending | Pausa e chiusura + musica |
 
 Camere: vedi [`CAMERAS.md`](CAMERAS.md). USB Camera (lavoro) non è in questa collezione.
