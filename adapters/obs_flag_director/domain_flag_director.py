@@ -37,6 +37,10 @@ class SessionDirectorConfig:
     session_debounce_ms: int = 4000
     flag_presentation: str = "overlay"
     manual_scenes: frozenset[str] = field(default_factory=lambda: DEFAULT_MANUAL_SCENES)
+    # Scenes the operator may stay on during a race; resume after Lobby.
+    race_scenes: frozenset[str] = field(
+        default_factory=lambda: frozenset({"Live", "Headcam"})
+    )
 
     def as_flag_config(self) -> FlagDirectorConfig:
         return FlagDirectorConfig(
@@ -132,25 +136,27 @@ class SessionDirector:
     _last_session_change_ms: int = field(default=-10**12, repr=False)
     _telem_connected: bool | None = field(default=None, repr=False)
     _iracing_up: bool = field(default=False, repr=False)
+    # Last Live/Headcam (or other race scene) before Lobby — restored on telem up.
+    _resume_scene: str | None = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
         self.flags = FlagDirector(self.config.as_flag_config())
 
     def note_obs_scene(self, scene_name: str | None) -> None:
         self.flags.note_obs_scene(scene_name)
+        if scene_name and scene_name in self.config.race_scenes:
+            self._resume_scene = scene_name
 
     def on_flag(self, flag: str, *, now_ms: int) -> str | None:
         scene = self.flags.on_flag(flag, now_ms=now_ms)
         if scene and scene in self.config.scenes.values():
-            # Leaving Live/Lobby for a flag — keep preferred home by telem state
             preferred = self._preferred_home()
             self.flags.set_stacked_home(preferred)
         return scene
 
     def _preferred_home(self) -> str:
         if self._telem_connected:
-            return self.config.live_scene
-        # UI only or sim fully closed → Lobby (not Live)
+            return self._resume_scene or self.config.live_scene
         return self.config.lobby_scene
 
     def _on_manual_scene(self) -> bool:
@@ -168,12 +174,19 @@ class SessionDirector:
         telemetry_connected: bool,
         now_ms: int,
     ) -> str | None:
-        """Return Live/Lobby scene to switch to, or None.
+        """Return scene to switch to, or None.
 
-        Does not leave Starting Soon / BRB / Ending or Flag scenes.
+        - No telem (UI only or iRacing closed) → Lobby from Live/Headcam.
+        - Telem up → restore last race scene (Live or Headcam); do not yank
+          Headcam→Live while the operator is already on a race scene.
+        - Never leaves Starting Soon / BRB / Ending or Flag scenes.
         """
         self._iracing_up = iracing_up
         self._telem_connected = telemetry_connected
+
+        cur = self.flags.active_scene
+        if cur and cur in self.config.race_scenes:
+            self._resume_scene = cur
 
         preferred = self._preferred_home()
         self.flags.set_stacked_home(preferred)
@@ -182,14 +195,14 @@ class SessionDirector:
             return None
 
         if telemetry_connected:
-            target = self.config.live_scene
-        elif iracing_up:
-            target = self.config.lobby_scene
+            if cur in self.config.race_scenes:
+                return None
+            target = self._resume_scene or self.config.live_scene
         else:
-            # Sim fully closed → Lobby (Starting Soon/BRB/Ending still protected above)
+            # UI-only or fully closed → Lobby (manual scenes already protected)
             target = self.config.lobby_scene
 
-        if target == self.flags.active_scene:
+        if target == cur:
             return None
 
         if (now_ms - self._last_session_change_ms) < self.config.session_debounce_ms:

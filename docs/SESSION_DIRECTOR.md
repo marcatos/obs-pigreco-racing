@@ -4,9 +4,9 @@ Hands-free OBS direction for **S.Marcato 42** slim live:
 
 | Condition | Scene / action |
 |-----------|----------------|
-| Telemetry connected (iRacing session) | **Live** |
+| Telemetry connected (iRacing session) | restore **Live** or **Headcam** (last race scene); never yank Headcam→Live |
 | iRacing process up, telemetry stale/down | **Lobby** |
-| iRacing fully closed | **Lobby** (not Starting Soon / BRB / Ending) |
+| iRacing fully closed | **Lobby** (also from Headcam) |
 | Flag yellow / red / checkered | **Overlay FX on Live** (default `flagPresentation=overlay`) — no cutaway |
 | Starting Soon / BRB / Ending | **never** auto-left (VirtualDeck / manual) |
 
@@ -39,6 +39,7 @@ Edit `adapters/obs_flag_director/config.local.json`:
 | `dryRun` | `true` = log only; `false` = real switches |
 | `flagPresentation` | `overlay` (default) or `scenes` |
 | `liveScene` / `lobbyScene` / `homeScene` | Default `Live` / `Lobby` / `Live` |
+| `raceScenes` | Scenes to resume after Lobby (default `Live`, `Headcam`) |
 | `sessionDebounceMs` | Live↔Lobby debounce (default 4000) |
 | `autoStartTelemetry` | Start `Start-Telemetry.bat iracing` when iRacing is up |
 | `iracingProcessNames` | Process watch list |

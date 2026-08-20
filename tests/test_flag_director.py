@@ -129,6 +129,29 @@ def test_session_iracing_closed_goes_lobby():
     )
 
 
+def test_session_headcam_closed_goes_lobby_then_restores_headcam():
+    s = _session()
+    s.note_obs_scene("Headcam")
+    assert (
+        s.on_session_state(iracing_up=False, telemetry_connected=False, now_ms=5000)
+        == "Lobby"
+    )
+    assert s._resume_scene == "Headcam"
+    assert (
+        s.on_session_state(iracing_up=True, telemetry_connected=True, now_ms=10000)
+        == "Headcam"
+    )
+
+
+def test_session_telem_up_does_not_yank_headcam():
+    s = _session()
+    s.note_obs_scene("Headcam")
+    assert (
+        s.on_session_state(iracing_up=True, telemetry_connected=True, now_ms=5000) is None
+    )
+    assert s.flags.active_scene == "Headcam"
+
+
 def test_session_debounce():
     s = _session()
     s.note_obs_scene("Lobby")
