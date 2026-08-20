@@ -345,13 +345,43 @@
     syncFlagStrip(flag);
   }
 
+  function clearBoardAndFightState() {
+    lastBoardAt = 0;
+    latchedGapByKey = Object.create(null);
+    latchedRelatives = null;
+    lastBoardFocusIdx = null;
+    fightPrevOrder = [];
+    fightStickyKeys = Object.create(null);
+    fightLeaveAt = Object.create(null);
+    fightDroppedKeys = Object.create(null);
+    fightGapHist = { ahead: null, behind: null, t: 0 };
+    fightDispSeps = null;
+    fightDispSide = null;
+    battleActive = false;
+    battleStreak = 0;
+    if (elFight) {
+      elFight.hidden = true;
+      elFight.classList.remove("is-on");
+      if (elFightRows) elFightRows.innerHTML = "";
+    }
+  }
+
+  function clearSessionOverlayState(reason) {
+    clearMomentLayer();
+    clearBoardAndFightState();
+    setStatus("SESSION RESET");
+    directorLog("INFO", "session_reset reason=" + (reason || ""));
+  }
+
   function clearMomentLayer() {
     if (heroExitTimer != null) {
       window.clearTimeout(heroExitTimer);
       heroExitTimer = null;
     }
     heroGen += 1;
-    directorState = { hero: null, queue: [] };
+    directorState = Director && Director.clearDirectorState
+      ? Director.clearDirectorState(directorState)
+      : { hero: null, queue: [] };
     if (!elMoment) return;
     elMoment.hidden = true;
     elMoment.innerHTML = "";
@@ -2000,10 +2030,14 @@
         render(msg);
       } else if (msg.type === "telemetry.event") {
         enqueueEvent(msg);
+      } else if (msg.type === "telemetry.session_reset") {
+        root.dataset.state = "live";
+        clearSessionOverlayState(msg.reason);
       } else if (msg.type === "telemetry.status" && msg.connected === false) {
         root.dataset.state = "idle";
         setStatus("SIM DISCONNECTED");
         clearMomentLayer();
+        clearBoardAndFightState();
       }
     });
 

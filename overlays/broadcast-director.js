@@ -41,8 +41,13 @@
     return { hero: item, queue: queue };
   }
 
+  function clearDirectorState(state) {
+    return { hero: null, queue: [] };
+  }
+
   root.PigrecoBroadcastDirector = {
     formatMomentLabel: formatMomentLabel,
     enqueueEvent: enqueueEvent,
+    clearDirectorState: clearDirectorState,
   };
 })(typeof globalThis !== "undefined" ? globalThis : this);
