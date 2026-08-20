@@ -1,4 +1,5 @@
--- PiGreco / S.Marcato — avvia il config server quando OBS parte (una sola volta).
+-- PiGreco / S.Marcato — all'apertura di OBS (una sola volta, silenzioso):
+--   config server :8766 + Session Director + telemetria :8765
 --
 -- Niente timer periodico / niente os.execute / niente io.popen (flash cmd su Windows).
 -- Avvio silenzioso: LuaJIT FFI → shell32.ShellExecuteW(SW_HIDE).
@@ -7,6 +8,7 @@ obs = obslua
 
 local pack_root_cached = ""
 local boot_timer_armed = false
+local director_boot_armed = false
 local ffi_ok, ffi = pcall(require, "ffi")
 local shell32, kernel32
 
@@ -42,8 +44,9 @@ local sync_armed = false
 local last_sync_key = ""
 
 function script_description()
-  return [[Avvia il server del Config Panel (127.0.0.1:8766) all'apertura di OBS
-(una sola volta, silenzioso).
+  return [[Avvia all'apertura di OBS (una sola volta, silenzioso):
+- Config Panel server (127.0.0.1:8766)
+- Session Director + telemetria iRacing (:8765) — Live↔Lobby automatico
 
 Sincronizza anche il layout faccia: se nascondi Cam PIP (o StreamCam),
 l'overlay passa a cam=0 e nasconde il riquadro CAM.
@@ -67,7 +70,7 @@ function script_properties()
   obs.obs_properties_add_button(
     props,
     "ensure_now",
-    "Avvia / verifica config server ora",
+    "Avvia / verifica config + Session Director ora",
     on_ensure_clicked
   )
   return props
@@ -94,6 +97,10 @@ function script_unload()
     obs.timer_remove(on_boot_once)
     boot_timer_armed = false
   end
+  if director_boot_armed then
+    obs.timer_remove(on_boot_director)
+    director_boot_armed = false
+  end
   if sync_armed then
     obs.timer_remove(sync_cam_layout)
     sync_armed = false
@@ -119,10 +126,22 @@ function on_boot_once()
   obs.timer_remove(on_boot_once)
   boot_timer_armed = false
   ensure_server(false)
+  -- Delay so OBS WebSocket is up before Session Director connects
+  if not director_boot_armed then
+    director_boot_armed = true
+    obs.timer_add(on_boot_director, 2500)
+  end
+end
+
+function on_boot_director()
+  obs.timer_remove(on_boot_director)
+  director_boot_armed = false
+  ensure_session_director(false)
 end
 
 function on_ensure_clicked(props, prop)
   ensure_server(false)
+  ensure_session_director(false)
   return true
 end
 
@@ -154,6 +173,9 @@ function guess_pack_root()
     local obs_dir = scripts_dir:gsub("[/\\][^/\\]+$", "")
     local root = obs_dir:gsub("[/\\][^/\\]+$", "")
     if file_exists(path_join(root, "tools\\ensure_config_server_silent.vbs")) then
+      return root
+    end
+    if file_exists(path_join(root, "tools\\ensure_session_director_silent.vbs")) then
       return root
     end
     if file_exists(path_join(root, "tools\\ensure_config_server.py")) then
@@ -231,6 +253,53 @@ function ensure_server(quiet)
     obs.LOG_WARNING,
     string.format(
       "PiGreco: avvio silenzioso fallito (%s). Usa Start-ConfigPanel.bat.",
+      tostring(info)
+    )
+  )
+end
+
+function ensure_session_director(quiet)
+  local root = pack_root_cached
+  if root == "" then
+    root = guess_pack_root() or ""
+    pack_root_cached = root
+  end
+  if root == "" then
+    if not quiet then
+      obs.script_log(
+        obs.LOG_WARNING,
+        "PiGreco Session Director: imposta «Cartella pack» nelle proprietà dello script"
+      )
+    end
+    return
+  end
+
+  local vbs = path_join(root, "tools\\ensure_session_director_silent.vbs")
+  if not file_exists(vbs) then
+    if not quiet then
+      obs.script_log(obs.LOG_ERROR, "PiGreco: file mancante " .. vbs)
+    end
+    return
+  end
+
+  local ok, info = shell_execute_hidden(
+    "wscript.exe",
+    '//nologo "' .. vbs .. '"'
+  )
+  if ok then
+    if not quiet then
+      obs.script_log(
+        obs.LOG_INFO,
+        "PiGreco Session Director + telemetry launch OK (ShellExecute hidden)"
+      )
+    end
+    return
+  end
+
+  obs.script_log(
+    obs.LOG_WARNING,
+    string.format(
+      "PiGreco: avvio Session Director fallito (%s). Usa Start-FlagDirector.bat.",
       tostring(info)
     )
   )

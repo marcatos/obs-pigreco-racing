@@ -21,8 +21,9 @@ Salva su **`config.values.json`** nel profilo overlay attivo e rigenera il rispe
    - **OBS Scripts (Lua):** nelle collezioni generate è cablato  
      `obs/scripts/pigreco_config_autostart.lua` — parte **una sola volta** all’apertura di OBS  
      (ShellExecute nascosto, niente timer / niente console nera).  
+     Avvia **config :8766** e **Session Director + telemetria :8765**.  
      Se in Scripts vedi ancora `pigreco_config_autostart.py`, **rimuovilo** (è disattivato).  
-   - **Windows Startup (opzionale):**  
+   - **Windows Startup (opzionale, solo config server):**  
      `powershell -File tools/install_config_autostart.ps1`  
      Per rimuoverlo: `powershell -File tools/install_config_autostart.ps1 -Remove`
 
