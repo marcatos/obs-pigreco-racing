@@ -1402,9 +1402,7 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
         # Creative Sync 1080p V2: MJPEG/YUY2 only — NV12 opens black
         video_format=DSHOW_FMT_MJPEG,
     )
-    cam_bd_face = cam_carbon_backdrop(
-        "Cam Backdrop Face", width=360, height=202, marcato=True
-    )
+    # Pedals keep carbon plate (no VB). Face PiP is transparent over gameplay via NVIDIA VB.
     cam_bd_pedals = cam_carbon_backdrop(
         "Cam Backdrop Pedals", width=320, height=180, marcato=True
     )
@@ -1568,22 +1566,14 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
         )
 
     # Keep name "Cam PIP" — Lua syncs eye → live-chrome ?cam=
+    # No carbon plate: NVIDIA VB makes StreamCam transparent over gameplay.
     scene_cam_pip = make_scene(
         "Cam PIP",
         [
             scene_item(
-                cam_bd_face["name"],
-                cam_bd_face["uuid"],
-                1,
-                pos=(cam_x, cam_y),
-                scale=(1.0, 1.0),
-                scale_ref=(cam_w, cam_h),
-                locked=True,
-            ),
-            scene_item(
                 cam["name"],
                 cam["uuid"],
-                2,
+                1,
                 pos=(cam_x, cam_y),
                 scale=(cam_scale, cam_scale),
                 scale_ref=cam_ref,
@@ -1591,7 +1581,7 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
             scene_item(
                 ov_cam_frame["name"],
                 ov_cam_frame["uuid"],
-                3,
+                2,
                 pos=(0.0, 0.0),
                 scale=(1.0, 1.0),
                 scale_ref=frame_ref,
@@ -1769,7 +1759,6 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
         cam,
         cam_head,
         cam_pedals,
-        cam_bd_face,
         cam_bd_pedals,
         game,
         ui_capture,
@@ -1910,12 +1899,9 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
         mixers=255,
         volume=0.9,
     )
-    # P1-04 dual cam + NVIDIA greenscreen (Quality+Chair) + carbon plate
+    # P1-04 dual cam: StreamCam uses NVIDIA VB (no carbon plate); Cam 2 keeps plate
     cam = streamcam_dshow()
     cam2 = dshow_cam("Cam 2", USBCAM_ID)
-    cam_bd_face = cam_carbon_backdrop(
-        "Cam Backdrop Face", width=360, height=202, marcato=True
-    )
     cam_bd_2 = cam_carbon_backdrop(
         "Cam Backdrop 2", width=320, height=180, marcato=True
     )
@@ -2127,28 +2113,19 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
             scale_ref=cam_ref,
         )
 
-    # Nested: carbon plate + NVIDIA greenscreen cam + frame
+    # Nested: NVIDIA VB StreamCam (transparent) + CAM frame — no carbon plate
     scene_cam_pip = make_scene(
         "Cam PIP",
         [
             scene_item(
-                cam_bd_face["name"],
-                cam_bd_face["uuid"],
-                1,
-                pos=(cam_x, cam_y),
-                scale=(1.0, 1.0),
-                scale_ref=(cam_w, cam_h),
-                locked=True,
-            ),
-            scene_item(
                 cam["name"],
                 cam["uuid"],
-                2,
+                1,
                 pos=(cam_x, cam_y),
                 scale=(cam_scale, cam_scale),
                 scale_ref=cam_ref,
             ),
-            fullscreen(ov_cam_frame["name"], ov_cam_frame["uuid"], 3, locked=True),
+            fullscreen(ov_cam_frame["name"], ov_cam_frame["uuid"], 2, locked=True),
         ],
     )
     scene_cam2_pip = make_scene(
@@ -2367,7 +2344,6 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
     sources = [
         cam,
         cam2,
-        cam_bd_face,
         cam_bd_2,
         mon_left,
         mon_center,
@@ -2553,9 +2529,6 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
         )
         cam = streamcam_dshow()
         cam2 = dshow_cam("Cam 2", USBCAM_ID)
-        cam_bd_face = cam_carbon_backdrop(
-            "Cam Backdrop Face", width=360, height=202, marcato=True
-        )
         cam_bd_2 = cam_carbon_backdrop(
             "Cam Backdrop 2", width=320, height=180, marcato=True
         )
@@ -2669,18 +2642,9 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
                 "Cam PIP",
                 [
                     scene_item(
-                        cam_bd_face["name"],
-                        cam_bd_face["uuid"],
-                        1,
-                        pos=(cam_x1080, cam_y1080),
-                        scale=(1.0, 1.0),
-                        scale_ref=(cam_w1080, cam_h1080),
-                        locked=True,
-                    ),
-                    scene_item(
                         cam["name"],
                         cam["uuid"],
-                        2,
+                        1,
                         pos=(cam_x1080, cam_y1080),
                         scale=(cam_w1080 / STREAMCAM_W, cam_w1080 / STREAMCAM_W),
                         scale_ref=(STREAMCAM_W, STREAMCAM_H),
@@ -2688,7 +2652,7 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
                     scene_item(
                         ov_cam_frame["name"],
                         ov_cam_frame["uuid"],
-                        3,
+                        2,
                         pos=(0.0, 0.0),
                         scale=(1.0, 1.0),
                         locked=True,
@@ -2914,7 +2878,6 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
         sources = [
             cam,
             cam2,
-            cam_bd_face,
             cam_bd_2,
             mon_center,
             game,

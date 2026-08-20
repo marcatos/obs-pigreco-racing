@@ -4,7 +4,7 @@
 
 | Source | Ruolo | Occhio OBS |
 |--------|--------|------------|
-| **Cam PIP** | Faccia (basso sinistra) = StreamCam + carbon + NVIDIA | on / off **da sola** |
+| **Cam PIP** | Faccia (basso sinistra) = StreamCam + NVIDIA VB (trasparente sul gameplay) + riquadro CAM | on / off **da sola** |
 | **Cam Pedals PIP** | Creative Live pedali (basso destra) + carbon, **senza** NVIDIA; crop zoom piedi/pedali | on / off **da sola** |
 | **Cam Head** | Logitech Brio 4K fullscreen | solo scena **Headcam** |
 
@@ -29,8 +29,7 @@ Non toccare StreamCam / Cam Pedals dentro le nested scene: usa solo gli occhi di
 ## Sfondo virtuale (solo faccia)
 
 Filtro **NVIDIA Background Removal** (mode **Quality**, *senza* Chair removal — tiene sedile/torso) su **StreamCam**, solo se è installato il redistributable **NVIDIA Video Effects**.
-
-Dietro: lastra carbon brand (`Cam Backdrop Face`).
+Niente lastra carbon dietro la faccia: il matte lascia vedere il gameplay.
 
 **Obbligatorio per il VB (RTX 4070 = Ada / 40 Series):**
 
