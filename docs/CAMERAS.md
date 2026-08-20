@@ -41,7 +41,7 @@ Dietro: lastra carbon brand (`Cam Backdrop Face`).
 
 Senza SDK il generatore **non** attacca il filtro (altrimenti è no-op e può rendere la PiP scattosa).
 
-StreamCam capture: **1280×720 @ 60 fps MJPEG** (abbastanza per il PiP 360p, più fluido di 1080p).
+StreamCam capture: **1280×720 @ 30 fps MJPEG** (scala sul PiP 360×202; NV Background Removal a interval 1).
 
 **Cam Pedals** e **Cam Head** sono senza NVIDIA (rig / headcam reali).
 

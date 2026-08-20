@@ -522,6 +522,11 @@ DSHOW_FMT_MJPEG = 400
 FPS_30_INTERVAL = 333333  # 10_000_000 / 30
 FPS_60_INTERVAL = 166667  # 10_000_000 / 60
 
+# Face PiP capture size (must match streamcam_dshow + Cam PIP scale_ref)
+STREAMCAM_W = 1280.0
+STREAMCAM_H = 720.0
+STREAMCAM_RESOLUTION = "1280x720"
+
 NVIDIA_VFX_URL = (
     "https://www.nvidia.com/en-us/geforce/broadcasting/broadcast-sdk/resources/"
 )
@@ -548,8 +553,8 @@ def nv_greenscreen_filter(
     name: str = "NVIDIA Background Removal",
     mode: int = NV_GS_MODE_QUALITY_CHAIR,
     threshold: float = 0.92,
-    # Every Nth frame — 1 is smoothest matte but often makes PiP choppy under load.
-    processing_interval: int = 2,
+    # Every Nth frame. At 30 fps input, interval=1 keeps the matte at full rate.
+    processing_interval: int = 1,
 ) -> dict:
     return {
         "prev_ver": PREV_VER,
@@ -616,8 +621,13 @@ def dshow_cam(
     )
 
 
+def streamcam_pip_scale(target_w: float) -> tuple[float, tuple[float, float]]:
+    """OBS scale + scale_ref so StreamCam fills ``target_w`` (16:9 PiP box)."""
+    return target_w / STREAMCAM_W, (STREAMCAM_W, STREAMCAM_H)
+
+
 def streamcam_dshow() -> dict:
-    """Face PiP: 720p60 MJPEG — smoother than 1080p under USB + NVIDIA VB load."""
+    """Face PiP: 720p30 MJPEG — correct PiP fill; 30 fps + NV interval 1 vs 60/2 chop."""
     has_vfx = nvidia_video_effects_installed()
     if not has_vfx:
         log.warning(
@@ -629,9 +639,9 @@ def streamcam_dshow() -> dict:
     return dshow_cam(
         "StreamCam",
         STREAMCAM_ID,
-        resolution="1280x720",
+        resolution=STREAMCAM_RESOLUTION,
         greenscreen=has_vfx,
-        frame_interval=FPS_60_INTERVAL,
+        frame_interval=FPS_30_INTERVAL,
         video_format=DSHOW_FMT_MJPEG,
     )
 
@@ -1067,14 +1077,13 @@ def build_collection(
 
     # Webcam 560×315 inside cam chrome (left 36, bottom 36 on 1920×1080)
     cam_w, cam_h = 560.0, 315.0
-    cam_scale = cam_w / 1920.0
+    cam_scale, cam_ref = streamcam_pip_scale(cam_w)
     cam_x, cam_y = 36.0, CANVAS_H - 36.0 - cam_h
-    cam_ref = (1920.0, 1080.0)
 
     # Smaller cam for interstitial scenes
     cam_sm_w = 280.0
-    cam_sm_scale = cam_sm_w / 1920.0
-    cam_sm_h = 1080.0 * cam_sm_scale
+    cam_sm_scale, _ = streamcam_pip_scale(cam_sm_w)
+    cam_sm_h = STREAMCAM_H * cam_sm_scale
     cam_sm_x = (CANVAS_W - cam_sm_w) / 2.0
     cam_sm_y = CANVAS_H - 56.0 - cam_sm_h
 
@@ -1512,9 +1521,11 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
         )
 
     cam_w, cam_h = 360.0, 202.0
-    cam_scale = cam_w / 1920.0
+    cam_scale, cam_ref = streamcam_pip_scale(cam_w)
     cam_x, cam_y = 36.0, CANVAS_H - 36.0 - cam_h
-    cam_ref = (1920.0, 1080.0)
+    # Full-canvas cam-frame.html is placed with canvas scale (CSS anchors the box).
+    frame_scale = cam_w / float(CANVAS_W)
+    frame_ref = (float(CANVAS_W), float(CANVAS_H))
     pedals_w, pedals_h = 320.0, 180.0
     pedals_scale = pedals_w / 1920.0
     # Digital zoom into feet/pedals (Creative has no UVC zoom). Crop on 1920x1080, keep 16:9.
@@ -1523,8 +1534,8 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
     pedals_scale_zoomed = pedals_w / pedals_crop_w
     pedals_x, pedals_y = CANVAS_W - 36.0 - pedals_w, CANVAS_H - 36.0 - pedals_h
     cam_sm_w = 280.0
-    cam_sm_scale = cam_sm_w / 1920.0
-    cam_sm_h = 1080.0 * cam_sm_scale
+    cam_sm_scale, _ = streamcam_pip_scale(cam_sm_w)
+    cam_sm_h = STREAMCAM_H * cam_sm_scale
     cam_sm_x = (CANVAS_W - cam_sm_w) / 2.0
     cam_sm_y = CANVAS_H - 56.0 - cam_sm_h
 
@@ -1572,9 +1583,9 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
                 ov_cam_frame["name"],
                 ov_cam_frame["uuid"],
                 3,
-                pos=(cam_x, cam_y),
-                scale=(cam_scale, cam_scale),
-                scale_ref=cam_ref,
+                pos=(0.0, 0.0),
+                scale=(1.0, 1.0),
+                scale_ref=frame_ref,
                 locked=True,
             ),
         ],
@@ -1597,16 +1608,16 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
                 2,
                 pos=(pedals_x, pedals_y),
                 scale=(pedals_scale_zoomed, pedals_scale_zoomed),
-                scale_ref=cam_ref,
+                scale_ref=(1920.0, 1080.0),
                 crop=pedals_crop,
             ),
             scene_item(
                 ov_cam_frame_pedals["name"],
                 ov_cam_frame_pedals["uuid"],
                 3,
-                pos=(pedals_x, pedals_y),
-                scale=(pedals_scale, pedals_scale),
-                scale_ref=cam_ref,
+                pos=(0.0, 0.0),
+                scale=(1.0, 1.0),
+                scale_ref=frame_ref,
                 locked=True,
             ),
         ],
@@ -2056,19 +2067,18 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
         ]
 
     cam_w, cam_h = 360.0, 202.0
-    cam_scale = cam_w / 1920.0
+    cam_scale, cam_ref = streamcam_pip_scale(cam_w)
     cam_x, cam_y = 36.0, CANVAS_H - 36.0 - cam_h
-    cam_ref = (1920.0, 1080.0)
     cam2_w, cam2_h = 320.0, 180.0
     cam2_scale = cam2_w / 1920.0
     cam2_x, cam2_y = CANVAS_W - 36.0 - cam2_w, CANVAS_H - 36.0 - cam2_h
     cam_sm_w = 280.0
-    cam_sm_scale = cam_sm_w / 1920.0
-    cam_sm_h = 1080.0 * cam_sm_scale
+    cam_sm_scale, _ = streamcam_pip_scale(cam_sm_w)
+    cam_sm_h = STREAMCAM_H * cam_sm_scale
     cam_sm_x = (CANVAS_W - cam_sm_w) / 2.0
     cam_sm_y = CANVAS_H - 56.0 - cam_sm_h
     cam_triple_x, cam_triple_y = triple_cam_pos()
-    cam_triple_scale = _TRIPLE_CAM_W / 1920.0
+    cam_triple_scale = _TRIPLE_CAM_W / STREAMCAM_W
 
     def fullscreen(
         name: str,
@@ -2663,8 +2673,8 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
                         cam["uuid"],
                         2,
                         pos=(cam_x1080, cam_y1080),
-                        scale=(cam_w1080 / 1920.0, cam_w1080 / 1920.0),
-                        scale_ref=(1920.0, 1080.0),
+                        scale=(cam_w1080 / STREAMCAM_W, cam_w1080 / STREAMCAM_W),
+                        scale_ref=(STREAMCAM_W, STREAMCAM_H),
                     ),
                     scene_item(
                         ov_cam_frame["name"],
