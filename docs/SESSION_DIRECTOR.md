@@ -96,6 +96,7 @@ python -m pytest tests/test_flag_director.py -v
 
 ## Verification checklist
 
+- [ ] No flashing cmd/PowerShell windows while Session Director runs (tasklist/netstat are hidden)
 - [ ] WebSocket enabled → VirtualDeck lists slim scenes
 - [ ] iRacing closed → no spurious cuts while on Starting Soon
 - [ ] iRacing UI only → Lobby + music within debounce
