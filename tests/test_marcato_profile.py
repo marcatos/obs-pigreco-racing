@@ -221,8 +221,9 @@ def test_marcato_replay_collection():
 
     if nvidia_video_effects_installed():
         assert nv_filters, "expected NVIDIA Background Removal when Video Effects SDK is installed"
-        assert nv_filters[0].get("settings", {}).get("mode") == 2
+        assert nv_filters[0].get("settings", {}).get("mode") == 0
         assert nv_filters[0].get("settings", {}).get("processing_interval") == 1
+        assert abs(float(nv_filters[0].get("settings", {}).get("threshold")) - 0.85) < 1e-6
     else:
         assert not nv_filters, "no NVIDIA filter when Video Effects SDK is missing"
 
