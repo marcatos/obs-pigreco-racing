@@ -206,9 +206,9 @@ Sparse frames emitted on the **WebSocket** after the tick that produced them (ti
 | `kind` | Trigger | Typical `payload` |
 |--------|---------|-------------------|
 | `flag_change` | `flag` differs from previous tick | `{ "flag": "yellow", "prev": "green" }` |
-| `battle` | gap ahead or behind within sensitivity threshold for N ticks | `{ "gapMs": 800, "withCarNumber": "7" }` |
-| `overtake` | focus `position` improves | `{ "fromPos": 5, "toPos": 4 }` |
-| `fast_lap` | focus `lastLapMs` ≤ `bestLapMs` on a completed lap | `{ "lapMs": 90123 }` |
+| `battle` | gap ahead or behind within sensitivity threshold for N ticks (muted near S/F) | `{ "gapMs": 800, "withCarNumber": "7" }` |
+| `overtake` | focus `position` improves and holds for 3 ticks (muted near S/F) | `{ "fromPos": 5, "toPos": 4 }` |
+| `fast_lap` | focus `lastLapMs` changes and beats previous `bestLapMs` (new PB) | `{ "lapMs": 90123 }` |
 | `pit` | focus enters or leaves pit | `{ "state": "enter" \| "exit" }` |
 | `session_end` | checkered or white flag | `{ "flag": "checkered" }` |
 

@@ -51,15 +51,32 @@
   opacity: 0.45;
 }
 
-/* Session strip — top center */
-.bc-session {
+/* Session + race-best — top center row (gap scales with session width) */
+.bc-top-center {
   position: absolute;
   top: 56px;
   left: 50%;
   transform: translateX(-50%);
+  z-index: 12;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 0.7rem;
+  max-width: min(94vw, 1180px);
+  pointer-events: none;
+}
+
+/* Session strip — track / laps / remain */
+.bc-session {
+  position: relative;
+  top: auto;
+  left: auto;
+  transform: none;
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
+  flex: 0 1 auto;
+  min-width: 0;
   padding: 0.35rem 0.9rem;
   background: color-mix(in srgb, var(--panel, #111) 88%, transparent);
   border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
@@ -93,15 +110,16 @@
   background: #009fe5;
 }
 
-/* Race / session best lap — right of session strip */
+/* Race / session best lap — immediately right of session strip */
 .bc-best {
-  position: absolute;
-  top: 56px;
-  left: calc(50% + 10.5rem);
+  position: relative;
+  top: auto;
+  left: auto;
   z-index: 12;
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
+  flex: 0 0 auto;
   min-width: 9.5rem;
   padding: 0.35rem 0.7rem 0.45rem;
   background: color-mix(in srgb, var(--panel, #111) 92%, transparent);
@@ -723,14 +741,16 @@
 
 .bc-fight-sep {
   display: flex;
-  flex: 0 0 3.5rem;
+  flex-direction: column;
+  flex: 0 0 3.75rem;
   align-items: center;
   justify-content: center;
   align-self: center;
   box-sizing: border-box;
-  width: 3.5rem;
-  min-width: 3.5rem;
-  max-width: 3.5rem;
+  width: 3.75rem;
+  min-width: 3.75rem;
+  max-width: 3.75rem;
+  gap: 0.12rem;
   padding: 0;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1;
@@ -739,18 +759,25 @@
   color: var(--text, #f7fafc);
 }
 
-.bc-fight-sep span {
+.bc-fight-side-tag {
+  display: block;
+  line-height: 1;
+  color: #f5d90a;
+  letter-spacing: 0.08em;
+  font-size: 0.55rem;
+  font-weight: 800;
+}
+
+.bc-fight-gap {
   display: block;
   width: 100%;
-  padding: 0.15rem 0;
+  padding: 0.1rem 0;
   text-align: center;
+  line-height: 1.1;
   border-bottom: 1px solid color-mix(in srgb, var(--line, #fff) 55%, transparent);
 }
 
-.bc-fight-sep.is-side span {
-  color: #f5d90a;
-  letter-spacing: 0.08em;
-  font-size: 0.62rem;
+.bc-fight-sep.is-side .bc-fight-gap {
   border-bottom-color: color-mix(in srgb, #f5d90a 50%, transparent);
 }
 
@@ -1133,7 +1160,7 @@
   animation: bcLiveIn 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.06s both;
 }
 
-.broadcast-root[data-state="live"] .bc-session {
+.broadcast-root[data-state="live"] .bc-top-center {
   animation: bcSessionIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 

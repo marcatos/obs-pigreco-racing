@@ -11,7 +11,7 @@
 | Scena | Video | Cam di default |
 |-------|--------|----------------|
 | **Live** | Game Capture iRacing | Face ON + Pedals ON |
-| **Headcam** | Brio fullscreen (niente Game Capture / Monitor) | Pedals ON; audio Desktop + mic come Live |
+| **Headcam** | Brio fullscreen (niente Game Capture / Monitor) | Pedals ON; telecronaca come Live; audio Desktop + mic |
 
 USB Camera (Windows Hello / lavoro) **non** è nel pack Live.
 
@@ -28,12 +28,24 @@ Non toccare StreamCam / Cam Pedals dentro le nested scene: usa solo gli occhi di
 
 ## Sfondo virtuale (solo faccia)
 
-Filtro **NVIDIA Background Removal** in mode **Quality + Chair** su **StreamCam**.
+Filtro **NVIDIA Background Removal** (mode **Quality + Chair**) su **StreamCam**, solo se è installato il redistributable **NVIDIA Video Effects**.
+
 Dietro: lastra carbon brand (`Cam Backdrop Face`).
+
+**Obbligatorio per il VB (RTX 4070 = Ada / 40 Series):**
+
+1. Scarica **Video Effects** per **RTX 40 Series** da  
+   https://www.nvidia.com/en-us/geforce/broadcasting/broadcast-sdk/resources/
+2. Installa, riavvia OBS.
+3. Rigenera il pack: `python tools/generate_pack.py --profile marcato`
+
+Senza SDK il generatore **non** attacca il filtro (altrimenti è no-op e può rendere la PiP scattosa).
+
+StreamCam capture: **1280×720 @ 60 fps MJPEG** (abbastanza per il PiP 360p, più fluido di 1080p).
 
 **Cam Pedals** e **Cam Head** sono senza NVIDIA (rig / headcam reali).
 
-Serve OBS con `nv-filters` e **NVIDIA Video Effects / Broadcast** installati (per la faccia).
+Serve OBS con `nv-filters` (incluso in OBS recenti) + Video Effects installato.
 
 ## Replay / Rec (legacy dual cam)
 

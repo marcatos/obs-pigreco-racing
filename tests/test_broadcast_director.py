@@ -67,6 +67,22 @@ def test_broadcast_js_handles_telemetry_event():
     assert 'msg.type === "telemetry.event"' in js
     assert "enqueueEvent" in js
     assert 'broadcastDirector || "auto"' in js
+    assert "focusNearStartFinish" in js
+    assert "SF_MUTE_LO" in js
+    assert "SF_MUTE_HI" in js
+
+
+def test_fight_sep_shows_realtime_gap_with_side_tag():
+    js = (ROOT / "overlays" / "broadcast.js").read_text(encoding="utf-8")
+    css = (ROOT / "overlays" / "assets" / "broadcast.css").read_text(encoding="utf-8")
+    assert "bc-fight-side-tag" in js
+    assert "bc-fight-gap" in js
+    assert "toFixed(3)" in js
+    assert "Math.round(abs / 50)" not in js
+    assert ".bc-fight-side-tag" in css
+    assert ".bc-fight-gap" in css
+    # SIDE must not replace gap text
+    assert 'text: "SIDE"' not in js.replace("bc-fight-side-tag", "")
 
 
 def test_director_queue_and_labels_via_node():

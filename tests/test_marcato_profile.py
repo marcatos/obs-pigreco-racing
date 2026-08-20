@@ -211,8 +211,20 @@ def test_marcato_replay_collection():
         "Overlay Cam 2 Frame",
     ]
     stream = next(s for s in data["sources"] if s.get("name") == "StreamCam")
-    assert any(f.get("id") == "nv_greenscreen_filter" for f in (stream.get("filters") or []))
-    assert (stream.get("filters") or [])[0].get("settings", {}).get("mode") == 2
+    assert stream["settings"]["resolution"] == "1280x720"
+    assert stream["settings"]["frame_interval"] == 166667
+    assert stream["settings"]["video_format"] == 400  # MJPEG
+    assert stream["settings"].get("buffering") is False
+    nv_filters = [f for f in (stream.get("filters") or []) if f.get("id") == "nv_greenscreen_filter"]
+    # Greenscreen only when NVIDIA Video Effects redistributable is present on the build PC
+    from generate_pack import nvidia_video_effects_installed
+
+    if nvidia_video_effects_installed():
+        assert nv_filters, "expected NVIDIA Background Removal when Video Effects SDK is installed"
+        assert nv_filters[0].get("settings", {}).get("mode") == 2
+        assert nv_filters[0].get("settings", {}).get("processing_interval") == 2
+    else:
+        assert not nv_filters, "no NVIDIA filter when Video Effects SDK is missing"
     for scene_name in ("Replay iRacing", "Replay Monitor", "Rec Singolo Live"):
         scene = next(s for s in data["sources"] if s.get("name") == scene_name)
         names = [it.get("name") for it in scene.get("settings", {}).get("items", [])]
@@ -267,6 +279,15 @@ def test_marcato_live_headcam_and_pedals():
     assert "Cam 2" not in source_names
     assert "Monitor Centro" not in source_names
 
+    ui = next(s for s in data["sources"] if s.get("name") == "iRacing UI Capture")
+    assert ui["id"] == "window_capture"
+    assert ui["settings"].get("method") == 2
+    assert "iRacingUI.exe" in ui["settings"].get("window", "")
+
+    lobby = next(s for s in data["sources"] if s.get("name") == "Lobby")
+    lobby_items = [it.get("name") for it in lobby["settings"]["items"]]
+    assert lobby_items[0] == "iRacing UI Capture"
+
     live = next(s for s in data["sources"] if s.get("name") == "Live")
     live_items = [it.get("name") for it in live["settings"]["items"]]
     assert live_items[0] == "Game Capture"
@@ -281,10 +302,18 @@ def test_marcato_live_headcam_and_pedals():
     assert head_items == [
         "Cam Head",
         "Overlay Live Chrome",
+        "Overlay Broadcast Chrome",
+        "Overlay Track Map",
         "Cam Pedals PIP",
         "Microfono",
     ]
     assert "Game Capture" not in head_items
+    bc_head = next(
+        it for it in head["settings"]["items"] if it["name"] == "Overlay Broadcast Chrome"
+    )
+    assert bc_head.get("visible") is True
+    tm_head = next(it for it in head["settings"]["items"] if it["name"] == "Overlay Track Map")
+    assert tm_head.get("visible") is False
 
     cam_head = next(s for s in data["sources"] if s.get("name") == "Cam Head")
     assert "vid_046d" in cam_head["settings"]["video_device_id"].lower()

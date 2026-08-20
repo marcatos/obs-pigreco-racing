@@ -33,15 +33,17 @@ Dopo aver modificato `overlays-marcato/config.values.json` a mano, salva dal **p
 3. Scegli `obs\S_Marcato_42.json` dalla cartella del repo.
 4. Se la collezione è già importata: **Scene Collection → S.Marcato 42**.
 
-Scene previste (**live slim**): Starting Soon, **Live**, **Lobby**, BRB, Ending — overlay da `overlays-marcato/`, canvas **1920×1080**. Bandiere = **Overlay Flag FX** sulla scena Live (animazioni trasparenti sopra gameplay + telecronaca), non pannelli full-screen.
+Scene previste (**live slim**): Starting Soon, **Live**, **Headcam**, Lobby, BRB, Ending — overlay da `overlays-marcato/`, canvas **1920×1080**. Bandiere = **Overlay Flag FX** sulla scena Live (animazioni trasparenti sopra gameplay + telecronaca), non pannelli full-screen.
 
 | Scena | Uso |
 |-------|-----|
 | Starting Soon | Countdown / pre-show + musica |
-| **Live** | Monitor **centro** + live chrome + **telecronaca** (Broadcast Chrome) + cam — anche in triplo schermo |
-| **Lobby** | Capture **iRacing UI** + musica (sim aperto, niente telemetria) |
+| **Live** | **Game Capture** iRacing + live chrome + telecronaca + **Cam PIP** (StreamCam) + **Cam Pedals PIP** (Creative) |
+| **Headcam** | **Brio** fullscreen + pedali ON + live chrome + telecronaca; audio Desktop + mic (niente Game Capture) |
+| **Lobby** | **Window Capture** iRacing UI (Chromium — not Game Capture) + musica (sim aperto, niente telemetria) |
 | BRB / Ending | Pausa e chiusura + musica |
-| Flag * | Tagli bandiera (Session Director) |
+
+Camere: vedi [`CAMERAS.md`](CAMERAS.md). USB Camera (lavoro) non è in questa collezione.
 
 Registrazione clean / replay: collezioni **S.Marcato Replay** e **S.Marcato Rec 2K** (non più scene Rec* in questa collezione live).
 
@@ -64,18 +66,19 @@ Generata insieme al pack Marcato: `obs/S_Marcato_Replay.json`. Solo scene **Repl
 
 Guida breve: [`replays/LEGGIMI.txt`](../replays/LEGGIMI.txt). Replay di stasera tipicamente in `%USERPROFILE%\Documents\iRacing\replay\` (es. `subses87837780.rpy`).
 
-**Audio:** sulle scene interstiziali (Starting Soon / **Lobby** / BRB / Ending) usa loop **Pixabay** royalty-free in `audio/interstitials/` (vedi `README.md` + `Open-Pixabay-Music.bat`). Il **microfono** è attivo solo sulla scena **Live** (non su Start / Lobby / BRB / Ending). Su Live non c’è bed musicale (Desktop + mic). Volume: Mixer → `Music …` / `Microfono`.
+**Audio:** sulle scene interstiziali (Starting Soon / **Lobby** / BRB / Ending) usa loop **Pixabay** royalty-free in `audio/interstitials/` (vedi `README.md` + `Open-Pixabay-Music.bat`). Il **microfono** è attivo su **Live** e **Headcam** (non su Start / Lobby / BRB / Ending). Su Live/Headcam non c’è bed musicale (Desktop + mic — audio gioco anche in Headcam). Volume: Mixer → `Music …` / `Microfono`.
 
 `python tools/generate_pack.py --profile marcato` **installa automaticamente** le collezioni in `%APPDATA%\obs-studio\basic\scenes\` (chiude/riapre OBS se era aperto).
 
 **Mic:** il generator prova a risolvere Focusrite / 2i2; override con env `MARCATO_MIC_ID` o file gitignored `obs/mic.device.json`.
 
-**Transizioni:** default **Dissolvenza 900 ms** (full mix crossfade). Override **→ Live** / **→ Ending**: **S.Marcato Stinger** + whoosh. Move resta opzionale. Dettagli: [`TRANSITIONS.md`](TRANSITIONS.md).
+**Transizioni:** default **Dissolvenza 900 ms** (full mix crossfade). Override **→ Live** / **→ Headcam** / **→ Ending**: **S.Marcato Stinger** + whoosh. Move resta opzionale. Dettagli: [`TRANSITIONS.md`](TRANSITIONS.md).
 
 Verifica audio (stream/registrazione):
 
 - [ ] Starting Soon → Lobby: Dissolvenza; bed A out, bed B in (no click).
 - [ ] Lobby → Live: Stinger + whoosh; Lobby bed out; Desktop + mic in.
+- [ ] Live → Headcam: Stinger; Desktop + mic restano; pedali ON.
 - [ ] Live → BRB: Dissolvenza; Desktop/mic out; BRB bed in.
 - [ ] BRB → Ending: Stinger + whoosh; Ending bed in.
 

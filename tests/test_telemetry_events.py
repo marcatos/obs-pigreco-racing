@@ -47,11 +47,53 @@ def test_battle_requires_streak():
     assert any(e["kind"] == "battle" for e in ev)
 
 
-def test_overtake_on_position_improve():
+def test_overtake_requires_held_position():
     d = EventDetector()
-    d.feed(_tick(position=5, ts=20))
-    ev = d.feed(_tick(position=4, ts=21))
+    d.feed(_tick(position=5, ts=20, standings=[{"isFocus": True, "distPct": 0.5}]))
+    # Single-tick blip must not fire
+    assert not any(
+        e["kind"] == "overtake"
+        for e in d.feed(_tick(position=4, ts=21, standings=[{"isFocus": True, "distPct": 0.5}]))
+    )
+    assert not any(
+        e["kind"] == "overtake"
+        for e in d.feed(_tick(position=5, ts=22, standings=[{"isFocus": True, "distPct": 0.5}]))
+    )
+    # Sustained improve: 5 → 4 held for 3 ticks
+    d.feed(_tick(position=5, ts=30, standings=[{"isFocus": True, "distPct": 0.5}]))
+    assert not any(
+        e["kind"] == "overtake"
+        for e in d.feed(_tick(position=4, ts=31, standings=[{"isFocus": True, "distPct": 0.5}]))
+    )
+    assert not any(
+        e["kind"] == "overtake"
+        for e in d.feed(_tick(position=4, ts=32, standings=[{"isFocus": True, "distPct": 0.5}]))
+    )
+    ev = d.feed(_tick(position=4, ts=33, standings=[{"isFocus": True, "distPct": 0.5}]))
     assert any(e["kind"] == "overtake" and e["payload"]["fromPos"] == 5 for e in ev)
+
+
+def test_overtake_muted_near_start_finish():
+    d = EventDetector()
+    d.feed(_tick(position=5, ts=40, standings=[{"isFocus": True, "distPct": 0.99}]))
+    for t in range(3):
+        ev = d.feed(
+            _tick(position=4, ts=41 + t, standings=[{"isFocus": True, "distPct": 0.99}])
+        )
+        assert not any(e["kind"] == "overtake" for e in ev)
+
+
+def test_battle_muted_near_start_finish():
+    d = EventDetector(sensitivity="hype")  # battle_ticks=3
+    for t in range(5):
+        ev = d.feed(
+            _tick(
+                gapAheadMs=400,
+                ts=50 + t,
+                standings=[{"isFocus": True, "distPct": 0.01}],
+            )
+        )
+        assert not any(e["kind"] == "battle" for e in ev)
 
 
 def test_fast_lap_when_last_le_best():
@@ -59,6 +101,14 @@ def test_fast_lap_when_last_le_best():
     d.feed(_tick(lastLapMs=91000, bestLapMs=90000, ts=30))
     ev = d.feed(_tick(lastLapMs=89900, bestLapMs=89900, ts=31))
     assert any(e["kind"] == "fast_lap" for e in ev)
+
+
+def test_fast_lap_ignores_align_without_new_pb():
+    """last catching best without beating previous best must not fire FASTEST."""
+    d = EventDetector()
+    d.feed(_tick(lastLapMs=91000, bestLapMs=90000, ts=30))
+    ev = d.feed(_tick(lastLapMs=90000, bestLapMs=90000, ts=31))
+    assert not any(e["kind"] == "fast_lap" for e in ev)
 
 
 def test_debounce_suppresses_repeat_battle():
@@ -137,17 +187,24 @@ def test_mock_and_bridge_accept_sensitivity_flag():
 
 def test_reset_clears_stale_prev_no_spurious_events():
     d = EventDetector(sensitivity="hype")
-    d.feed(_tick(flag="green", position=5, ts=1))
-    ev = d.feed(_tick(flag="yellow", position=4, ts=2))
+    d.feed(_tick(flag="green", position=5, ts=1, standings=[{"isFocus": True, "distPct": 0.5}]))
+    ev = d.feed(
+        _tick(flag="yellow", position=4, ts=2, standings=[{"isFocus": True, "distPct": 0.5}])
+    )
     assert any(e["kind"] == "flag_change" for e in ev)
-    assert any(e["kind"] == "overtake" for e in ev)
+    # Overtake needs held confirm — not on first improve tick
+    assert not any(e["kind"] == "overtake" for e in ev)
     d.reset()
     assert d._sens_name == "hype"
     # Same flag/pos as last tick must not fire from leftover _prev
-    assert d.feed(_tick(flag="yellow", position=4, ts=100)) == []
-    ev2 = d.feed(_tick(flag="green", position=3, ts=101))
+    assert d.feed(
+        _tick(flag="yellow", position=4, ts=100, standings=[{"isFocus": True, "distPct": 0.5}])
+    ) == []
+    ev2 = d.feed(
+        _tick(flag="green", position=3, ts=101, standings=[{"isFocus": True, "distPct": 0.5}])
+    )
     assert any(e["kind"] == "flag_change" for e in ev2)
-    assert any(e["kind"] == "overtake" for e in ev2)
+    assert not any(e["kind"] == "overtake" for e in ev2)
 
 
 def test_reset_clears_battle_streak_and_debounce():

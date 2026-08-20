@@ -1,100 +1,52 @@
-# Task 3 Report — Live/Ending overrides + quick transitions + bed fade settings
+# Task 3 report — Gate fight panel in broadcast.js
 
-**Branch:** `feat/audio-scene-transitions`  
-**Date:** 2026-08-14  
-**Status:** ✅ Complete
+**Status:** done  
+**Branch:** `feat/p3-12-cam-flag-battle`  
+**Roadmap:** P3-12 (left `in_progress`; flag strip + ROADMAP close are later tasks)  
+**Commit:** `fcde2e9` `feat(broadcast): gate battle panel on battleEligible / session`  
+**Pushed:** no
 
-## Summary
+## What shipped
 
-Wired per-scene stinger transition overrides on Marcato Live and Ending scenes, replaced the Marcato live quick-transition dock with Dissolvenza / Stinger / Taglio, and set interstitial bed `ffmpeg_source` settings to keep decoders warm through scene fades.
+- Helper `battleEligibleFromTick(tick)` at the top of the battle section in `overlays/broadcast.js`.
+- `updateFightPanel` now returns before gap/arm logic when ineligible: if the panel was on, it hides and logs; if off, it only clears `battleStreak`.
+- `docs/TELEMETRY_BROADCAST.md` documents the session rule under the battle-panel config bullets.
 
-## Changes
+### Eligibility (client)
 
-### `tools/generate_pack.py`
+| Input | Result |
+|-------|--------|
+| `tick.battleEligible` is a boolean | that value (bridge / Task 2 wins) |
+| missing bool + `session` quali / cooldown / unknown / empty | `false` |
+| missing bool + `session` race | `true` iff `lap` is finite and `>= 1` |
+| missing bool + `session` practice | `true` iff `tick.standings.length >= 2` |
+| missing / null tick, or other session | `false` |
 
-#### 1. Live + Ending stinger overrides (`build_marcato_live_collection`)
+After Task 2 the bool is always on the tick; the session/lap/standings path is legacy-only.
 
-After `scene_live` and `scene_end` are built:
+## Files
 
-```python
-apply_scene_transition_override(
-    scene_live, transition_name="S.Marcato Stinger", duration_ms=850
-)
-apply_scene_transition_override(
-    scene_end, transition_name="S.Marcato Stinger", duration_ms=850
-)
-```
+| Path | Change |
+|------|--------|
+| `overlays/broadcast.js` | helper + gate at start of `updateFightPanel` |
+| `docs/TELEMETRY_BROADCAST.md` | battle pack eligibility bullet |
 
-Each scene’s `private_settings` now carries `transition: "S.Marcato Stinger"` and `transition_duration: 850`.
+## Tests
 
-#### 2. Quick transitions dock
+- No JS unit tests for `broadcast.js` fight-panel logic (N/A).
+- Isolated Node copy of the helper: 11/11 matrix cases OK (bool true/false, race lap 0/1, practice solo/2, quali, cooldown, unknown, empty session, null tick).
+- `node --check overlays/broadcast.js` → OK.
+- `python -m pytest tests/test_broadcast_director.py -q` → 8 passed, **1 failed** (`test_overlay_runtime_director_policies_via_node`): harness `ReferenceError: location is not defined` in pre-existing `flagAssetBase()`. Same `location.pathname` exists on HEAD; not introduced by this gate. Not fixed (out of scope).
 
-Replaced the old 5-entry dock (Taglio, current_tr, Swipe Racing, Flash Carbon, Dissolvenza 350) with:
+## Constraints / notes
 
-| id | name | duration |
-|----|------|----------|
-| 1 | Dissolvenza | `tr_dur` (900 ms Marcato default) |
-| 2 | S.Marcato Stinger | 850 ms *(only if transition exists)* |
-| 3 | Taglio | 0 ms |
+- Overlay stays an IIFE in `broadcast.js` (existing pack). No new hexagonal tree.
+- Logging uses existing `directorLog` (INFO when an active panel is forced off).
+- Did not touch flag strip, director `battle` hero chips, `generate_pack.py`, or ROADMAP status.
+- Marcato chrome already loads shared `overlays/broadcast.js`.
 
-If `S.Marcato Stinger` is absent from `transitions`, id 2 is omitted and Taglio is renumbered to id 2.
+## Concerns
 
-#### 3. Fade-friendly interstitial beds
-
-**Marcato live** `music()` helper:
-
-- `close_when_inactive`: `False` (was `True`)
-- `restart_on_activate`: `True` (unchanged)
-
-**Replay** `music()` helper (same pattern):
-
-- `close_when_inactive`: `False` (was `True`)
-- `restart_on_activate`: `True` (unchanged)
-
-Rationale: keeps ffmpeg decoders warm through 850–900 ms dissolves/stingers so bed audio does not cut abruptly when scenes deactivate.
-
-### `tests/test_pack_transitions.py`
-
-Added `test_override_helper_idempotent` — calls `apply_scene_transition_override` twice on the same scene and asserts stable `private_settings`.
-
-Existing tests retained:
-
-- `test_marcato_default_is_dissolvenza_900`
-- `test_apply_scene_transition_override_sets_private_settings`
-
-## Test results
-
-```
-python -m pytest tests/test_pack_transitions.py -v
-```
-
-```
-tests/test_pack_transitions.py::test_marcato_default_is_dissolvenza_900 PASSED
-tests/test_pack_transitions.py::test_apply_scene_transition_override_sets_private_settings PASSED
-tests/test_pack_transitions.py::test_override_helper_idempotent PASSED
-
-3 passed in 0.05s
-```
-
-## Commit
-
-```
-feat(obs): stinger overrides on Live/Ending and fade-friendly beds
-```
-
-Staged files only:
-
-- `tools/generate_pack.py`
-- `tests/test_pack_transitions.py`
-
-## Out of scope (deferred)
-
-- **Task 4:** Regenerate `obs/S_Marcato_42.json` (and siblings) — JSON on disk still reflects pre-Task-3 quick_transitions until regen.
-- **Task 5:** `TRANSITIONS.md` documentation update.
-- Full-collection integration test for Live/Ending overrides (brief recommends helper-level test only; monitor/mic side effects avoided).
-
-## Notes / concerns
-
-1. **JSON drift:** Until Task 4 runs `generate_pack.py`, committed OBS JSON files may not match generator output. Expected per task split.
-2. **CPU cost:** `close_when_inactive: False` keeps up to 4 loop decoders resident on Marcato live; brief accepts this tradeoff for smoother fades.
-3. **Stinger conditional:** Quick dock omits Stinger entry only if `build_transitions(profile="marcato")` ever drops it; current Marcato profile always includes it.
+1. Director `telemetry.event` `battle` chips are **not** gated here (brief: only `updateFightPanel`). A quali/formation fight chip could still play if the producer emits `battle`.
+2. Fallback practice check uses `tick.standings.length >= 2`, not “≥1 other car vs focus”. Harmless after Task 2 (bool always present).
+3. Pre-existing overlay runtime harness crash (`location` missing) — Task 7 review lock, unrelated to this change.

@@ -176,8 +176,6 @@
   let fightDispSeps = null;
   let fightDispSide = null;
   let fightDispAt = 0;
-  const FIGHT_GAP_REFRESH_MS = 400;
-  const FIGHT_GAP_EPSILON_MS = 55;
   let tickerRowsCache = null;
   let tickerPhase = "idle"; // idle | rise | expand | show | collapse | drop
   let tickerTimer = null;
@@ -430,22 +428,22 @@
   function fmtFightGap(ms) {
     if (ms == null || !Number.isFinite(Number(ms))) return { text: "—", side: false };
     const abs = Math.abs(Number(ms));
-    if (abs < 60) return { text: "SIDE", side: true };
-    return { text: (abs / 1000).toFixed(2) + "s", side: false };
+    return { text: (abs / 1000).toFixed(3) + "s", side: abs < 60 };
   }
 
-  /** SIDE hysteresis + 0.05s quantize so labels don't chatter. */
+  /** SIDE hysteresis only — gap text stays live (no 50ms quantize). */
+  function fightGapIsSide(ms, wasSide) {
+    if (ms == null || !Number.isFinite(Number(ms))) return false;
+    var abs = Math.abs(Number(ms));
+    if (wasSide) return abs < 110;
+    return abs < 60;
+  }
+
   function fmtFightGapStable(ms, wasSide) {
     if (ms == null || !Number.isFinite(Number(ms))) return { text: "—", side: false };
     var abs = Math.abs(Number(ms));
-    if (wasSide) {
-      if (abs < 110) return { text: "SIDE", side: true };
-    } else if (abs < 60) {
-      return { text: "SIDE", side: true };
-    }
-    var q = Math.round(abs / 50) * 50;
-    if (q < 100) q = 100;
-    return { text: (q / 1000).toFixed(2) + "s", side: false };
+    var side = fightGapIsSide(ms, wasSide);
+    return { text: (abs / 1000).toFixed(3) + "s", side: side };
   }
 
   function fightOrdersEqual(a, b) {
@@ -457,45 +455,29 @@
     return true;
   }
 
-  function stabilizeFightSeps(rawSeps, structureChanged) {
-    var now = Date.now();
+  function stabilizeFightSeps(rawSeps, _structureChanged) {
+    // Live ms every paint; only SIDE boolean is sticky (hysteresis).
     var next = rawSeps.slice();
-    if (
-      !structureChanged &&
-      fightDispSeps &&
-      fightDispSeps.length === next.length &&
-      now - fightDispAt < FIGHT_GAP_REFRESH_MS
-    ) {
-      return fightDispSeps;
-    }
-    if (!structureChanged && fightDispSeps && fightDispSeps.length === next.length) {
-      var moved = false;
-      var i;
-      for (i = 0; i < next.length; i++) {
-        var prev = fightDispSeps[i];
-        var cur = next[i];
-        var prevSide = !!(fightDispSide && fightDispSide[i]);
-        var nextFmt = fmtFightGapStable(cur, prevSide);
-        var prevFmt = fmtFightGapStable(prev, prevSide);
-        if (nextFmt.side !== prevFmt.side || nextFmt.text !== prevFmt.text) {
-          if (Math.abs(cur - prev) >= FIGHT_GAP_EPSILON_MS || nextFmt.side !== prevFmt.side) {
-            moved = true;
-          } else {
-            next[i] = prev;
-          }
-        } else {
-          next[i] = prev;
-        }
-      }
-      if (!moved) return fightDispSeps;
-    }
-    fightDispSeps = next;
     fightDispSide = next.map(function (ms, idx) {
       var was = !!(fightDispSide && fightDispSide[idx]);
-      return fmtFightGapStable(ms, was).side;
+      return fightGapIsSide(ms, was);
     });
-    fightDispAt = now;
+    fightDispSeps = next;
+    fightDispAt = Date.now();
     return fightDispSeps;
+  }
+
+  function fightSepHtml(ms, wasSide) {
+    var sep = fmtFightGapStable(ms, wasSide);
+    return (
+      '<div class="bc-fight-sep' +
+      (sep.side ? " is-side" : "") +
+      '">' +
+      (sep.side ? '<span class="bc-fight-side-tag">SIDE</span>' : "") +
+      '<span class="bc-fight-gap">' +
+      sep.text +
+      "</span></div>"
+    );
   }
 
   var HELMET_SVG =
@@ -552,6 +534,22 @@
       return rows.length >= 2;
     }
     return false;
+  }
+
+  /** LapDistPct corridor where estimated gaps thrash at S/F (matches domain_events). */
+  var SF_MUTE_LO = 0.04;
+  var SF_MUTE_HI = 0.96;
+
+  function focusNearStartFinish(tick, standings) {
+    var d = tick && tick.focusDistPct;
+    if (d == null || !Number.isFinite(Number(d))) {
+      var i = findFocusStandingIndex(standings || [], tick && tick.focusCarIdx);
+      if (i >= 0) d = standings[i].distPct;
+    }
+    if (d == null || !Number.isFinite(Number(d))) return false;
+    d = Number(d) % 1;
+    if (d < 0) d += 1;
+    return d < SF_MUTE_LO || d > SF_MUTE_HI;
   }
 
   function sampleFightGaps(tick) {
@@ -871,8 +869,26 @@
   function paintFightSepEl(el, ms, wasSide) {
     var sep = fmtFightGapStable(ms, wasSide);
     el.classList.toggle("is-side", sep.side);
-    var span = el.querySelector("span");
-    if (span && span.textContent !== sep.text) span.textContent = sep.text;
+    var tag = el.querySelector(".bc-fight-side-tag");
+    if (sep.side) {
+      if (!tag) {
+        tag = document.createElement("span");
+        tag.className = "bc-fight-side-tag";
+        tag.textContent = "SIDE";
+        el.insertBefore(tag, el.firstChild);
+      } else if (tag.textContent !== "SIDE") {
+        tag.textContent = "SIDE";
+      }
+    } else if (tag) {
+      tag.remove();
+    }
+    var gap = el.querySelector(".bc-fight-gap");
+    if (!gap) {
+      gap = document.createElement("span");
+      gap.className = "bc-fight-gap";
+      el.appendChild(gap);
+    }
+    if (gap.textContent !== sep.text) gap.textContent = sep.text;
     return sep.side;
   }
 
@@ -978,13 +994,7 @@
     var html = "";
     pack.rows.forEach(function (r, rowIdx) {
       if (rowIdx > 0) {
-        var sep = fmtFightGapStable(seps[rowIdx - 1], !!(fightDispSide && fightDispSide[rowIdx - 1]));
-        html +=
-          '<div class="bc-fight-sep' +
-          (sep.side ? " is-side" : "") +
-          '"><span>' +
-          sep.text +
-          "</span></div>";
+        html += fightSepHtml(seps[rowIdx - 1], !!(fightDispSide && fightDispSide[rowIdx - 1]));
       }
       var swap =
         swapped[r.key] === "up"
@@ -997,7 +1007,7 @@
     elFightRows.innerHTML = html;
     fightPrevOrder = order;
     fightDispSide = seps.map(function (ms, sIdx) {
-      return fmtFightGapStable(ms, !!(fightDispSide && fightDispSide[sIdx])).side;
+      return fightGapIsSide(ms, !!(fightDispSide && fightDispSide[sIdx]));
     });
 
     if (structureChanged && Object.keys(firstRects).length) {
@@ -1042,10 +1052,16 @@
       }
       return;
     }
+    var nearSf = focusNearStartFinish(tick, standings);
     var sample = sampleFightGaps(tick);
-    var arm = fightShouldArm(sample);
-    var hold = fightShouldHold(sample);
+    var arm = !nearSf && fightShouldArm(sample);
+    var hold = nearSf || fightShouldHold(sample);
     var now = fightNow();
+
+    if (nearSf && !battleActive) {
+      battleStreak = 0;
+      return;
+    }
 
     if (battleActive) {
       if (!hold) {

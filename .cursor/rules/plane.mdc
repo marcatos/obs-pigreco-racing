@@ -10,14 +10,14 @@ LAN `http://10.100.30.87`. UI `https://plane.marcatos.ddns.net`.
 
 ## Canonical owners
 
-- Live facts → Plane issue named **STATUS** (Community v1.4.1 has no Pages API)
-- Decisions → Plane issue named **DECISIONS** (append at top of that issue)
-- Work → Plane issues (labels feat/fix/chore/known-issue/backlog)
-- Session notes → comment on the issue (do not add git handoffs)
+- Live facts → Plane work item named **STATUS** (Community v1.4.1 MCP `page` is 404)
+- Decisions → Plane work item named **DECISIONS** (append at top of that issue)
+- Work → Plane work items (labels feat/fix/chore/known-issue/backlog)
+- Session notes → comment on the work item (do not add git handoffs)
 - Changelog → conventional commits
 - Code → git
 
-List open issues for `OBSPI` at session start. Create an issue before coding.
+List open work items for `OBSPI` at session start. Create a work item before coding.
 If MCP create fails (`title` vs `name`), run:
 
 ```powershell

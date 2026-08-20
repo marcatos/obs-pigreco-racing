@@ -455,8 +455,14 @@ def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
             cars=cars,
         )
 
-        # Prefer official positions only when enough cars have them and not in replay
-        use_official = (not is_replay) and official_valid >= max(2, len(cars) // 2)
+        # Prefer official positions only when enough cars have them and not in replay.
+        # Race live always uses lap+distPct — CarIdxPosition briefly zeros at S/F and
+        # flipping official↔progress reshuffles the whole board + false overtakes.
+        use_official = (
+            (not is_replay)
+            and official_valid >= max(2, len(cars) // 2)
+            and not (session_kind == "race" and live_order)
+        )
         est_lap = 90000.0
         for c in cars:
             if c.get("carIdx") == focus_idx and c.get("bestLapMs"):
