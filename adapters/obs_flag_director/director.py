@@ -82,6 +82,42 @@ def session_reset_command(*, now_ms: int) -> dict[str, Any]:
     }
 
 
+def queue_session_reset(
+    command_q: asyncio.Queue[dict[str, Any]],
+    *,
+    telemetry_connected: bool,
+    now_ms: int,
+) -> bool:
+    """Queue a manual reset only for the currently active telemetry connection."""
+    if not telemetry_connected:
+        log.warning(
+            "Reset Session telemetry offline; local clear only command=session_reset"
+        )
+        return False
+    command_q.put_nowait(session_reset_command(now_ms=now_ms))
+    log.info("Reset Session command queued queued=%d", command_q.qsize())
+    return True
+
+
+def discard_pending_commands(
+    command_q: asyncio.Queue[dict[str, Any]],
+    *,
+    reason: str,
+) -> int:
+    """Drop commands tied to a telemetry connection that has ended."""
+    dropped = 0
+    while True:
+        try:
+            command_q.get_nowait()
+        except asyncio.QueueEmpty:
+            break
+        command_q.task_done()
+        dropped += 1
+    if dropped:
+        log.warning("Telemetry commands discarded reason=%s dropped=%d", reason, dropped)
+    return dropped
+
+
 def load_config(path: Path) -> dict[str, Any]:
     if not path.is_file():
         raise FileNotFoundError(
@@ -655,11 +691,15 @@ async def run_director_loop(
                 previous = previous_program_scene
                 await replay.reset_local(previous_scene=previous)
                 last_tick_flag = None
-                command_q.put_nowait(session_reset_command(now_ms=now))
+                command_queued = queue_session_reset(
+                    command_q,
+                    telemetry_connected=telem_connected,
+                    now_ms=now,
+                )
                 log.info(
-                    "Reset Session scene entered previous=%s commandQueued=%d",
+                    "Reset Session scene entered previous=%s commandQueued=%s",
                     previous,
-                    command_q.qsize(),
+                    command_queued,
                 )
 
                 restore = director.on_reset_session_scene(previous_scene=previous)
@@ -713,7 +753,10 @@ async def run_director_loop(
                     command_q.qsize(),
                 )
             except Exception:  # noqa: BLE001
-                command_q.put_nowait(command)
+                log.warning(
+                    "Telemetry command send failed; dropping command=%s",
+                    command.get("command"),
+                )
                 raise
             finally:
                 command_q.task_done()
@@ -765,15 +808,21 @@ async def run_director_loop(
                                     msg.get("reason"),
                                 )
                     finally:
+                        telem_connected = False
                         sender.cancel()
                         try:
                             await sender
                         except asyncio.CancelledError:
                             pass
+                        discard_pending_commands(
+                            command_q,
+                            reason="telemetry_disconnect",
+                        )
             except asyncio.CancelledError:
                 raise
             except Exception as exc:  # noqa: BLE001
                 telem_connected = False
+                discard_pending_commands(command_q, reason="telemetry_disconnect")
                 log.warning("Telemetry disconnected (%s); retry in 2s", type(exc).__name__)
                 try:
                     await asyncio.wait_for(stop.wait(), timeout=2.0)

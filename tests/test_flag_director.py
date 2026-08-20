@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import sys
 from pathlib import Path
 
@@ -252,6 +253,49 @@ def test_session_reset_command_shape():
         "command": "session_reset",
         "reason": "manual",
     }
+
+
+def test_offline_session_reset_is_not_queued(caplog):
+    command_q: asyncio.Queue[dict[str, object]] = asyncio.Queue()
+
+    with caplog.at_level(logging.WARNING, logger="pigreco.session_director"):
+        queued = runtime_director.queue_session_reset(
+            command_q,
+            telemetry_connected=False,
+            now_ms=1234,
+        )
+
+    assert queued is False
+    assert command_q.empty()
+    assert "local clear only" in caplog.text
+
+
+def test_connected_session_reset_is_queued():
+    command_q: asyncio.Queue[dict[str, object]] = asyncio.Queue()
+
+    queued = runtime_director.queue_session_reset(
+        command_q,
+        telemetry_connected=True,
+        now_ms=1234,
+    )
+
+    assert queued is True
+    assert command_q.get_nowait() == runtime_director.session_reset_command(now_ms=1234)
+
+
+def test_disconnect_discards_queued_session_reset(caplog):
+    command_q: asyncio.Queue[dict[str, object]] = asyncio.Queue()
+    command_q.put_nowait(runtime_director.session_reset_command(now_ms=1234))
+
+    with caplog.at_level(logging.WARNING, logger="pigreco.session_director"):
+        dropped = runtime_director.discard_pending_commands(
+            command_q,
+            reason="telemetry_disconnect",
+        )
+
+    assert dropped == 1
+    assert command_q.empty()
+    assert "dropped=1" in caplog.text
 
 
 class _ReplayObs:
