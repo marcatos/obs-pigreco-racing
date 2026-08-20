@@ -12,3 +12,6 @@ def test_clear_director_state_in_js():
     assert "clearDirectorState" in src
     br = (ROOT / "overlays" / "broadcast.js").read_text(encoding="utf-8")
     assert "telemetry.session_reset" in br
+    assert "clearLeaderboardDom" in br
+    assert 'clearSessionOverlayState("ws_open")' in br
+    assert "elLb.innerHTML" in br

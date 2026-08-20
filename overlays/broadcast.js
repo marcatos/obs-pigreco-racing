@@ -345,6 +345,35 @@
     syncFlagStrip(flag);
   }
 
+  function clearLeaderboardDom() {
+    if (focusFlashTimer != null) {
+      window.clearTimeout(focusFlashTimer);
+      focusFlashTimer = null;
+    }
+    lastFocusPos = null;
+    lbAnimToken += 1;
+    lbAnimating = false;
+    lbPendingRows = null;
+    lbOrderKeys = [];
+    Object.keys(lbRowsByKey).forEach(function (k) {
+      var dead = lbRowsByKey[k];
+      if (dead && dead.parentNode) dead.parentNode.removeChild(dead);
+      delete lbRowsByKey[k];
+    });
+    if (elLb) {
+      elLb.innerHTML = "";
+      if (elLb.parentElement) elLb.parentElement.classList.remove("is-lb-swapping");
+    }
+    if (elRel) elRel.innerHTML = "";
+    if (elFocus) elFocus.innerHTML = "";
+    if (elTickerTrack) elTickerTrack.innerHTML = "";
+    if (elBestDriver) elBestDriver.innerHTML = "";
+    if (elSession) {
+      elSession.innerHTML = "";
+      elSession.dataset.flag = "green";
+    }
+  }
+
   function clearBoardAndFightState() {
     lastBoardAt = 0;
     latchedGapByKey = Object.create(null);
@@ -359,6 +388,7 @@
     fightDispSide = null;
     battleActive = false;
     battleStreak = 0;
+    clearLeaderboardDom();
     if (elFight) {
       elFight.hidden = true;
       elFight.classList.remove("is-on");
@@ -369,7 +399,9 @@
   function clearSessionOverlayState(reason) {
     clearMomentLayer();
     clearBoardAndFightState();
-    setStatus("SESSION RESET");
+    if (reason !== "ws_open") {
+      setStatus("SESSION RESET");
+    }
     directorLog("INFO", "session_reset reason=" + (reason || ""));
   }
 
@@ -2010,6 +2042,9 @@
 
     socket.addEventListener("open", function () {
       retryMs = 1000;
+      // Drop any standings/hero left from a previous WS lifetime (long-lived
+      // bridge, missed session_reset, or Browser Source that never reloaded).
+      clearSessionOverlayState("ws_open");
       root.dataset.state = "live";
       setStatus("LIVE");
       var now = (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now();
