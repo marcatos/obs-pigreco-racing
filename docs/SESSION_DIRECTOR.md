@@ -103,11 +103,13 @@ On hot telemetry moments (`incident`, `loss_of_control`, `near_miss`, `hard_over
 - Collection regenerated with Instant Replay sources (`python tools/generate_pack.py --profile marcato`)
 - `instantReplay.enabled` in `adapters/obs_flag_director/config.local.json` (see `config.example.json`)
 
-Cooldownfault: 50 s between auto replays. Manual scene stays on Live/Headcam (no scene switch).
+Cooldown default: 50 s between auto replays. Manual scene stays on Live/Headcam (no scene switch).
 
 ## Session reset
 
-Select **Reset Session** in VirtualDeck to clear telemetry continuity, broadcast overlays, and replay/director state without restarting OBS or Python. The empty auxiliary scene is only a command trigger; Session Director restores the previous **Live** or **Headcam** scene automatically. See the [session reset design](superpowers/specs/2026-08-20-session-reset-design.md).
+Select **Reset Session** in VirtualDeck to clear telemetry continuity, broadcast overlays, and replay/director state without restarting OBS or Python. The empty auxiliary scene is only a command trigger; Session Director restores the previous **Live** or **Headcam** scene automatically.
+
+Program never stays on the empty scene: with no known previous scene the director falls back to the preferred home (**Live** when telemetry is up, else **Lobby**), and a failed scene switch is retried on the next poll instead of latching. See the [session reset design](superpowers/specs/2026-08-20-session-reset-design.md).
 
 ## Tests
 

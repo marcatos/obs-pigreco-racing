@@ -158,11 +158,23 @@ class SessionDirector:
         return scene
 
     def on_reset_session_scene(self, *, previous_scene: str | None) -> str | None:
-        """Return the prior race scene to restore after a manual reset."""
+        """Return the scene to restore after a manual reset.
+
+        A prior race scene comes back as-is. An unknown previous scene falls
+        back to the preferred home so program never strands on the empty Reset
+        Session scene. Other known scenes (Starting Soon, BRB, …) return None:
+        the caller keeps the operator where they were.
+        """
         previous = (previous_scene or "").strip()
         if previous in self.config.race_scenes:
             return previous
+        if not previous:
+            return self._preferred_home()
         return None
+
+    def preferred_home_scene(self) -> str:
+        """Last-resort target for callers that must leave a placeholder scene."""
+        return self._preferred_home()
 
     def _preferred_home(self) -> str:
         if self._telem_connected:

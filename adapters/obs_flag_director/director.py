@@ -675,6 +675,7 @@ async def run_director_loop(
     async def session_poll() -> None:
         nonlocal last_tick_flag, telem_connected
         previous_program_scene: str | None = None
+        reset_handled = False
         while not stop.is_set():
             now = _ms_now()
             iracing_up = await asyncio.to_thread(process_running, proc_names)
@@ -687,44 +688,52 @@ async def run_director_loop(
                 telem_connected = False
 
             cur = await asyncio.to_thread(obs.get_current_scene)
-            if cur == reset_scene and previous_program_scene != reset_scene:
+            if cur == reset_scene:
                 previous = previous_program_scene
-                await replay.reset_local(previous_scene=previous)
-                last_tick_flag = None
-                command_queued = queue_session_reset(
-                    command_q,
-                    telemetry_connected=telem_connected,
-                    now_ms=now,
-                )
-                log.info(
-                    "Reset Session scene entered previous=%s commandQueued=%s",
-                    previous,
-                    command_queued,
-                )
+                if not reset_handled:
+                    await replay.reset_local(previous_scene=previous)
+                    last_tick_flag = None
+                    command_queued = queue_session_reset(
+                        command_q,
+                        telemetry_connected=telem_connected,
+                        now_ms=now,
+                    )
+                    log.info(
+                        "Reset Session scene entered previous=%s commandQueued=%s",
+                        previous,
+                        command_queued,
+                    )
+                    reset_handled = True
 
-                restore = director.on_reset_session_scene(previous_scene=previous)
-                target = restore
+                target = director.on_reset_session_scene(previous_scene=previous)
                 if target is None and previous and previous != reset_scene:
                     target = previous
-                if target:
-                    try:
-                        await asyncio.to_thread(obs.set_scene, target)
-                        director.note_obs_scene(target)
-                        log.info("Reset Session restored scene=%s", target)
-                    except Exception:  # noqa: BLE001
-                        log.exception(
-                            "Reset Session could not restore previous scene=%s",
-                            target,
-                        )
-                else:
-                    log.warning("Reset Session has no previous scene to restore")
-                previous_program_scene = reset_scene
+                if not target or target == reset_scene:
+                    # Reset Session is an empty placeholder: never stay on it.
+                    target = director.preferred_home_scene()
+                    log.warning(
+                        "Reset Session has no previous scene, falling back to %s",
+                        target,
+                    )
+                try:
+                    await asyncio.to_thread(obs.set_scene, target)
+                    director.note_obs_scene(target)
+                    previous_program_scene = target
+                    log.info("Reset Session restored scene=%s", target)
+                except Exception:  # noqa: BLE001
+                    # Keep previous_program_scene so the next poll retries.
+                    log.exception(
+                        "Reset Session could not restore scene=%s, retry in %.1fs",
+                        target,
+                        poll_s,
+                    )
                 try:
                     await asyncio.wait_for(stop.wait(), timeout=poll_s)
                 except asyncio.TimeoutError:
                     pass
                 continue
 
+            reset_handled = False
             if cur:
                 director.note_obs_scene(cur)
                 previous_program_scene = cur

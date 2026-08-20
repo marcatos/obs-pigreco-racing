@@ -230,6 +230,20 @@ def test_reset_session_stays_on_starting_soon():
     assert s.on_reset_session_scene(previous_scene="Starting Soon") is None
 
 
+def test_reset_session_without_previous_falls_back_to_lobby():
+    s = _session()
+    assert s.on_reset_session_scene(previous_scene=None) == "Lobby"
+    assert s.preferred_home_scene() == "Lobby"
+
+
+def test_reset_session_without_previous_falls_back_to_live_when_telemetry_up():
+    s = _session()
+    s.note_obs_scene("Live")
+    s.on_session_state(iracing_up=True, telemetry_connected=True, now_ms=1000)
+    assert s.on_reset_session_scene(previous_scene=None) == "Live"
+    assert s.on_reset_session_scene(previous_scene="") == "Live"
+
+
 def test_reset_session_scene_is_manual():
     s = _session()
     s.note_obs_scene("Reset Session")
