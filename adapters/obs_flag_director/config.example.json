@@ -12,7 +12,8 @@
   "homeScene": "Live",
   "liveScene": "Live",
   "lobbyScene": "Lobby",
-  "manualScenes": ["Starting Soon", "BRB", "Ending"],
+  "resetSessionScene": "Reset Session",
+  "manualScenes": ["Starting Soon", "BRB", "Ending", "Reset Session"],
   "raceScenes": ["Live", "Headcam"],
   "flagPresentation": "overlay",
   "autoStartTelemetry": true,
@@ -23,5 +24,14 @@
     "yellow": "Flag Yellow",
     "red": "Flag Red",
     "checkered": "Flag Checkered"
+  },
+  "instantReplay": {
+    "enabled": true,
+    "cooldownMs": 50000,
+    "maxPlayMs": 10000,
+    "mediaSourceName": "Instant Replay Clip",
+    "sceneItemName": "Instant Replay",
+    "sceneItemScenes": ["Live", "Headcam"],
+    "hotKinds": ["incident", "loss_of_control", "near_miss", "hard_overtake"]
   }
 }

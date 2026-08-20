@@ -12,7 +12,9 @@ from dataclasses import dataclass, field
 
 FLAG_SCENES = frozenset({"yellow", "red", "checkered"})
 HOME_FLAGS = frozenset({"green", "none"})
-DEFAULT_MANUAL_SCENES = frozenset({"Starting Soon", "BRB", "Ending"})
+DEFAULT_MANUAL_SCENES = frozenset(
+    {"Starting Soon", "BRB", "Ending", "Reset Session"}
+)
 # overlay = Browser Source FX on Live (recommended); scenes = OBS program cuts
 PRESENTATIONS = frozenset({"overlay", "scenes"})
 
@@ -37,6 +39,7 @@ class SessionDirectorConfig:
     session_debounce_ms: int = 4000
     flag_presentation: str = "overlay"
     manual_scenes: frozenset[str] = field(default_factory=lambda: DEFAULT_MANUAL_SCENES)
+    reset_session_scene: str = "Reset Session"
     # Scenes the operator may stay on during a race; resume after Lobby.
     race_scenes: frozenset[str] = field(
         default_factory=lambda: frozenset({"Live", "Headcam"})
@@ -153,6 +156,13 @@ class SessionDirector:
             preferred = self._preferred_home()
             self.flags.set_stacked_home(preferred)
         return scene
+
+    def on_reset_session_scene(self, *, previous_scene: str | None) -> str | None:
+        """Return the prior race scene to restore after a manual reset."""
+        previous = (previous_scene or "").strip()
+        if previous in self.config.race_scenes:
+            return previous
+        return None
 
     def _preferred_home(self) -> str:
         if self._telem_connected:
