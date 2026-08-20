@@ -13,6 +13,7 @@
   "liveScene": "Live",
   "lobbyScene": "Lobby",
   "manualScenes": ["Starting Soon", "BRB", "Ending"],
+  "raceScenes": ["Live", "Headcam"],
   "flagPresentation": "overlay",
   "autoStartTelemetry": true,
   "telemetryMode": "iracing",

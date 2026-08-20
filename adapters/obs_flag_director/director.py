@@ -92,6 +92,12 @@ def build_session_director(cfg: dict[str, Any]) -> SessionDirector:
         if isinstance(manual, list)
         else frozenset({"Starting Soon", "BRB", "Ending"})
     )
+    race = cfg.get("raceScenes")
+    race_set = (
+        frozenset(str(x) for x in race)
+        if isinstance(race, list) and race
+        else frozenset({"Live", "Headcam"})
+    )
     return SessionDirector(
         SessionDirectorConfig(
             scenes={str(k).lower(): str(v) for k, v in scenes.items()},
@@ -102,6 +108,7 @@ def build_session_director(cfg: dict[str, Any]) -> SessionDirector:
             session_debounce_ms=int(cfg.get("sessionDebounceMs") or 4000),
             flag_presentation=_flag_presentation(cfg),
             manual_scenes=manual_set,
+            race_scenes=race_set,
         )
     )
 
