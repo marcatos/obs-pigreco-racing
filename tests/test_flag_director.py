@@ -120,6 +120,15 @@ def test_session_iracing_no_telem_goes_lobby():
     )
 
 
+def test_session_iracing_closed_goes_lobby():
+    s = _session()
+    s.note_obs_scene("Live")
+    assert (
+        s.on_session_state(iracing_up=False, telemetry_connected=False, now_ms=5000)
+        == "Lobby"
+    )
+
+
 def test_session_debounce():
     s = _session()
     s.note_obs_scene("Lobby")

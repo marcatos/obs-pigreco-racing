@@ -6,6 +6,7 @@ Hands-free OBS direction for **S.Marcato 42** slim live:
 |-----------|----------------|
 | Telemetry connected (iRacing session) | **Live** |
 | iRacing process up, telemetry stale/down | **Lobby** |
+| iRacing fully closed | **Lobby** (not Starting Soon / BRB / Ending) |
 | Flag yellow / red / checkered | **Overlay FX on Live** (default `flagPresentation=overlay`) — no cutaway |
 | Starting Soon / BRB / Ending | **never** auto-left (VirtualDeck / manual) |
 
