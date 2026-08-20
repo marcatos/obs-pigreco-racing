@@ -157,7 +157,7 @@ Additive sector / split fields. Present when the source exposes split geometry (
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `pos` | number | 1-based overall (or class) position |
+| `pos` | number | 1-based overall (or class) position. After race checkered/cool-down the bridge latches absolute finish order so leavers do not re-rank survivors (last place alone must not become P1). |
 | `carNumber` | string | Race number |
 | `name` | string | Driver / short name |
 | `gapMs` | number \| null | Gap to leader (ms); `0` for P1 |

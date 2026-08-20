@@ -52,6 +52,11 @@ from domain_session_reset import (  # noqa: E402
     build_session_key,
     session_reset_envelope,
 )
+from domain_finish import (  # noqa: E402
+    finish_phase_active,
+    standings_from_finish_latch,
+    update_finish_latch,
+)
 from domain_standings import build_relatives, standings_from_cars  # noqa: E402
 from domain_track_map import build_map_cars, format_track_id  # noqa: E402
 
@@ -72,6 +77,8 @@ _session_tracker = SessionResetTracker()
 _session_key_missing_logged = False
 _start_by_car: dict[int, int] = {}
 _grid_session_key: Any = None
+_finish_latch: dict[int, dict[str, Any]] = {}
+_finish_field_high_water: int = 0
 SESSION_BACKJUMP_MS = 1000
 
 
@@ -99,10 +106,12 @@ def reset_continuity() -> None:
     """Clear event + pos-change memory (disconnect / invalid tick)."""
     global _prev_pos_by_car, _last_focus_car_idx, _last_session_time_ms
     global _start_by_car, _grid_session_key
+    global _finish_latch, _finish_field_high_water
     had_state = (
         detector._prev is not None
         or bool(_prev_pos_by_car)
         or _last_focus_car_idx is not None
+        or bool(_finish_latch)
     )
     detector.reset()
     _prev_pos_by_car = {}
@@ -111,6 +120,8 @@ def reset_continuity() -> None:
     _sector_tracker.reset()
     _start_by_car = {}
     _grid_session_key = None
+    _finish_latch = {}
+    _finish_field_high_water = 0
     if had_state:
         log.info("continuity reset detector and pos-change map")
 
@@ -405,6 +416,7 @@ def _driver_map(ir: Any) -> dict[int, dict[str, Any]]:
 def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
     """Return a telemetry.tick dict, or None if not connected / no data."""
     global _prev_pos_by_car, _start_by_car, _grid_session_key
+    global _finish_latch, _finish_field_high_water
     if not getattr(ir, "is_initialized", False) or not getattr(ir, "is_connected", False):
         return None
 
@@ -520,6 +532,8 @@ def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
         session_kind = _session_kind(session_type)
         session_state = _safe_get(ir, "SessionState", None)
         pace_mode = _safe_get(ir, "PaceMode", None)
+        session_flags_early = _safe_get(ir, "SessionFlags", 0)
+        flag_early = _flag_name(session_flags_early)
         try:
             session_state_i = int(session_state) if session_state is not None else None
         except (TypeError, ValueError):
@@ -537,6 +551,8 @@ def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
         if grid_key != _grid_session_key:
             _grid_session_key = grid_key
             _start_by_car = {}
+            _finish_latch = {}
+            _finish_field_high_water = 0
             log.info("grid reset sessionNum=%s kind=%s", sn, session_kind)
 
         if not _start_by_car:
@@ -572,6 +588,11 @@ def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
             cars=cars,
         )
 
+        # Track peak field size during the race so a late checkered latch
+        # still knows the full grid when most cars have already left.
+        if session_kind == "race" and cars:
+            _finish_field_high_water = max(_finish_field_high_water, len(cars))
+
         # Prefer official positions only when enough cars have them and not in replay.
         # Race live always uses lap+distPct — CarIdxPosition briefly zeros at S/F and
         # flipping official↔progress reshuffles the whole board + false overtakes.
@@ -605,6 +626,60 @@ def build_tick_from_ir(ir: Any) -> dict[str, Any] | None:
                 _start_by_car,
                 show_delta=bool(_start_by_car),
             )
+
+        # Under checkered / cool-down: latch absolute finish order so leavers
+        # do not promote the last connected car to P1.
+        if finish_phase_active(
+            session_kind=session_kind,
+            flag=flag_early,
+            session_state=session_state_i,
+        ):
+            # Prefer absolute SDK positions on the live rows used for latching.
+            latch_src = []
+            for r in standings:
+                row = dict(r)
+                idx = row.get("carIdx")
+                if idx is not None:
+                    for c in cars:
+                        if c.get("carIdx") == idx:
+                            op = c.get("officialPos")
+                            try:
+                                opi = int(op)
+                            except (TypeError, ValueError):
+                                opi = -1
+                            if opi > 0:
+                                row["officialPos"] = opi
+                            break
+                latch_src.append(row)
+            before = len(_finish_latch)
+            _finish_latch, _finish_field_high_water = update_finish_latch(
+                _finish_latch,
+                live_rows=latch_src,
+                field_high_water=_finish_field_high_water,
+            )
+            if len(_finish_latch) != before:
+                log.info(
+                    "finish latch cars=%d highWater=%d flag=%s state=%s",
+                    len(_finish_latch),
+                    _finish_field_high_water,
+                    flag_early,
+                    session_state_i,
+                )
+            present_idxs = {
+                int(c["carIdx"])
+                for c in cars
+                if c.get("carIdx") is not None
+            }
+            if _finish_latch:
+                standings = standings_from_finish_latch(
+                    _finish_latch,
+                    focus_car_idx=focus_idx,
+                    present_idxs=present_idxs,
+                )
+        elif _finish_latch:
+            _finish_latch = {}
+            _finish_field_high_water = 0
+
         new_pos_map: dict[Any, int] = {}
         for r in standings:
             key = r.get("carIdx")
