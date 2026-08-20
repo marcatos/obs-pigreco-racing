@@ -512,12 +512,40 @@ def source_base(
 # (keeps seat / mic stand; drops messy room). Requires Video Effects SDK.
 NV_GS_MODE_QUALITY_CHAIR = 2
 
+# DirectShow VideoFormat (libdshowcapture) + frame_interval in 100ns units
+DSHOW_FMT_NV12 = 201
+DSHOW_FMT_MJPEG = 400
+FPS_30_INTERVAL = 333333  # 10_000_000 / 30
+FPS_60_INTERVAL = 166667  # 10_000_000 / 60
+
+NVIDIA_VFX_URL = (
+    "https://www.nvidia.com/en-us/geforce/broadcasting/broadcast-sdk/resources/"
+)
+
+
+def nvidia_video_effects_installed() -> bool:
+    """OBS nv_greenscreen_filter needs the Video Effects redistributable (not just the GPU)."""
+    roots = [
+        Path(r"C:\Program Files\NVIDIA Corporation\NVIDIA Video Effects"),
+        Path(r"C:\Program Files\NVIDIA Corporation\NVIDIA Broadcast"),
+        Path(r"C:\Program Files\NVIDIA Corporation\Maxine"),
+    ]
+    for root in roots:
+        if not root.is_dir():
+            continue
+        # Any redistributable payload counts
+        if any(root.rglob("*.dll")):
+            return True
+    return False
+
 
 def nv_greenscreen_filter(
     *,
     name: str = "NVIDIA Background Removal",
     mode: int = NV_GS_MODE_QUALITY_CHAIR,
     threshold: float = 0.92,
+    # Every Nth frame — 1 is smoothest matte but often makes PiP choppy under load.
+    processing_interval: int = 2,
 ) -> dict:
     return {
         "prev_ver": PREV_VER,
@@ -528,7 +556,7 @@ def nv_greenscreen_filter(
         "settings": {
             "mode": int(mode),
             "threshold": float(threshold),
-            "processing_interval": 1,
+            "processing_interval": int(processing_interval),
         },
         "enabled": True,
     }
@@ -563,6 +591,9 @@ def dshow_cam(
     *,
     resolution: str = "1920x1080",
     greenscreen: bool = True,
+    frame_interval: int = FPS_30_INTERVAL,
+    video_format: int = DSHOW_FMT_NV12,
+    buffering: bool = False,
 ) -> dict:
     filters = [nv_greenscreen_filter()] if greenscreen else None
     return source_base(
@@ -573,8 +604,31 @@ def dshow_cam(
             "last_video_device_id": device_id,
             "res_type": 1,
             "resolution": resolution,
+            "frame_interval": int(frame_interval),
+            "video_format": int(video_format),
+            "buffering": bool(buffering),
         },
         filters=filters,
+    )
+
+
+def streamcam_dshow() -> dict:
+    """Face PiP: 720p60 MJPEG — smoother than 1080p under USB + NVIDIA VB load."""
+    has_vfx = nvidia_video_effects_installed()
+    if not has_vfx:
+        log.warning(
+            "NVIDIA Video Effects SDK not installed — StreamCam without Background Removal "
+            "(filter would be a no-op / choppy). Install RTX 40 Series package from %s "
+            "then re-run: python tools/generate_pack.py --profile marcato",
+            NVIDIA_VFX_URL,
+        )
+    return dshow_cam(
+        "StreamCam",
+        STREAMCAM_ID,
+        resolution="1280x720",
+        greenscreen=has_vfx,
+        frame_interval=FPS_60_INTERVAL,
+        video_format=DSHOW_FMT_MJPEG,
     )
 
 
@@ -888,7 +942,7 @@ def build_collection(
         mixers=255,
         volume=0.85,
     )
-    cam = dshow_cam("StreamCam", STREAMCAM_ID)
+    cam = streamcam_dshow()
     cam2 = dshow_cam("Cam 2", USBCAM_ID)
     roles = monitor_roles()
     for role, mon in roles.items():
@@ -1323,7 +1377,7 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
         mixers=255,
         volume=0.90,
     )
-    cam = dshow_cam("StreamCam", STREAMCAM_ID)
+    cam = streamcam_dshow()
     cam_head = dshow_cam("Cam Head", BRIO_ID, greenscreen=False)
     cam_pedals = dshow_cam("Cam Pedals", CREATIVE_ID, greenscreen=False)
     cam_bd_face = cam_carbon_backdrop(
@@ -1833,7 +1887,7 @@ def build_replay_collection(*, overlays: Path | None = None) -> Path:
         volume=0.9,
     )
     # P1-04 dual cam + NVIDIA greenscreen (Quality+Chair) + carbon plate
-    cam = dshow_cam("StreamCam", STREAMCAM_ID)
+    cam = streamcam_dshow()
     cam2 = dshow_cam("Cam 2", USBCAM_ID)
     cam_bd_face = cam_carbon_backdrop(
         "Cam Backdrop Face", width=360, height=202, marcato=True
@@ -2474,7 +2528,7 @@ def build_rec_2k_collection(*, overlays: Path | None = None) -> Path:
             {"device_id": MIC_ID},
             mixers=2,
         )
-        cam = dshow_cam("StreamCam", STREAMCAM_ID)
+        cam = streamcam_dshow()
         cam2 = dshow_cam("Cam 2", USBCAM_ID)
         cam_bd_face = cam_carbon_backdrop(
             "Cam Backdrop Face", width=360, height=202, marcato=True

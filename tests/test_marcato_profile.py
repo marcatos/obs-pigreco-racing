@@ -211,8 +211,20 @@ def test_marcato_replay_collection():
         "Overlay Cam 2 Frame",
     ]
     stream = next(s for s in data["sources"] if s.get("name") == "StreamCam")
-    assert any(f.get("id") == "nv_greenscreen_filter" for f in (stream.get("filters") or []))
-    assert (stream.get("filters") or [])[0].get("settings", {}).get("mode") == 2
+    assert stream["settings"]["resolution"] == "1280x720"
+    assert stream["settings"]["frame_interval"] == 166667
+    assert stream["settings"]["video_format"] == 400  # MJPEG
+    assert stream["settings"].get("buffering") is False
+    nv_filters = [f for f in (stream.get("filters") or []) if f.get("id") == "nv_greenscreen_filter"]
+    # Greenscreen only when NVIDIA Video Effects redistributable is present on the build PC
+    from generate_pack import nvidia_video_effects_installed
+
+    if nvidia_video_effects_installed():
+        assert nv_filters, "expected NVIDIA Background Removal when Video Effects SDK is installed"
+        assert nv_filters[0].get("settings", {}).get("mode") == 2
+        assert nv_filters[0].get("settings", {}).get("processing_interval") == 2
+    else:
+        assert not nv_filters, "no NVIDIA filter when Video Effects SDK is missing"
     for scene_name in ("Replay iRacing", "Replay Monitor", "Rec Singolo Live"):
         scene = next(s for s in data["sources"] if s.get("name") == scene_name)
         names = [it.get("name") for it in scene.get("settings", {}).get("items", [])]
