@@ -292,6 +292,11 @@ def test_marcato_live_headcam_and_pedals():
     lobby = next(s for s in data["sources"] if s.get("name") == "Lobby")
     lobby_items = [it.get("name") for it in lobby["settings"]["items"]]
     assert lobby_items[0] == "iRacing UI Capture"
+    ui_item = lobby["settings"]["items"][0]
+    assert ui_item["bounds_type"] == 3  # Scale Outer → fill 1920×1080
+    assert ui_item["bounds_crop"] is True
+    assert abs(ui_item["bounds"]["x"] - 1920.0) < 1e-6
+    assert abs(ui_item["bounds"]["y"] - 1080.0) < 1e-6
 
     live = next(s for s in data["sources"] if s.get("name") == "Live")
     live_items = [it.get("name") for it in live["settings"]["items"]]
