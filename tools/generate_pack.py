@@ -1710,7 +1710,8 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
     scene_lobby = make_scene(
         "Lobby",
         [
-            # Native Chromium UI size ≠ canvas — Scale Outer like Live Game Capture.
+            # Fit full Chromium UI in canvas (Scale Inner = no edge crop).
+            # Scale Outer would zoom and clip menus on all sides.
             scene_item(
                 ui_capture["name"],
                 ui_capture["uuid"],
@@ -1719,14 +1720,14 @@ def build_marcato_live_collection(*, overlays: Path | None = None) -> Path:
                 scale=(1.0, 1.0),
                 scale_ref=(float(CANVAS_W), float(CANVAS_H)),
                 bounds=(float(CANVAS_W), float(CANVAS_H)),
-                bounds_type=_BOUNDS_SCALE_OUTER,
+                bounds_type=_BOUNDS_SCALE_INNER,
+                bounds_align=0,  # center
             ),
             fullscreen(ov_live["name"], ov_live["uuid"], 2, locked=True),
             cam_pip_item(3),
             *audio_bed_item(mus_lobby, 4),
         ],
     )
-    scene_lobby["settings"]["items"][0]["bounds_crop"] = True
     scene_brb = make_scene(
         "BRB",
         [
