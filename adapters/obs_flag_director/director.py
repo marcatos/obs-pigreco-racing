@@ -213,13 +213,32 @@ def process_running(names: list[str]) -> bool:
 
 
 def telemetry_port_open(host: str = "127.0.0.1", port: int = 8765) -> bool:
-    import socket
+    """True if something is already listening on the telemetry WS port.
 
+    Do **not** use a bare TCP connect: websockets then logs
+    ``InvalidMessage: did not receive a valid HTTP request`` on every poll.
+    """
+    _ = host  # reserved for future host-specific bind checks
     try:
-        with socket.create_connection((host, port), timeout=0.4):
-            return True
-    except OSError:
+        out = subprocess.run(
+            ["netstat", "-ano"],
+            capture_output=True,
+            text=True,
+            timeout=2,
+            check=False,
+        ).stdout or ""
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        log.debug("telemetry_port_open netstat failed: %s", exc)
         return False
+
+    port_tok = f":{int(port)}"
+    for line in out.splitlines():
+        upper = line.upper()
+        if "LISTENING" not in upper or "UDP" in upper:
+            continue
+        if port_tok in line:
+            return True
+    return False
 
 
 class TelemetryLauncher:

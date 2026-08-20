@@ -922,6 +922,10 @@ async def async_main(args: argparse.Namespace) -> int:
     if args.ibt:
         log.info("IBT folder (sim-managed): %s", ibt_dir)
 
+    # Bare TCP probes / HTTP GETs on :8765 otherwise spam InvalidMessage tracebacks.
+    logging.getLogger("websockets.server").setLevel(logging.CRITICAL)
+    logging.getLogger("websockets.asyncio.server").setLevel(logging.CRITICAL)
+
     async with serve(handler, args.host, args.port):
         while not stop.is_set():
             t0 = time.perf_counter()
