@@ -41,6 +41,7 @@ Allow **inbound TCP 4455** from your LAN (Windows Defender Firewall) so the phon
 | Lobby | Switch scene |
 | BRB | Switch scene |
 | Ending | Switch scene |
+| Reset Session | Clear session state |
 | Start / Stop Stream | OBS stream |
 | Start / Stop Record | OBS record |
 
@@ -48,7 +49,7 @@ Flags are **overlay FX on Live** (telemetry) — no Flag * buttons on the slim d
 
 Full checklist: `adapters/streamdeck/marcato-live-deck.json`.
 
-**Note:** Session Director full-auto will re-assert `Live` or `Lobby` from telemetry when you are on those “race” scenes. It will **not** yank you out of Starting Soon / BRB / Ending — use VirtualDeck for show flow.
+**Note:** `Reset Session` clears telemetry, overlay, replay, and director continuity, then returns automatically to the previous `Live` or `Headcam` scene. Session Director full-auto will re-assert `Live` or `Lobby` from telemetry when you are on those “race” scenes. It will **not** yank you out of Starting Soon / BRB / Ending — use VirtualDeck for show flow.
 
 ## 5. Session Director password
 

@@ -77,21 +77,42 @@ wscript //nologo tools\ensure_session_director_silent.vbs
 
 On **Live**, music beds are not in the scene (Desktop + Mic only).
 
-## Scene transitions (audio-aware)
+## Scene transitions (Move)
 
-Collection default: **Dissolvenza 900 ms**. Overrides **→ Live** / **→ Ending**: **S.Marcato Stinger** + whoosh. Details: [`TRANSITIONS.md`](TRANSITIONS.md).
+Collection default: **S.Marcato Move** (~650 ms) for all scene pairs (no per-scene stinger overrides). Details: [`TRANSITIONS.md`](TRANSITIONS.md).
 
-Verify from **stream/recording** (Monitor Alone may differ):
+Verify from **stream/recording**:
 
-- [ ] Starting Soon → Lobby: 900 ms Dissolvenza; bed A fades out, bed B fades in (no click/cut).
-- [ ] Lobby → Live: Stinger + whoosh; Lobby bed fades out; Desktop (+ mic) fades in.
-- [ ] Live → BRB: Dissolvenza; Desktop/mic out, BRB bed in.
-- [ ] BRB → Ending: Stinger + whoosh; Ending bed in.
+- [ ] Starting Soon → Lobby: Move morph (~650 ms).
+- [ ] Lobby → Live: Move; Lobby bed out; Desktop (+ mic) in.
+- [ ] Live → BRB: Move; Desktop/mic out, BRB bed in.
+- [ ] BRB → Ending: Move; Ending bed in.
+
+## Instant Replay (P2-04)
+
+On hot telemetry moments (`incident`, `loss_of_control`, `near_miss`, `hard_overtake`) the Session Director:
+
+1. Saves the OBS **Replay Buffer**
+2. Loads the clip into **Instant Replay Clip**
+3. Shows the nested **Instant Replay** source (960×540, bottom-right) on the current race scene (`Live` / `Headcam`)
+4. Hides it after `maxPlayMs` (default 10 s)
+
+**Prerequisites**
+
+- OBS → Settings → Output → Replay Buffer **enabled** (20–30 s recommended)
+- Collection regenerated with Instant Replay sources (`python tools/generate_pack.py --profile marcato`)
+- `instantReplay.enabled` in `adapters/obs_flag_director/config.local.json` (see `config.example.json`)
+
+Cooldownfault: 50 s between auto replays. Manual scene stays on Live/Headcam (no scene switch).
+
+## Session reset
+
+Select **Reset Session** in VirtualDeck to clear telemetry continuity, broadcast overlays, and replay/director state without restarting OBS or Python. The empty auxiliary scene is only a command trigger; Session Director restores the previous **Live** or **Headcam** scene automatically. See the [session reset design](superpowers/specs/2026-08-20-session-reset-design.md).
 
 ## Tests
 
 ```powershell
-python -m pytest tests/test_flag_director.py -v
+python -m pytest tests/test_flag_director.py tests/test_instant_replay_policy.py -v
 ```
 
 ## Verification checklist

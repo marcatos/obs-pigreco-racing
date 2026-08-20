@@ -116,11 +116,25 @@ def test_marcato_collection_urls():
     assert "overlays/starting-soon.html" not in text.replace("\\\\", "/")
 
 
-def test_marcato_collection_uses_dissolvenza_transition():
+def test_marcato_has_reset_session_scene():
     path = ROOT / "obs" / "S_Marcato_42.json"
     data = json.loads(path.read_text(encoding="utf-8"))
-    assert data.get("current_transition") == "Dissolvenza"
-    assert data.get("transition_duration") == 900
+    scene_names = {scene.get("name") for scene in data.get("scene_order", [])}
+    scenes = {
+        source.get("name"): source
+        for source in data.get("sources", [])
+        if source.get("id") == "scene"
+    }
+
+    assert "Reset Session" in scene_names
+    assert scenes["Reset Session"].get("settings", {}).get("items") == []
+
+
+def test_marcato_collection_uses_move_transition():
+    path = ROOT / "obs" / "S_Marcato_42.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    assert data.get("current_transition") == "S.Marcato Move"
+    assert data.get("transition_duration") == 650
     fades = [t for t in data.get("transitions", []) if t.get("id") == "fade_transition"]
     assert len(fades) == 1
     assert fades[0]["name"] == "Dissolvenza"
@@ -135,8 +149,24 @@ def test_marcato_collection_uses_dissolvenza_transition():
     by_name = {s.get("name"): s for s in data.get("sources", []) if s.get("id") == "scene"}
     for scene_name in ("Live", "Headcam", "Ending"):
         ps = by_name[scene_name].get("private_settings") or {}
-        assert ps.get("transition") == "S.Marcato Stinger"
-        assert ps.get("transition_duration") == 850
+        assert ps.get("transition") is None
+        assert "transition" not in ps
+
+
+def test_marcato_instant_replay_nested_scene():
+    path = ROOT / "obs" / "S_Marcato_42.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    names = {s.get("name") for s in data.get("sources", [])}
+    assert "Instant Replay" in names
+    assert "Instant Replay Clip" in names
+    assert "Overlay Instant Replay Chrome" in names
+    by_name = {s.get("name"): s for s in data.get("sources", []) if s.get("id") == "scene"}
+    for scene_name in ("Live", "Headcam"):
+        items = (by_name[scene_name].get("settings") or {}).get("items") or []
+        ir = next(i for i in items if i.get("name") == "Instant Replay")
+        assert ir.get("visible") is False
+        assert abs(float(ir["pos"]["x"]) - 924.0) < 1.0
+        assert abs(float(ir["pos"]["y"]) - 504.0) < 1.0
 
 
 def test_pigreco_collection_uses_move_transition():
@@ -270,6 +300,7 @@ def test_marcato_live_headcam_and_pedals():
         "Lobby",
         "BRB",
         "Ending",
+        "Reset Session",
     }
     assert "Live Race" not in names
     assert "Rec Singolo" not in names
@@ -316,8 +347,12 @@ def test_marcato_live_headcam_and_pedals():
         "Overlay Track Map",
         "Cam Pedals PIP",
         "Microfono",
+        "Instant Replay",
     ]
     assert "Game Capture" not in head_items
+    assert "Instant Replay" in live_items
+    ir_live = next(it for it in live["settings"]["items"] if it["name"] == "Instant Replay")
+    assert ir_live.get("visible") is False
     bc_head = next(
         it for it in head["settings"]["items"] if it["name"] == "Overlay Broadcast Chrome"
     )
