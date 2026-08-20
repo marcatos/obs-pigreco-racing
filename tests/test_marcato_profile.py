@@ -153,6 +153,15 @@ def test_marcato_collection_uses_move_transition():
         assert "transition" not in ps
 
 
+def test_marcato_instant_replay_chrome_asset_present():
+    """Generator + collection reference this overlay; it must ship with the pack."""
+    path = ROOT / "overlays-marcato" / "instant-replay-chrome.html"
+    assert path.is_file()
+    html = path.read_text(encoding="utf-8")
+    assert "assets/theme.css" in html
+    assert "REPLAY" in html
+
+
 def test_marcato_instant_replay_nested_scene():
     path = ROOT / "obs" / "S_Marcato_42.json"
     data = json.loads(path.read_text(encoding="utf-8"))
