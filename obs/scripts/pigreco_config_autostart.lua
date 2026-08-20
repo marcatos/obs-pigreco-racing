@@ -319,8 +319,9 @@ function sync_cam_layout()
     end
   end
 
-  -- Prefer Cam PIP; else bare StreamCam (triple band / legacy)
-  local cam_found = face_found or stream_found
+  -- Prefer Cam PIP; else bare StreamCam (triple band / legacy).
+  -- No face cam on this scene (e.g. Headcam) → force cam=0 so a shared
+  -- Overlay Live Chrome does not keep an empty CAM frame from Live.
   local cam_visible = false
   if face_found then
     cam_visible = face_visible
@@ -328,15 +329,7 @@ function sync_cam_layout()
     cam_visible = stream_visible
   end
 
-  if not cam_found then
-    if items ~= nil then
-      obs.sceneitem_list_release(items)
-    end
-    obs.obs_source_release(scene_source)
-    return
-  end
-
-  local key = scene_name .. "|" .. tostring(cam_visible)
+  local key = scene_name .. "|" .. tostring(cam_visible) .. "|" .. tostring(face_found or stream_found)
   if key == last_sync_key then
     if items ~= nil then
       obs.sceneitem_list_release(items)
