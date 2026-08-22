@@ -8,7 +8,7 @@
 ![Local-first](https://img.shields.io/badge/Local--first-no%20cloud-009FE5?style=flat-square)
 ![Profiles](https://img.shields.io/badge/Profiles-2-080A0C?style=flat-square)
 
-> **Pilota non tecnico?** Apri [`LEGGIMI.txt`](LEGGIMI.txt) oppure fai doppio clic su **`Setup.bat`** — guida e setup restano in italiano.
+> **Pilota non tecnico?** Apri [`LEGGIMI.txt`](LEGGIMI.txt), fai doppio clic su **`Setup.bat`**, oppure incolla il [one-liner](#quick-start-windows) in PowerShell — guida e setup in italiano.
 
 Zip → useful OBS preview in under **10 minutes**. Gameplay stays center-stage; sponsors and telemetry stay peripheral. Open OBS → Session Director + telemetry start themselves. No SaaS, no mandatory cloud — files on disk you can share in Discord.
 
@@ -56,7 +56,7 @@ python tools/generate_showcase.py
 
 ## Why this pack
 
-- **Setup.bat** — nick, optional Python install (UAC), overlays personalized, scene collection copied into OBS AppData
+- **Setup.bat** — nick Twitch, scelta pack OBS (default **solo PiGreco**), installa Python/OBS/dipendenze se mancano, personalizza overlay, copia collezione in AppData
 - **Hands-free Session Director** — iRacing open + telem → **Live** / **Headcam**; UI-only or quit → **Lobby**; reopen restores the race scene you left
 - **Brand chrome that respects the FOV** — π / 42 identity in corners; center stays gameplay
 - **Browser Source overlays** — HTML/CSS/JS, not baked OBS images; refresh when you change config
@@ -86,7 +86,7 @@ Switch collections in OBS — no uninstall needed.
 | Broadcast polish | Countdown, session badge, BRB timer, rich ending + QR | [`docs/`](docs/README.md) |
 | Stinger & cams | Brand stinger, Cam PIP / Headcam / pedals, NV VB notes | [`STINGER`](docs/STINGER.md) · [`CAMERAS`](docs/CAMERAS.md) |
 | Config dock | Live config at `http://127.0.0.1:8766/` | [`OBS_CONFIG_PANEL`](docs/OBS_CONFIG_PANEL.md) |
-| **Session Director** | Auto **Live ↔ Lobby ↔ Headcam**, telem autostart, Lua on OBS open | [`SESSION_DIRECTOR`](docs/SESSION_DIRECTOR.md) |
+| **Session Director** | Auto **Live ↔ Lobby ↔ Headcam**, telem autostart, session reset tra gare, Lua on OBS open | [`SESSION_DIRECTOR`](docs/SESSION_DIRECTOR.md) |
 | Telecronaca | Standings / focus / battle / flags over WebSocket `:8765` | [`TELEMETRY_BROADCAST`](docs/TELEMETRY_BROADCAST.md) |
 | Track map | Peripheral minimap + self-learn / official SVG | [`TRACK_MAP`](docs/TRACK_MAP.md) |
 | Flag FX | Animated rails on Live (default) — no full-screen cutaway | [`FLAG_DIRECTOR`](docs/FLAG_DIRECTOR.md) |
@@ -164,15 +164,44 @@ Third-party tools (SimHub, Racing Overlay) can sit **beside** the pack as extra 
 
 ### 1. Setup
 
-```text
-double-click → Setup.bat
+**One-liner (consigliato per il team)** — scarica `main` da GitHub ed esegue `Setup.ps1`:
+
+```powershell
+irm https://raw.githubusercontent.com/marcatos/obs-pigreco-racing/main/install.ps1 | iex
 ```
 
-Prompts for nick / pilot name, installs Python if missing, writes overlay config, copies the collection to:
+Da **CMD**:
 
-`%APPDATA%\obs-studio\basic\scenes\`
+```cmd
+powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/marcatos/obs-pigreco-racing/main/install.ps1 | iex"
+```
+
+**Oppure** doppio clic su [`Setup.bat`](Setup.bat) se hai già la cartella (ZIP o clone).
+
+Lo script chiede:
+
+1. **Nick Twitch** (senza `@`)
+2. **Pack OBS** — `[1]` solo **PiGreco Racing** (default, Invio) · `[2]` PiGreco + S.Marcato 42 · `[3]` solo S.Marcato
+3. Conferme **UAC** se serve (Python 3.12 via winget)
+
+Poi verifica e installa automaticamente:
+
+| Componente | Come |
+|----------|------|
+| Python 3.12 | winget se assente |
+| Librerie pip | [`requirements-setup.txt`](requirements-setup.txt) — Pillow, websockets, obsws-python, pyirsdk, qrcode |
+| OBS Studio | winget se assente |
+| Collezione scene | `%APPDATA%\obs-studio\basic\scenes\` |
+
+Import check: `tools/verify_setup_dependencies.py`. Log setup: `logs/setup-*.log`.
 
 Italian walkthrough: [`LEGGIMI.txt`](LEGGIMI.txt) · PDF: [`Guida_PiGreco_OBS.pdf`](Guida_PiGreco_OBS.pdf)
+
+**Non-interactive** (es. script tuo):
+
+```powershell
+.\Setup.ps1 -Username tuo_nick -Profiles pigreco
+```
 
 ### 2. Open OBS
 
@@ -199,6 +228,7 @@ Optional login keepalive: `tools/install_config_autostart.ps1`.
 4. Telecronaca eye **on** **Overlay Broadcast Chrome** when you want standings on stream
 
 Deep dive: [`OBS_CONFIG_PANEL`](docs/OBS_CONFIG_PANEL.md) · [`SESSION_DIRECTOR`](docs/SESSION_DIRECTOR.md) · [`TELEMETRY_BROADCAST`](docs/TELEMETRY_BROADCAST.md)
+
 ### 4. After overlay edits
 
 Browser Source → **Refresh cache of current page** (or restart OBS).
@@ -277,7 +307,9 @@ Full index: **[`docs/README.md`](docs/README.md)**
 ## Repo layout
 
 ```text
+install.ps1               Bootstrap one-liner (irm | iex from GitHub)
 Setup.bat / Setup.ps1     Guided Windows setup
+requirements-setup.txt    Pip deps installed by Setup.ps1
 LEGGIMI.txt               Italian quick start
 obs/                      Scene collection JSON
 overlays/                 PiGreco pack
@@ -341,4 +373,4 @@ VirtualDeck profile: [`docs/OBS_VIRTUALDECK.md`](docs/OBS_VIRTUALDECK.md).
 
 **Do not commit** stream keys, OAuth tokens, StreamElements JWTs, or secret URLs.
 
-Issues and PRs welcome on this repository. Non-technical team path remains **`Setup.bat` → OBS → Refresh overlay**.
+Issues and PRs welcome on this repository. Non-technical team path: **`irm …/install.ps1 | iex`** or **`Setup.bat`** → OBS → refresh overlay.
