@@ -18,15 +18,15 @@ INIZIA DA QUI (il modo piu' semplice):
   da main (Code -> Download ZIP). La cartella si chiama
   obs-pigreco-racing-main: va bene, lancia Setup.bat da li'.
 
-  ONE-LINER (scarica da GitHub + avvia Setup):
+  ONE-LINER (consigliato — scarica ed esegue Setup da GitHub):
 
-  PowerShell (incolla tutto e Invio):
+  PowerShell:
 
-    $z=Join-Path $env:TEMP 'obs-pigreco-racing.zip';$d=Join-Path $env:USERPROFILE 'Documents\obs-pigreco-racing-main';[Net.ServicePointManager]::SecurityProtocol='Tls12';Invoke-WebRequest 'https://github.com/marcatos/obs-pigreco-racing/archive/refs/heads/main.zip' -OutFile $z -UseBasicParsing;if(Test-Path $d){Remove-Item $d -Recurse -Force};Expand-Archive $z (Join-Path $env:USERPROFILE 'Documents') -Force;Start-Process (Join-Path $d 'Setup.bat') -Wait
+    irm https://raw.githubusercontent.com/marcatos/obs-pigreco-racing/main/install.ps1 | iex
 
-  CMD (incolla tutto e Invio):
+  CMD:
 
-    powershell -NoProfile -ExecutionPolicy Bypass -Command "$z=Join-Path $env:TEMP 'obs-pigreco-racing.zip';$d=Join-Path $env:USERPROFILE 'Documents\obs-pigreco-racing-main';[Net.ServicePointManager]::SecurityProtocol='Tls12';Invoke-WebRequest 'https://github.com/marcatos/obs-pigreco-racing/archive/refs/heads/main.zip' -OutFile $z -UseBasicParsing;if(Test-Path $d){Remove-Item $d -Recurse -Force};Expand-Archive $z (Join-Path $env:USERPROFILE 'Documents') -Force;Start-Process (Join-Path $d 'Setup.bat') -Wait"
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/marcatos/obs-pigreco-racing/main/install.ps1 | iex"
 
   Alla scelta pack OBS premi Invio (solo PiGreco).
 
