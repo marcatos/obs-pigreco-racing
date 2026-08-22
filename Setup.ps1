@@ -224,8 +224,8 @@ try {
         exit 1
     }
 
-    $Username = Read-Required "Il tuo nick Twitch (senza @)" $Username
-    $Username = $Username.TrimStart("@")
+    $Username = Read-Required 'Il tuo nick Twitch (senza @)' $Username
+    $Username = $Username.TrimStart('@')
     if (-not $PilotName) {
         $PilotName = Read-Host "Nome visualizzato negli overlay (Invio = stesso del nick)"
         if (-not $PilotName) { $PilotName = $Username }
