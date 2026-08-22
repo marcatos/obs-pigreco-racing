@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
   Setup guidato del pacchetto OBS PiGreco Racing.
@@ -148,7 +148,7 @@ function Install-PythonElevated {
 
     $winget = Get-Command winget -ErrorAction SilentlyContinue
     if (-not $winget) {
-        Write-Log ERROR "winget non disponibile. Installa Python a mano da https://www.python.org/downloads/ (spunta 'Add python.exe to PATH') e rilancia Setup.ps1"
+        Write-Log ERROR 'winget non disponibile. Installa Python a mano da https://www.python.org/downloads/ (spunta Add python.exe to PATH) e rilancia Setup.ps1'
         throw "winget missing"
     }
 
@@ -214,7 +214,7 @@ function Read-Required([string]$Prompt, [string]$Current) {
 try {
     Write-Host ""
     Write-Host "========================================" -ForegroundColor Green
-    Write-Host "  PiGreco Racing — Setup OBS Pack" -ForegroundColor Green
+    Write-Host '  PiGreco Racing - Setup OBS Pack' -ForegroundColor Green
     Write-Host "========================================" -ForegroundColor Green
     Write-Host ""
     Write-Log INFO "start Setup.ps1 cwd=$ScriptDir log=$LogFile elevated=$(Test-IsAdmin) ElevatedPythonInstall=$ElevatedPythonInstall"
@@ -227,7 +227,7 @@ try {
     $Username = Read-Required 'Il tuo nick Twitch (senza @)' $Username
     $Username = $Username.TrimStart('@')
     if (-not $PilotName) {
-        $PilotName = Read-Host "Nome visualizzato negli overlay (Invio = stesso del nick)"
+        $PilotName = Read-Host 'Nome visualizzato negli overlay (Invio = stesso del nick)'
         if (-not $PilotName) { $PilotName = $Username }
     }
 
@@ -283,7 +283,7 @@ try {
     Write-Host ""
     Write-Host "SETUP COMPLETATO" -ForegroundColor Green
     Write-Host "1) Apri OBS Studio" -ForegroundColor White
-    Write-Host "2) Menu 'Collezione di scene' -> PiGreco Racing" -ForegroundColor White
+    Write-Host '2) Menu Collezione di scene -> PiGreco Racing' -ForegroundColor White
     Write-Host "3) Imposta Monitor Centro / Monitor Singolo e la webcam" -ForegroundColor White
     Write-Host "4) Guida completa: Guida_PiGreco_OBS.pdf" -ForegroundColor White
     Write-Host ""
