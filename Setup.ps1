@@ -21,6 +21,9 @@
 .PARAMETER EventTitle
   Default: Sim Racing Session
 
+.PARAMETER Profiles
+  Pack OBS da installare: pigreco, marcato (virgola). Default: pigreco
+
 .PARAMETER SkipObsInstall
   Non copia il JSON in AppData OBS
 
@@ -34,6 +37,7 @@ param(
     [string]$PilotName = "",
     [string]$TeamName = "PiGreco Racing",
     [string]$EventTitle = "Sim Racing Session",
+    [string]$Profiles = "",
     [switch]$SkipObsInstall,
     [switch]$ElevatedPythonInstall
 )
@@ -210,6 +214,21 @@ function Read-Required([string]$Prompt, [string]$Current) {
     }
 }
 
+function Read-ProfileChoice {
+    Write-Host ""
+    Write-Host "Pack OBS da installare:" -ForegroundColor Cyan
+    Write-Host "  [1] Solo PiGreco Racing (consigliato per il team)" -ForegroundColor White
+    Write-Host "  [2] PiGreco + S.Marcato 42" -ForegroundColor White
+    Write-Host "  [3] Solo S.Marcato 42" -ForegroundColor White
+    $choice = Read-Host "Scelta [Invio = 1]"
+    if (-not $choice -or $choice -eq "1") { return "pigreco" }
+    switch ($choice) {
+        "2" { return "pigreco,marcato" }
+        "3" { return "marcato" }
+        default { return "pigreco" }
+    }
+}
+
 # --- main ---
 try {
     Write-Host ""
@@ -230,6 +249,11 @@ try {
         $PilotName = Read-Host 'Nome visualizzato negli overlay (Invio = stesso del nick)'
         if (-not $PilotName) { $PilotName = $Username }
     }
+
+    if (-not $Profiles) {
+        $Profiles = Read-ProfileChoice
+    }
+    Write-Log INFO "profiles=$Profiles"
 
     Write-Log INFO "streamer username=$Username pilot=$PilotName"
 
@@ -255,7 +279,8 @@ try {
         "--username", $Username,
         "--pilot-name", $PilotName,
         "--team-name", $TeamName,
-        "--event-title", $EventTitle
+        "--event-title", $EventTitle,
+        "--profiles", $Profiles
     )
     if (-not $SkipObsInstall) {
         $args += "--install-obs"

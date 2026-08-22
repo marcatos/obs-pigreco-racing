@@ -4,7 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-import shutil
+import sys
 import time
 from pathlib import Path
 
@@ -12,11 +12,30 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 log = logging.getLogger("setup_streamer")
 
 ROOT = Path(__file__).resolve().parents[1]
+TOOLS_DIR = Path(__file__).resolve().parent
 OVERLAYS = ROOT / "overlays"
 CONFIG_JS = OVERLAYS / "config.js"
 CONFIG_VALUES = OVERLAYS / "config.values.json"
-EXAMPLE = OVERLAYS / "config.example.js"
 OBS_JSON = ROOT / "obs" / "PiGreco_Racing.json"
+
+VALID_PROFILES = ("pigreco", "marcato")
+DEFAULT_PROFILES = ("pigreco",)
+
+
+def parse_profiles(raw: str) -> tuple[str, ...]:
+    """Normalize --profiles (comma/space separated). Default: pigreco only."""
+    if not raw or not raw.strip():
+        return DEFAULT_PROFILES
+    names: list[str] = []
+    for part in raw.replace(",", " ").split():
+        name = part.strip().lower()
+        if not name:
+            continue
+        if name not in VALID_PROFILES:
+            raise SystemExit(f"Profilo sconosciuto: {name!r} (validi: {', '.join(VALID_PROFILES)})")
+        if name not in names:
+            names.append(name)
+    return tuple(names or DEFAULT_PROFILES)
 
 
 def parse_args() -> argparse.Namespace:
@@ -28,15 +47,20 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--team-name", default="PiGreco Racing")
     p.add_argument("--event-title", default="Sim Racing Session")
     p.add_argument(
+        "--profiles",
+        default="pigreco",
+        help="Pack OBS da generare/installare: pigreco, marcato (separati da virgola). Default: pigreco",
+    )
+    p.add_argument(
         "--install-obs",
         action="store_true",
-        help="Copia la collezione in %%APPDATA%%/obs-studio/basic/scenes/",
+        help="Copia le collezioni selezionate in %%APPDATA%%/obs-studio/basic/scenes/",
     )
     p.add_argument(
         "--regen-collection",
         action="store_true",
         default=True,
-        help="Rigenera obs/PiGreco_Racing.json con path locali (default: on)",
+        help="Rigenera i JSON scene con path locali (default: on)",
     )
     return p.parse_args()
 
@@ -62,43 +86,113 @@ def write_config(username: str, pilot_name: str, team_name: str, event_title: st
     log.info("updated config.values.json + config.js (username=%s, pilot=%s)", nick, pilot)
 
 
-def regen_and_maybe_install(install: bool) -> None:
+def _load_generate_pack():
+    if str(TOOLS_DIR) not in sys.path:
+        sys.path.insert(0, str(TOOLS_DIR))
+    import generate_pack  # noqa: E402
+
+    return generate_pack
+
+
+def regenerate_profiles(profiles: tuple[str, ...]) -> dict[str, list[Path]]:
+    pack = _load_generate_pack()
+    generated: dict[str, list[Path]] = {}
     t0 = time.perf_counter()
-    gen = ROOT / "tools" / "generate_pack.py"
-    import runpy
 
-    runpy.run_path(str(gen), run_name="__main__")
-    log.info("regenerated collection in %.0f ms", (time.perf_counter() - t0) * 1000)
+    if "pigreco" in profiles:
+        pack.ASSETS.mkdir(parents=True, exist_ok=True)
+        pack.export_logo_png()
+        scene = pack.build_collection(profile="pigreco")
+        generated["pigreco"] = [scene]
+        log.info("generated PiGreco collection -> %s", scene)
 
-    # Patch browser URLs are already absolute via generate_pack file_url(ROOT)
+    if "marcato" in profiles:
+        overlays = ROOT / "overlays-marcato"
+        paths = [
+            pack.build_marcato_live_collection(overlays=overlays),
+            pack.build_replay_collection(overlays=overlays),
+            pack.build_rec_2k_collection(overlays=overlays),
+        ]
+        pack.install_rec_2k_profile()
+        generated["marcato"] = paths
+        log.info(
+            "generated Marcato collections -> %s",
+            ", ".join(p.name for p in paths),
+        )
+
+    log.info(
+        "regenerated profiles=%s in %.0f ms",
+        ",".join(profiles),
+        (time.perf_counter() - t0) * 1000,
+    )
+    return generated
+
+
+def install_profiles_to_obs(profiles: tuple[str, ...], generated: dict[str, list[Path]]) -> None:
+    pack = _load_generate_pack()
+    t0 = time.perf_counter()
+    pack.stop_obs()
+
+    if "marcato" in profiles:
+        for src in generated.get("marcato", []):
+            activate = profiles == ("marcato",) and src.name == "S_Marcato_42.json"
+            pack.install_obs_scene_collection(src, activate=activate)
+
+    if "pigreco" in profiles:
+        pigreco = generated.get("pigreco", [])
+        if not pigreco:
+            raise SystemExit("PiGreco collection missing after regenerate")
+        pack.install_obs_scene_collection(pigreco[0], activate=True)
+
+    pack.start_obs()
+    log.info(
+        "installed profiles=%s to OBS in %.0f ms",
+        ",".join(profiles),
+        (time.perf_counter() - t0) * 1000,
+    )
+
+
+def regen_and_maybe_install(profiles: tuple[str, ...], install: bool) -> None:
+    generated = regenerate_profiles(profiles)
     if install:
-        dest_dir = Path.home() / "AppData/Roaming/obs-studio/basic/scenes"
-        dest_dir.mkdir(parents=True, exist_ok=True)
-        dest = dest_dir / "PiGreco_Racing.json"
-        shutil.copy2(OBS_JSON, dest)
-        log.info("installed scene collection -> %s", dest)
+        install_profiles_to_obs(profiles, generated)
 
 
 def main() -> None:
     started = time.perf_counter()
     args = parse_args()
-    log.info("start setup_streamer username=%s", args.username)
-    write_config(args.username, args.pilot_name, args.team_name, args.event_title)
-    if args.regen_collection:
-        regen_and_maybe_install(args.install_obs)
-    elif args.install_obs:
-        dest = Path.home() / "AppData/Roaming/obs-studio/basic/scenes/PiGreco_Racing.json"
-        shutil.copy2(OBS_JSON, dest)
-        log.info("installed existing collection -> %s", dest)
+    profiles = parse_profiles(args.profiles)
+    log.info("start setup_streamer username=%s profiles=%s", args.username, ",".join(profiles))
 
-    # Verify config JSON-ish keys present
-    cfg_txt = CONFIG_JS.read_text(encoding="utf-8")
-    if "username" not in cfg_txt:
-        raise SystemExit("config.js missing username after write")
+    if "pigreco" in profiles:
+        write_config(args.username, args.pilot_name, args.team_name, args.event_title)
+    else:
+        log.info("skip PiGreco config write (profiles=%s)", ",".join(profiles))
+
+    if args.regen_collection:
+        regen_and_maybe_install(profiles, args.install_obs)
+    elif args.install_obs:
+        pack = _load_generate_pack()
+        generated: dict[str, list[Path]] = {}
+        if "pigreco" in profiles and OBS_JSON.is_file():
+            generated["pigreco"] = [OBS_JSON]
+        for name in ("S_Marcato_42.json", "S_Marcato_Replay.json", "S_Marcato_Rec_2K.json"):
+            path = ROOT / "obs" / name
+            if "marcato" in profiles and path.is_file():
+                generated.setdefault("marcato", []).append(path)
+        if not generated:
+            raise SystemExit("Nessuna collezione da installare; usa --regen-collection o rigenera prima.")
+        install_profiles_to_obs(profiles, generated)
+
+    if "pigreco" in profiles:
+        cfg_txt = CONFIG_JS.read_text(encoding="utf-8")
+        if "username" not in cfg_txt:
+            raise SystemExit("config.js missing username after write")
 
     log.info(
-        "done in %.0f ms | share folder: %s | teammates: copy pack, run setup_streamer.py --username THEIR_NICK --install-obs",
+        "done in %.0f ms | profiles=%s | share folder: %s",
         (time.perf_counter() - started) * 1000,
+        ",".join(profiles),
         ROOT,
     )
 

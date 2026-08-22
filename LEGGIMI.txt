@@ -11,6 +11,9 @@ INIZIA DA QUI (il modo piu' semplice):
 
   Fai doppio clic su  Setup.bat
 
+  Ti chiedera' anche quali pack OBS installare (default:
+  solo PiGreco Racing; S.Marcato 42 e' opzionale).
+
   Se hai scaricato lo ZIP da GitHub, usa sempre l'ultimo
   da main (Code -> Download ZIP). La cartella si chiama
   obs-pigreco-racing-main: va bene, lancia Setup.bat da li'.
