@@ -38,6 +38,12 @@ lo installa (comparira' una richiesta
 
 di amministratore: accetta).
 
+Installa anche le librerie Python del pack
+
+(Pillow, websockets, obsws-python, pyirsdk, ...)
+
+e, se manca, OBS Studio (winget).
+
 
 
 PANNELLO CONFIG DENTRO OBS:

@@ -1,0 +1,7 @@
+# Streamer machine — verified and installed by Setup.ps1 (pip).
+# Covers pack generation, config server, telemetry bridge, Session/Flag Director.
+Pillow>=10.0.0
+websockets>=12.0
+obsws-python>=1.7.0
+pyirsdk>=1.3.0
+qrcode[pil]>=7.4

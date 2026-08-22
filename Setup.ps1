@@ -6,7 +6,8 @@
 .DESCRIPTION
   - Chiede nick / nome pilota
   - Se Python non e' installato, lo installa (richiede privilegi elevati)
-  - Installa dipendenze minime (Pillow)
+  - Installa dipendenze Python (requirements-setup.txt)
+  - Verifica / installa OBS Studio se assente (winget)
   - Personalizza config e copia la collezione scene in OBS
 
 .PARAMETER Username
@@ -143,7 +144,8 @@ function Install-PythonElevated {
             "-Username", $Username,
             "-PilotName", $PilotName,
             "-TeamName", $TeamName,
-            "-EventTitle", $EventTitle
+            "-EventTitle", $EventTitle,
+            "-Profiles", $Profiles
         )
         if ($SkipObsInstall) { $passArgs += "-SkipObsInstall" }
         Request-Elevation -ExtraArgs $passArgs
@@ -190,19 +192,97 @@ function Ensure-Python {
     return $py
 }
 
-function Ensure-PipPackage {
-    param([string]$PythonExe, [string]$Package)
-    Write-Log INFO "Verifica pacchetto Python: $Package"
-    & $PythonExe -m pip show $Package 2>$null | Out-Null
+function Ensure-Pip {
+    param([string]$PythonExe)
+    Write-Log INFO "Verifica pip"
+    & $PythonExe -m pip --version 2>$null | Out-Null
     if ($LASTEXITCODE -ne 0) {
-        Write-Log INFO "Installazione $Package ..."
-        & $PythonExe -m pip install --disable-pip-version-check $Package
+        Write-Log INFO "Bootstrap pip ..."
+        & $PythonExe -m ensurepip --upgrade
         if ($LASTEXITCODE -ne 0) {
-            throw "pip install $Package fallito"
+            throw "ensurepip fallito"
         }
-    } else {
-        Write-Log INFO "$Package gia' presente"
     }
+    Write-Log INFO "Aggiornamento pip ..."
+    & $PythonExe -m pip install --disable-pip-version-check --upgrade pip
+    if ($LASTEXITCODE -ne 0) {
+        throw "pip upgrade fallito"
+    }
+}
+
+function Ensure-PipRequirements {
+    param([string]$PythonExe, [string]$RequirementsFile)
+    if (-not (Test-Path $RequirementsFile)) {
+        throw "File mancante: $RequirementsFile"
+    }
+    Write-Log INFO "Installazione dipendenze Python da $(Split-Path -Leaf $RequirementsFile) ..."
+    $t0 = Get-Date
+    & $PythonExe -m pip install --disable-pip-version-check -r $RequirementsFile
+    if ($LASTEXITCODE -ne 0) {
+        throw "pip install -r $RequirementsFile fallito"
+    }
+    $ms = [int]((Get-Date) - $t0).TotalMilliseconds
+    Write-Log INFO "pip requirements completato in ${ms}ms"
+}
+
+function Find-ObsExecutable {
+    $paths = @(
+        "$env:ProgramFiles\obs-studio\bin\64bit\obs64.exe",
+        "${env:ProgramFiles(x86)}\obs-studio\bin\64bit\obs64.exe",
+        "$env:LOCALAPPDATA\Programs\obs-studio\bin\64bit\obs64.exe"
+    )
+    foreach ($p in $paths) {
+        if (Test-Path $p) { return $p }
+    }
+    return $null
+}
+
+function Install-ObsWithWinget {
+    $winget = Get-Command winget -ErrorAction SilentlyContinue
+    if (-not $winget) {
+        return $false
+    }
+    Write-Log INFO "Installazione OBS Studio tramite winget (scope user) ..."
+    $t0 = Get-Date
+    & winget install -e --id OBSProject.OBSStudio --scope user --accept-package-agreements --accept-source-agreements --disable-interactivity
+    $code = $LASTEXITCODE
+    $ms = [int]((Get-Date) - $t0).TotalMilliseconds
+    Write-Log INFO "winget OBS (user) exit=$code in ${ms}ms"
+    if (Find-ObsExecutable) {
+        return $true
+    }
+    if (Test-IsAdmin) {
+        Write-Log INFO "Retry OBS winget (machine scope) ..."
+        & winget install -e --id OBSProject.OBSStudio --accept-package-agreements --accept-source-agreements --disable-interactivity
+        return [bool](Find-ObsExecutable)
+    }
+    return $false
+}
+
+function Ensure-ObsStudio {
+    $obs = Find-ObsExecutable
+    if ($obs) {
+        Write-Log INFO "OBS Studio trovato: $obs"
+        return $obs
+    }
+    Write-Log WARN "OBS Studio non trovato"
+    if (Install-ObsWithWinget) {
+        $obs = Find-ObsExecutable
+        Write-Log INFO "OBS Studio installato: $obs"
+        return $obs
+    }
+    Write-Log WARN "Installa OBS manualmente da https://obsproject.com e rilancia Setup se necessario"
+    return $null
+}
+
+function Test-MoveTransitionPlugin {
+    $dll = 'C:\Program Files\obs-studio\obs-plugins\64bit\move-transition.dll'
+    if (Test-Path $dll) {
+        Write-Log INFO "Plugin Move Transition presente"
+        return $true
+    }
+    Write-Log WARN "Plugin Move Transition assente ($dll) - transizioni Move nel pack potrebbero non funzionare; vedi docs/TRANSITIONS.md"
+    return $false
 }
 
 function Read-Required([string]$Prompt, [string]$Current) {
@@ -267,7 +347,21 @@ try {
     }
 
     $python = Ensure-Python
-    Ensure-PipPackage -PythonExe $python -Package "Pillow"
+    Ensure-Pip -PythonExe $python
+    $requirements = Join-Path $ScriptDir "requirements-setup.txt"
+    Ensure-PipRequirements -PythonExe $python -RequirementsFile $requirements
+    $verifyDeps = Join-Path $ScriptDir "tools\verify_setup_dependencies.py"
+    if (-not (Test-Path $verifyDeps)) {
+        throw "File mancante: tools\verify_setup_dependencies.py"
+    }
+    Write-Log INFO "Verifica import dipendenze Python ..."
+    & $python $verifyDeps
+    if ($LASTEXITCODE -ne 0) {
+        throw "Verifica dipendenze Python fallita"
+    }
+
+    Ensure-ObsStudio | Out-Null
+    Test-MoveTransitionPlugin | Out-Null
 
     $setupPy = Join-Path $ScriptDir "tools\setup_streamer.py"
     if (-not (Test-Path $setupPy)) {
