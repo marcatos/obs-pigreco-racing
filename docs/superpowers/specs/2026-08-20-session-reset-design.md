@@ -1,7 +1,7 @@
 # Design — Session reset (telemetry + director + overlays)
 
 **Date:** 2026-08-20  
-**Status:** approved (pending implement)  
+**Status:** implemented (OBSPI-60, shipped 2026-08-20)  
 **Plane:** [OBSPI-60](https://plane.marcatos.ddns.net) — feat: session reset (auto + VirtualDeck)  
 
 **Related:** [`SESSION_DIRECTOR.md`](../../SESSION_DIRECTOR.md), [`adapters/telemetry/CONTRACT.md`](../../../adapters/telemetry/CONTRACT.md), [`2026-08-14-marcato-session-director-design.md`](2026-08-14-marcato-session-director-design.md)
