@@ -192,6 +192,9 @@ Poi verifica e installa automaticamente:
 | Librerie pip | [`requirements-setup.txt`](requirements-setup.txt) — Pillow, websockets, obsws-python, pyirsdk, qrcode |
 | OBS Studio | winget se assente |
 | Collezione scene | `%APPDATA%\obs-studio\basic\scenes\` |
+| **PiGreco Config dock** | Registrato in OBS (`Visualizza → Docks`) su `http://127.0.0.1:8766/` |
+| **Config + telemetria** | Server `:8766`, bridge `:8765`, Session Director — avvio automatico |
+| **Re-run installer** | `irm …/install.ps1 \| iex` → **Aggiorna** (default) conserva la config pilota |
 
 Import check: `tools/verify_setup_dependencies.py`. Log setup: `logs/setup-*.log`.
 

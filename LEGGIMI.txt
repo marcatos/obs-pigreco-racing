@@ -30,6 +30,10 @@ INIZIA DA QUI (il modo piu' semplice):
 
   Alla scelta pack OBS premi Invio (solo PiGreco).
 
+  Se il pack e' gia' installato, lo script chiede:
+  [1] Aggiorna (default) · [2] Disinstalla · [3] Annulla
+  L'aggiornamento conserva config.values.json del pilota.
+
 
 
 Ti chiede il nick, e se manca Python

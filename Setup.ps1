@@ -389,22 +389,24 @@ try {
     $ms = [int]((Get-Date) - $t1).TotalMilliseconds
     Write-Log INFO "setup_streamer completato in ${ms}ms"
 
-    $autostart = Join-Path $ScriptDir "tools\install_config_autostart.ps1"
-    if (Test-Path $autostart) {
-        Write-Log INFO "Installazione autostart config server (Startup Windows)..."
-        & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $autostart
-        if ($LASTEXITCODE -ne 0) {
-            Write-Log WARN "install_config_autostart exit=$LASTEXITCODE (puoi rilanciare tools/install_config_autostart.ps1)"
-        }
+    $integrate = Join-Path $ScriptDir "tools\pigreco_install.py"
+    if (-not (Test-Path $integrate)) {
+        throw "File mancante: tools\pigreco_install.py"
+    }
+    Write-Log INFO "Integrazione OBS (dock PiGreco Config, autostart, telemetria)..."
+    & $python $integrate install --pack-root $ScriptDir --profiles $Profiles
+    if ($LASTEXITCODE -ne 0) {
+        throw "pigreco_install.py exit code $LASTEXITCODE"
     }
 
     $totalMs = [int]((Get-Date) - $Script:StartedAt).TotalMilliseconds
     Write-Host ""
     Write-Host "SETUP COMPLETATO" -ForegroundColor Green
-    Write-Host "1) Apri OBS Studio" -ForegroundColor White
+    Write-Host "1) Apri OBS Studio (o riavvialo se era gia' aperto)" -ForegroundColor White
     Write-Host '2) Menu Collezione di scene -> PiGreco Racing' -ForegroundColor White
-    Write-Host "3) Imposta Monitor Centro / Monitor Singolo e la webcam" -ForegroundColor White
-    Write-Host "4) Guida completa: Guida_PiGreco_OBS.pdf" -ForegroundColor White
+    Write-Host "3) Visualizza -> Docks -> PiGreco Config (pannello impostazioni)" -ForegroundColor White
+    Write-Host "4) Telemetria + Session Director partono in automatico (porte 8765/8766)" -ForegroundColor White
+    Write-Host "5) Guida completa: Guida_PiGreco_OBS.pdf" -ForegroundColor White
     Write-Host ""
     Write-Log INFO "done success total=${totalMs}ms"
     exit 0
